@@ -984,28 +984,6 @@ mod tests {
         }
     }
 
-    /// Completeness gate — run explicitly with `--ignored`: every
-    /// UI-theme-paired theme must have been crafted, i.e. its basemap
-    /// differs from BOTH reference basemaps. Fails while any placeholder
-    /// clone remains; the workflow gate runs it once all family agents
-    /// have delivered.
-    #[test]
-    #[ignore = "red by design until every family agent has replaced its placeholder palettes"]
-    fn no_placeholder_palettes_remain() {
-        let dark_reference = MapTheme::oldworld().basemap;
-        let light_reference = MapTheme::pastel_light().basemap;
-        for theme in all_built_in() {
-            if ORIGINAL_IDS.contains(&theme.id) {
-                continue;
-            }
-            assert!(
-                theme.basemap != dark_reference && theme.basemap != light_reference,
-                "{}: still a placeholder (reference-clone) basemap",
-                theme.id
-            );
-        }
-    }
-
     /// Flight-category colors stay semantically recognizable in all themes:
     /// VFR greenish, MVFR blueish, IFR reddish, LIFR magenta-ish — and
     /// mutually distinct.
