@@ -1,0 +1,29 @@
+[package]
+name = "strata-plan"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+# Errors / logging
+thiserror.workspace = true
+tracing.workspace = true
+
+# Serialization — flight/aircraft documents are pretty JSON files; the
+# format_version migration scaffold transforms `serde_json::Value` trees.
+# float_roundtrip: document loads must reproduce saved f64s exactly (doc
+# equality drives the app's dirty flag), which default float parsing does
+# not guarantee in the last ULP.
+serde.workspace = true
+serde_json = { workspace = true, features = ["float_roundtrip"] }
+
+# Time (departure times, snapshot timestamps, winds-aloft valid times)
+chrono = { version = "0.4", features = ["serde"] }
+
+# Domain types only (LatLon, Airspace, Obstacle, vertical datums, …).
+# No store/provider usage: storage stays behind the source traits.
+strata-data.workspace = true
+
+[dev-dependencies]
+# The fixture NOTAM corpus for the relevance tests — test builds only.
+strata-data = { workspace = true, features = ["test-support"] }

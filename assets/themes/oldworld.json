@@ -1,0 +1,148 @@
+{
+  "$schema": "https://github.com/longbridge/gpui-component/raw/refs/heads/main/.theme-schema.json",
+  "name": "Oldworld",
+  "author": "dgox16",
+  "url": "https://github.com/dgox16/oldworld.nvim",
+  "themes": [
+    {
+      "name": "Oldworld",
+      "mode": "dark",
+      "colors": {
+        "accent.background": "#2a2a2c",
+        "accent.foreground": "#c9c7cd",
+        "background": "#161617",
+        "border": "#2a2a2c",
+        "danger.background": "#ea83a5",
+        "danger.foreground": "#161617",
+        "foreground": "#c9c7cd",
+        "input.border": "#313134",
+        "link.active.foreground": "#92a2d5",
+        "link.foreground": "#92a2d5",
+        "link.hover.foreground": "#aca1cf",
+        "list.active.background": "#92a2d515",
+        "list.active.border": "#92a2d5",
+        "list.even.background": "#1b1b1c",
+        "muted.background": "#1b1b1c",
+        "muted.foreground": "#8b8693",
+        "panel.background": "#161617",
+        "popover.background": "#18181a",
+        "popover.foreground": "#c9c7cd",
+        "primary.background": "#92a2d5",
+        "primary.foreground": "#161617",
+        "scrollbar.background": "#16161700",
+        "scrollbar.thumb.background": "#444448",
+        "secondary.background": "#27272a",
+        "secondary.active.background": "#313134",
+        "secondary.foreground": "#c9c7cd",
+        "secondary.hover.background": "#2a2a2c",
+        "tab.active.background": "#161617",
+        "tab.active.foreground": "#c9c7cd",
+        "tab.background": "#13131400",
+        "tab.foreground": "#9f9ca6",
+        "tab_bar.background": "#131314",
+        "title_bar.background": "#131314",
+        "title_bar.border": "#2a2a2c",
+        "base.red": "#ea83a5",
+        "base.red.light": "#f5a191",
+        "base.green": "#90b99f",
+        "base.green.light": "#b5d1be",
+        "base.yellow": "#e6b99d",
+        "base.yellow.light": "#f0d2bc",
+        "base.blue": "#92a2d5",
+        "base.blue.light": "#b3bfe2",
+        "base.magenta": "#aca1cf",
+        "base.magenta.light": "#e29eca",
+        "base.cyan": "#85b5ba",
+        "base.cyan.light": "#a8cccf"
+      },
+      "highlight": {
+        "editor.foreground": "#c9c7cd",
+        "editor.background": "#161617",
+        "editor.active_line.background": "#1b1b1c",
+        "editor.line_number": "#444448",
+        "editor.active_line_number": "#b4b1ba",
+        "editor.invisible": "#6c687466",
+        "conflict": "#f5a191",
+        "created": "#90b99f",
+        "hidden": "#6c6874",
+        "hint": "#aca1cf",
+        "modified": "#e6b99d",
+        "predictive": "#6c6874",
+        "syntax": {
+          "attribute": {
+            "color": "#e6b99d"
+          },
+          "boolean": {
+            "color": "#e6b99d"
+          },
+          "comment": {
+            "color": "#8b8693"
+          },
+          "comment.doc": {
+            "color": "#9f9ca6"
+          },
+          "constant": {
+            "color": "#ea83a5"
+          },
+          "constructor": {
+            "color": "#e6b99d"
+          },
+          "embedded": {
+            "color": "#c9c7cd"
+          },
+          "function": {
+            "color": "#92a2d5"
+          },
+          "keyword": {
+            "color": "#aca1cf"
+          },
+          "link_text": {
+            "color": "#92a2d5",
+            "font_style": "normal"
+          },
+          "link_uri": {
+            "color": "#85b5ba",
+            "font_style": "italic"
+          },
+          "number": {
+            "color": "#e29eca"
+          },
+          "string": {
+            "color": "#90b99f"
+          },
+          "string.escape": {
+            "color": "#e6b99d"
+          },
+          "string.regex": {
+            "color": "#90b99f"
+          },
+          "string.special": {
+            "color": "#e6b99d"
+          },
+          "string.special.symbol": {
+            "color": "#e6b99d"
+          },
+          "tag": {
+            "color": "#ea83a5"
+          },
+          "text.literal": {
+            "color": "#90b99f"
+          },
+          "title": {
+            "color": "#90b99f",
+            "font_weight": 600
+          },
+          "type": {
+            "color": "#e6b99d"
+          },
+          "property": {
+            "color": "#c9c7cd"
+          },
+          "variable.special": {
+            "color": "#92a2d5"
+          }
+        }
+      }
+    }
+  ]
+}

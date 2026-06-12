@@ -1,0 +1,45 @@
+[package]
+name = "strata-render"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+# Must stay the zed wgpu fork from [workspace.dependencies] — strata-app shares
+# one Arc<wgpu::Device> with gpui-ce's gpui_wgpu at runtime.
+wgpu.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+# Geometry / math
+glam = "0.30"
+lyon = "1"
+
+# Vector tiles
+geozero = { version = "0.14", default-features = false, features = ["with-mvt"] }
+# Tile payloads from PMTiles are gzip (sometimes zlib) compressed; pure-Rust
+# miniz_oxide backend (flate2 default), already in the workspace lockfile.
+flate2 = "1"
+
+# Text
+cosmic-text = "0.14"
+etagere = "0.2"
+
+# GPU data
+bytemuck = { version = "1", features = ["derive"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
+# f32 → f16 texel conversion for the gridded-weather Rg16Float uploads.
+half = "2"
+
+# Caching / concurrency
+lru = "0.16"
+parking_lot = "0.12"
+crossbeam-channel = "0.5"
+rustc-hash = "2"
+
+[dev-dependencies]
+pollster = "0.4"
+proptest = "1"
+# naga from the same fork/rev as wgpu so test validation matches the runtime
+# WGSL dialect exactly.
+naga = { git = "https://github.com/zed-industries/wgpu.git", rev = "357a0c56e0070480ad9daea5d2eaa83150b79e88", features = ["wgsl-in"] }

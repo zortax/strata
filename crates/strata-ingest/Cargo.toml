@@ -1,0 +1,52 @@
+[package]
+name = "strata-ingest"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+# `cli` gates the strata-ingest binary and its dependencies (clap, indicatif,
+# dotenvy, …). On by default so plain `cargo build -p strata-ingest` keeps
+# producing the CLI; the GUI app embeds the library with
+# `default-features = false`.
+default = ["cli"]
+cli = [
+    "dep:anyhow",
+    "dep:clap",
+    "dep:dirs",
+    "dep:dotenvy",
+    "dep:indicatif",
+    "dep:tracing-subscriber",
+]
+
+[[bin]]
+name = "strata-ingest"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[dependencies]
+strata-data.workspace = true
+
+thiserror.workspace = true
+tracing.workspace = true
+
+chrono = "0.4"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync"] }
+tokio-util = "0.7"
+
+# Read-only terrain-tile count for `inspect`/`status` — the Store API
+# exposes no row counts.
+rusqlite.workspace = true
+
+# CLI-only (feature `cli`)
+anyhow = { workspace = true, optional = true }
+clap = { version = "4", features = ["derive"], optional = true }
+dirs = { version = "6", optional = true }
+dotenvy = { version = "0.15", optional = true }
+indicatif = { version = "0.18", optional = true }
+tracing-subscriber = { workspace = true, optional = true }
+
+[dev-dependencies]
+tempfile = "3"
+# Synthetic TerrainProvider impls in elevation-stage unit tests.
+async-trait = "0.1"

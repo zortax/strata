@@ -1,0 +1,26 @@
+[package]
+name = "strata-brief"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+# Errors / logging
+thiserror.workspace = true
+tracing.workspace = true
+
+# The input contract is plain serializable data; the template receives it
+# as JSON through typst's `sys.inputs`.
+serde.workspace = true
+serde_json.workspace = true
+
+# Timestamps in the input (generation time, departure, ETAs). Passed in by
+# the caller — rendering itself never reads a clock.
+chrono = { version = "0.4", features = ["serde"] }
+
+# typst as a library: compiler + PDF export. This is by far the heaviest
+# dependency in the workspace (~250 transitive crates, adds noticeably to a
+# cold build) — which is exactly why briefing rendering lives in its own
+# crate that only strata-app depends on.
+typst = "0.14"
+typst-pdf = "0.14"

@@ -1,0 +1,60 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/strata-app",
+    "crates/strata-brief",
+    "crates/strata-data",
+    "crates/strata-ingest",
+    "crates/strata-plan",
+    "crates/strata-render",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0"
+
+[workspace.dependencies]
+# UI stack — gpui comes from the gpui-ce fork (surface element, gpu_context,
+# backdrop blur, gpu_device_lost); gpui-component from git, forced onto gpui-ce
+# via the patch below. Pinned rev = branch gpu-device-lost on zortax/gpui-ce.
+gpui = { git = "https://github.com/zortax/gpui-ce", rev = "cf260a0986ff7c2c783bfd793f9a116e0923a2c1" }
+gpui_platform = { git = "https://github.com/zortax/gpui-ce", rev = "cf260a0986ff7c2c783bfd793f9a116e0923a2c1", features = ["font-kit", "x11", "wayland"] }
+gpui-component = { git = "https://github.com/longbridge/gpui-component", rev = "da2a9ca7c112c93de20d8e4d9dfaf8d53536aa47" }
+gpui-component-assets = { git = "https://github.com/longbridge/gpui-component", rev = "da2a9ca7c112c93de20d8e4d9dfaf8d53536aa47" }
+# Must match gpui-ce's gpui_wgpu wgpu — the app shares one wgpu::Device with gpui.
+wgpu = { git = "https://github.com/zed-industries/wgpu.git", rev = "357a0c56e0070480ad9daea5d2eaa83150b79e88" }
+
+# Workspace crates
+strata-brief = { path = "crates/strata-brief" }
+strata-data = { path = "crates/strata-data" }
+strata-plan = { path = "crates/strata-plan" }
+strata-render = { path = "crates/strata-render" }
+# Library-only (no CLI deps): the app drives ingestion in-process.
+strata-ingest = { path = "crates/strata-ingest", default-features = false }
+
+# Errors / logging
+anyhow = "1"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Serde & co
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+strum = { version = "0.27", features = ["derive"] }
+rust-embed = "8"
+
+# SQLite store + MBTiles readers (bundled SQLite ships with R*Tree enabled).
+# One libsqlite3-sys per dependency graph — declaring the version once here is
+# what keeps strata-data / strata-app / strata-ingest in lockstep.
+rusqlite = { version = "0.40", features = ["bundled"] }
+
+# gpui-component is declared via `git = zed` inside its workspace; route every
+# crate it requests from that source to the gpui-ce fork. Removing this
+# patch breaks the entire UI wiring — never "fix" build errors by deleting it.
+[patch."https://github.com/zed-industries/zed"]
+gpui = { git = "https://github.com/zortax/gpui-ce", rev = "cf260a0986ff7c2c783bfd793f9a116e0923a2c1" }
+gpui_macros = { git = "https://github.com/zortax/gpui-ce", rev = "cf260a0986ff7c2c783bfd793f9a116e0923a2c1" }
+gpui_platform = { git = "https://github.com/zortax/gpui-ce", rev = "cf260a0986ff7c2c783bfd793f9a116e0923a2c1" }
+gpui_web = { git = "https://github.com/zortax/gpui-ce", rev = "cf260a0986ff7c2c783bfd793f9a116e0923a2c1" }

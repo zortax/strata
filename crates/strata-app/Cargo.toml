@@ -1,0 +1,58 @@
+[package]
+name = "strata-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+gpui.workspace = true
+gpui_platform.workspace = true
+gpui-component.workspace = true
+gpui-component-assets.workspace = true
+# Blessed gpui<->tokio bridge from the gpui-ce fork: the aviationweather
+# provider (reqwest) needs a tokio reactor; gpui's executor is not one.
+gpui_tokio = { git = "https://github.com/zortax/gpui-ce", rev = "cf260a0986ff7c2c783bfd793f9a116e0923a2c1" }
+
+strata-data.workspace = true
+strata-render.workspace = true
+# In-process ingestion (download → normalize → store) with progress events.
+strata-ingest.workspace = true
+# UI-free flight planning core (FlightDoc, AircraftProfile, compute()).
+strata-plan.workspace = true
+# Briefing PDF generation (typst as a library); linked here only, for the
+# one export feature (plan §1 rationale).
+strata-brief.workspace = true
+
+anyhow.workspace = true
+# Gridded-weather timelines (slider window, provider valid times) are
+# chrono `DateTime<Utc>` — same version strata-data uses.
+chrono = "0.4"
+tracing.workspace = true
+tracing-subscriber.workspace = true
+rust-embed.workspace = true
+strum.workspace = true
+parking_lot = "0.12"
+# MBTiles basemap reader (same bundled SQLite as strata-data's store).
+rusqlite.workspace = true
+dirs = "6"
+serde.workspace = true
+# NOTAM snapshot payloads: the flight document stores them as opaque
+# `serde_json::Value`s; the briefing layer owns the typed shape.
+serde_json.workspace = true
+# Config file (~/.config/strata/config.toml). App-only, like dotenvy below.
+toml = "1"
+# Not in [workspace.dependencies]: only the binaries load .env, and the
+# workspace root is owned elsewhere.
+dotenvy = "0.15"
+
+[dev-dependencies]
+# The fixture NOTAM corpus for the briefing/PDF-input tests — test builds
+# only; runtime builds have no fixture NOTAM path.
+strata-data = { workspace = true, features = ["test-support"] }
+tempfile = "3"
+# Theme-catalog test: every embedded assets/themes/*.json must parse as a
+# gpui-component ThemeSet (the same shape the registry loads at startup).
+serde_json.workspace = true
+# Async provider tests (the NOTAM fetch merge in state::briefing) — same
+# feature set as strata-data's dev-dependency.
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros"] }

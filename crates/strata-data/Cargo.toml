@@ -1,0 +1,66 @@
+[package]
+name = "strata-data"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+# Errors / logging
+thiserror.workspace = true
+tracing.workspace = true
+
+# Serialization — postcard is the codec for geometry blobs in the SQLite store.
+serde.workspace = true
+serde_json.workspace = true
+postcard = { version = "1", features = ["use-std"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Async (lib-side features only; binaries own their runtime)
+async-trait = "0.1"
+tokio = { version = "1", default-features = false, features = ["sync", "time", "fs", "io-util"] }
+futures = "0.3"
+parking_lot = "0.12"
+
+# HTTP — rustls only, no native TLS. reqwest 0.13 renamed the old
+# `rustls-tls` feature to `rustls`; 0.13 is required to match pmtiles.
+reqwest = { version = "0.13", default-features = false, features = ["json", "query", "form", "gzip", "rustls", "stream", "http2", "charset"] }
+
+# Store (bundled SQLite ships with R*Tree enabled)
+rusqlite.workspace = true
+
+# Basemap: PMTiles HTTP range reads + local archive writing
+pmtiles = { version = "0.23", default-features = false, features = ["http-async", "reqwest-rustls", "mmap-async-tokio", "iter-async", "write"] }
+
+# Terrain pipeline: GeoTIFF DEM decode + PNG hillshade tiles
+tiff = "0.11"
+image = { version = "0.25", default-features = false, features = ["png"] }
+flate2 = "1"
+
+# Gridded weather (DWD open data). grib's default features pull C codecs
+# (openjpeg, libaec) and proj — none needed for ICON-D2's simple packing on a
+# regular lat-lon grid. bzip2 defaults to the pure-Rust libbz2-rs backend.
+# `tar` is declared here for the sibling DWD radar provider (RADOLAN RV
+# composites ship as tar.bz2 bundles) so it needn't touch this manifest.
+grib = { version = "0.15", default-features = false }
+bzip2 = "0.6"
+tar = "0.4"
+
+# Data dir resolution (~/.local/share/strata)
+dirs = "6"
+
+[features]
+# Exposes the fixture NOTAM corpus (`providers::autorouter::FixtureNotamProvider`)
+# to dependent crates' unit tests. Never enabled by app/runtime builds —
+# dependents request it from [dev-dependencies] only.
+test-support = []
+
+[dev-dependencies]
+# "net": the autorouter client tests run against a local TCP mock server.
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "net"] }
+tempfile = "3"
+# Max-pooling safety property over synthetic DEMs (store::elevation::pool).
+proptest = "1"
+# Captures log output in the autorouter never-log-secrets test.
+tracing-subscriber.workspace = true
