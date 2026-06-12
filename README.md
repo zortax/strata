@@ -3,6 +3,8 @@
 A desktop VFR map explorer and flight planner for Europe, built with Rust and 
 GPUI.
 
+<img width="2723" height="2041" alt="strata" src="https://github.com/user-attachments/assets/8c97a53d-64ed-4cbb-bfcf-88fc41d10b72" />
+
 ## Features
 
 - Vector basemap and terrain hillshade rendering (wgpu)
