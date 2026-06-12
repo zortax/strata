@@ -11,8 +11,10 @@
 //! terracotta, glider/para = yellow `#df8e1d` as ochre. LIFR leans Latte's
 //! violet magenta; dark text over a light halo; cool-gray relief.
 
-use super::{AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme,
-            MapTheme, MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a};
+use super::{
+    AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme, MapTheme,
+    MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a,
+};
 use crate::layers::style::srgb;
 use crate::terrain::{TerrainStyle, tint_from_srgb8};
 

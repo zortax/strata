@@ -85,7 +85,10 @@ mod tests {
     #[test]
     fn labels_match_the_design_doc() {
         let labels: Vec<&str> = ContextTab::ALL.iter().map(|t| t.label()).collect();
-        assert_eq!(labels, ["Inspect", "Weather", "Loading", "Fuel", "Briefing"]);
+        assert_eq!(
+            labels,
+            ["Inspect", "Weather", "Loading", "Fuel", "Briefing"]
+        );
     }
 
     #[test]

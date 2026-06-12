@@ -5,7 +5,6 @@
 
 use std::time::Instant;
 
-use strata_render::LayerId;
 use gpui::{Context, InteractiveElement as _, IntoElement, ParentElement as _, Styled as _, px};
 use gpui_component::{
     ActiveTheme as _, Selectable as _, Sizable as _,
@@ -13,6 +12,7 @@ use gpui_component::{
     h_flex,
     separator::Separator,
 };
+use strata_render::LayerId;
 
 use crate::app::RootView;
 use crate::assets::IconName;

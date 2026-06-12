@@ -7,9 +7,9 @@
 //! mass grows upward on screen).
 
 use gpui::{Bounds, Pixels, Point, Size, point, px};
+use strata_data::domain::Meters;
 use strata_plan::aircraft::EnvelopePoint;
 use strata_plan::units::Kilograms;
-use strata_data::domain::Meters;
 
 /// Grab distance for a vertex, in px.
 pub const VERTEX_HIT_RADIUS_PX: f32 = 9.0;
@@ -260,7 +260,12 @@ mod tests {
         let mapping = mapping();
         for v in envelope() {
             let back = mapping.to_data(mapping.to_px(v));
-            assert!((back.arm.0 - v.arm.0).abs() < 1e-3, "arm {} vs {}", back.arm.0, v.arm.0);
+            assert!(
+                (back.arm.0 - v.arm.0).abs() < 1e-3,
+                "arm {} vs {}",
+                back.arm.0,
+                v.arm.0
+            );
             assert!(
                 (back.mass.0 - v.mass.0).abs() < 1.0,
                 "mass {} vs {}",
@@ -288,8 +293,14 @@ mod tests {
         assert!((f32::from(top_left.x) - 100.0).abs() < 0.51, "{top_left:?}");
         assert!((f32::from(top_left.y) - 50.0).abs() < 0.51, "{top_left:?}");
         let bottom_right = mapping.to_px(p(range.arm_max, range.mass_min));
-        assert!((f32::from(bottom_right.x) - 500.0).abs() < 0.51, "{bottom_right:?}");
-        assert!((f32::from(bottom_right.y) - 250.0).abs() < 0.51, "{bottom_right:?}");
+        assert!(
+            (f32::from(bottom_right.x) - 500.0).abs() < 0.51,
+            "{bottom_right:?}"
+        );
+        assert!(
+            (f32::from(bottom_right.y) - 250.0).abs() < 0.51,
+            "{bottom_right:?}"
+        );
     }
 
     #[test]

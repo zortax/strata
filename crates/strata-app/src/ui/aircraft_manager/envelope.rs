@@ -12,8 +12,8 @@
 use gpui::prelude::FluentBuilder as _;
 use gpui::{
     Bounds, Context, EventEmitter, InteractiveElement as _, IntoElement, MouseButton,
-    MouseDownEvent, MouseMoveEvent, MouseUpEvent, ParentElement as _, Pixels, Render,
-    Styled as _, TextAlign, Window, canvas, div, point, px, size,
+    MouseDownEvent, MouseMoveEvent, MouseUpEvent, ParentElement as _, Pixels, Render, Styled as _,
+    TextAlign, Window, canvas, div, point, px, size,
 };
 use gpui_component::button::{Button, ButtonVariants as _};
 use gpui_component::plot::label::{PlotLabel, Text as PlotText};
@@ -251,11 +251,12 @@ impl EnvelopeEditor {
         // Grid + tick labels.
         let mut labels: Vec<PlotText> = Vec::new();
         for arm in ticks(range.arm_min, range.arm_max, 6) {
-            let x = mapping.to_px(EnvelopePoint {
-                arm: strata_data::domain::Meters(arm),
-                mass: strata_plan::units::Kilograms(range.mass_min),
-            })
-            .x;
+            let x = mapping
+                .to_px(EnvelopePoint {
+                    arm: strata_data::domain::Meters(arm),
+                    mass: strata_plan::units::Kilograms(range.mass_min),
+                })
+                .x;
             window.paint_quad(gpui::fill(
                 Bounds::new(point(x, area.origin.y), size(px(1.), area.size.height)),
                 grid_color,

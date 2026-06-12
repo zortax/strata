@@ -12,8 +12,10 @@
 //! (`#ae81ff`, grayed). Weather keeps its semantics with Molokai's lime
 //! green, cyan-leaning blue, warm red and pink-magenta.
 
-use super::{AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme,
-            MapTheme, MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a};
+use super::{
+    AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme, MapTheme,
+    MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a,
+};
 use crate::layers::style::srgb;
 use crate::terrain::{TerrainStyle, tint_from_srgb8};
 

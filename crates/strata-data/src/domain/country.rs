@@ -214,7 +214,9 @@ impl std::str::FromStr for Country {
 
 /// Error of [`Country::from_str`]: not a supported alpha-2 code.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
-#[error("unsupported country code {0:?} (expected an ISO 3166-1 alpha-2 code of a supported European country, e.g. DE)")]
+#[error(
+    "unsupported country code {0:?} (expected an ISO 3166-1 alpha-2 code of a supported European country, e.g. DE)"
+)]
 pub struct UnknownCountry(pub String);
 
 /// Bounding boxes for live METAR/TAF station fetches over the enabled
@@ -376,7 +378,10 @@ mod tests {
         assert!(gb.contains(ll(54.6, -5.93)), "Belfast (NI included)");
         assert!(gb.contains(ll(60.15, -1.15)), "Shetland (Lerwick)");
         assert!(gb.contains(ll(49.86, -6.3)), "Isles of Scilly");
-        assert!(!gb.contains(ll(49.45, -2.58)), "Guernsey (Crown dependency)");
+        assert!(
+            !gb.contains(ll(49.45, -2.58)),
+            "Guernsey (Crown dependency)"
+        );
         assert!(!gb.contains(ll(36.14, -5.35)), "Gibraltar");
     }
 
@@ -421,7 +426,11 @@ mod tests {
             (Country::MT, 35.90, 14.51),
             (Country::CY, 35.17, 33.36),
         ];
-        assert_eq!(capitals.len(), Country::ALL.len(), "one capital per country");
+        assert_eq!(
+            capitals.len(),
+            Country::ALL.len(),
+            "one capital per country"
+        );
         for (c, lat, lon) in capitals {
             assert!(c.bounding_box().contains(ll(lat, lon)), "{c} capital");
         }

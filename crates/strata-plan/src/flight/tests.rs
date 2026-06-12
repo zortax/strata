@@ -21,11 +21,21 @@ fn named(kind: NamedPointKind, id: &str, name: &str, lat: f64, lon: f64) -> Rout
 
 /// A fully-populated document exercising every field.
 fn full_doc() -> FlightDoc {
-    let mut departure =
-        RouteWaypoint::new(named(NamedPointKind::Airport, "EDFE", "Frankfurt-Egelsbach", 49.96, 8.64));
+    let mut departure = RouteWaypoint::new(named(
+        NamedPointKind::Airport,
+        "EDFE",
+        "Frankfurt-Egelsbach",
+        49.96,
+        8.64,
+    ));
     departure.leg_altitude = Some(PlannedAltitude::Amsl(MetersAmsl::from_feet(3500.0)));
-    let mut navaid =
-        RouteWaypoint::new(named(NamedPointKind::Navaid, "FFM", "Frankfurt VOR", 50.05, 8.63));
+    let mut navaid = RouteWaypoint::new(named(
+        NamedPointKind::Navaid,
+        "FFM",
+        "Frankfurt VOR",
+        50.05,
+        8.63,
+    ));
     navaid.leg_altitude = Some(PlannedAltitude::FlightLevel(65));
     navaid.leg_wind = Some(ManualWind {
         direction: DegreesTrue::new(250.0),
@@ -50,7 +60,13 @@ fn full_doc() -> FlightDoc {
         departure_time: Some(Utc.with_ymd_and_hms(2026, 6, 14, 9, 30, 0).unwrap()),
         cruise_altitude: Some(PlannedAltitude::Amsl(MetersAmsl::from_feet(4500.0))),
         route: vec![departure, navaid, free, destination],
-        alternates: vec![named(NamedPointKind::Airport, "EDDN", "Nürnberg", 49.5, 11.08)],
+        alternates: vec![named(
+            NamedPointKind::Airport,
+            "EDDN",
+            "Nürnberg",
+            49.5,
+            11.08,
+        )],
         loading: LoadingScenario {
             name: "Two on board".to_owned(),
             station_loads: vec![StationLoad {
@@ -117,7 +133,10 @@ fn unknown_fields_are_tolerated() {
     let doc = FlightDoc::from_json_str(json).unwrap();
     assert_eq!(doc.name, "tolerance");
     assert_eq!(doc.route.len(), 1);
-    assert_eq!(doc.route[0].leg_altitude, Some(PlannedAltitude::FlightLevel(75)));
+    assert_eq!(
+        doc.route[0].leg_altitude,
+        Some(PlannedAltitude::FlightLevel(75))
+    );
 }
 
 #[test]
@@ -145,7 +164,10 @@ fn newer_format_version_is_refused() {
     let result = FlightDoc::from_json_str(r#"{"format_version": 99}"#);
     assert!(matches!(
         result,
-        Err(FlightError::Version(VersionError::TooNew { found: 99, supported: 1 }))
+        Err(FlightError::Version(VersionError::TooNew {
+            found: 99,
+            supported: 1
+        }))
     ));
 }
 
@@ -169,7 +191,13 @@ fn non_object_root_is_refused() {
 
 #[test]
 fn route_point_accessors() {
-    let airport = named(NamedPointKind::Airport, "EDDF", "Frankfurt/Main", 50.0379, 8.5622);
+    let airport = named(
+        NamedPointKind::Airport,
+        "EDDF",
+        "Frankfurt/Main",
+        50.0379,
+        8.5622,
+    );
     assert_eq!(airport.ident(), Some("EDDF"));
     assert_eq!(airport.label(), "EDDF");
     assert_eq!(airport.position(), ll(50.0379, 8.5622));
@@ -181,6 +209,9 @@ fn route_point_accessors() {
     assert_eq!(free_named.ident(), None);
     assert_eq!(free_named.label(), "Lake bend");
 
-    let free_anon = RoutePoint::Free(FreePoint { name: None, position: ll(48.0, 11.0) });
+    let free_anon = RoutePoint::Free(FreePoint {
+        name: None,
+        position: ll(48.0, 11.0),
+    });
     assert_eq!(free_anon.label(), "48.00000°N 11.00000°E");
 }

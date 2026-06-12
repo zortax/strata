@@ -50,7 +50,11 @@ where
         });
     }
     while version < current {
-        tracing::debug!(from = version, to = version + 1, "migrating document format");
+        tracing::debug!(
+            from = version,
+            to = version + 1,
+            "migrating document format"
+        );
         value = migrate(value, version)?;
         version += 1;
         if let Some(object) = value.as_object_mut() {
@@ -81,7 +85,13 @@ mod tests {
     fn current_version_loads_directly() {
         let doc: Doc =
             load_versioned(r#"{"format_version": 1, "name": "x"}"#, 1, no_migrations).unwrap();
-        assert_eq!(doc, Doc { format_version: 1, name: "x".into() });
+        assert_eq!(
+            doc,
+            Doc {
+                format_version: 1,
+                name: "x".into()
+            }
+        );
     }
 
     #[test]
@@ -97,9 +107,14 @@ mod tests {
 
     #[test]
     fn newer_version_is_refused() {
-        let result: Result<Doc, _> =
-            load_versioned(r#"{"format_version": 2}"#, 1, no_migrations);
-        assert!(matches!(result, Err(VersionError::TooNew { found: 2, supported: 1 })));
+        let result: Result<Doc, _> = load_versioned(r#"{"format_version": 2}"#, 1, no_migrations);
+        assert!(matches!(
+            result,
+            Err(VersionError::TooNew {
+                found: 2,
+                supported: 1
+            })
+        ));
     }
 
     #[test]
@@ -116,13 +131,18 @@ mod tests {
             },
         )
         .unwrap();
-        assert_eq!(doc, Doc { format_version: 3, name: "a+1+2".into() });
+        assert_eq!(
+            doc,
+            Doc {
+                format_version: 3,
+                name: "a+1+2".into()
+            }
+        );
     }
 
     #[test]
     fn unregistered_migration_errors() {
-        let result: Result<Doc, _> =
-            load_versioned(r#"{"format_version": 0}"#, 1, no_migrations);
+        let result: Result<Doc, _> = load_versioned(r#"{"format_version": 0}"#, 1, no_migrations);
         assert!(matches!(result, Err(VersionError::NoMigration { from: 0 })));
     }
 

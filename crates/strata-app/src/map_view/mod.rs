@@ -24,13 +24,6 @@ mod route_edit;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use strata_data::domain::{BoundingBox, LatLon as GeoLatLon};
-use strata_data::store::{Feature, Store};
-use strata_render::glam::{DVec2, UVec2};
-use strata_render::{
-    CameraSnapshot, LayerId, MapInput, MapRenderer, MapTheme, Redraw, RenderAirspace,
-    RenderPointFeature, RenderRoute, RendererConfig, TileSource,
-};
 use gpui::prelude::FluentBuilder as _;
 use gpui::{
     App, AppContext as _, Bounds, Context, DevicePixels, Entity, InteractiveElement as _,
@@ -41,6 +34,13 @@ use gpui::{
 use gpui_component::ActiveTheme as _;
 use gpui_component::menu::ContextMenuExt as _;
 use parking_lot::Mutex;
+use strata_data::domain::{BoundingBox, LatLon as GeoLatLon};
+use strata_data::store::{Feature, Store};
+use strata_render::glam::{DVec2, UVec2};
+use strata_render::{
+    CameraSnapshot, LayerId, MapInput, MapRenderer, MapTheme, Redraw, RenderAirspace,
+    RenderPointFeature, RenderRoute, RendererConfig, TileSource,
+};
 
 use crate::convert;
 use crate::gridded_weather::GriddedWeatherController;
@@ -907,11 +907,7 @@ impl MapView {
                         cell.renderer.set_layer_enabled(layer, enabled);
                     }
                     cell.renderer.set_weather_time(
-                        self.app_state
-                            .read(cx)
-                            .weather_time
-                            .selected()
-                            .timestamp(),
+                        self.app_state.read(cx).weather_time.selected().timestamp(),
                     );
                     let (lat_lon, zoom) = self
                         .last_pushed_camera
@@ -1226,10 +1222,8 @@ fn route_fit_view(positions: &[GeoLatLon], viewport_px: DVec2) -> Option<(f64, f
     let mut min = DVec2::splat(f64::INFINITY);
     let mut max = DVec2::splat(f64::NEG_INFINITY);
     for position in positions {
-        let world = geo::world_from_lat_lon(strata_render::LatLon::new(
-            position.lat(),
-            position.lon(),
-        ));
+        let world =
+            geo::world_from_lat_lon(strata_render::LatLon::new(position.lat(), position.lon()));
         min = min.min(world);
         max = max.max(world);
     }
@@ -1545,7 +1539,10 @@ mod tests {
         };
         assert!(feed_covered(&global, &snapshot(48.5, 9.5, 50.5, 11.5, 6.5)));
         // Far outside any bbox a viewport feed would ever have queried.
-        assert!(feed_covered(&global, &snapshot(53.0, 13.0, 54.5, 14.5, 7.9)));
+        assert!(feed_covered(
+            &global,
+            &snapshot(53.0, 13.0, 54.5, 14.5, 7.9)
+        ));
     }
 
     /// Gated point kinds are the only thing global coverage does NOT span:
@@ -1556,7 +1553,10 @@ mod tests {
             global: true,
             bbox: None,
         };
-        assert!(!feed_covered(&global, &snapshot(48.5, 9.5, 50.5, 11.5, 8.5)));
+        assert!(!feed_covered(
+            &global,
+            &snapshot(48.5, 9.5, 50.5, 11.5, 8.5)
+        ));
 
         // Once the gated kinds were bbox-fed at matching gates, settles
         // inside that envelope are covered again …
@@ -1564,7 +1564,10 @@ mod tests {
             bbox: coverage(8.5).bbox,
             global: true,
         };
-        assert!(feed_covered(&with_bbox, &snapshot(48.5, 9.5, 50.5, 11.5, 8.5)));
+        assert!(feed_covered(
+            &with_bbox,
+            &snapshot(48.5, 9.5, 50.5, 11.5, 8.5)
+        ));
         // … but opening the next gate (obstacles at 9.0) refeeds.
         assert!(!feed_covered(
             &with_bbox,
@@ -1687,8 +1690,7 @@ mod tests {
             GeoLatLon::new(49.49, 9.92).unwrap(),
             GeoLatLon::new(49.61, 11.21).unwrap(),
         ];
-        let (lat, lon, zoom) =
-            route_fit_view(&route, viewport).expect("non-empty route fits");
+        let (lat, lon, zoom) = route_fit_view(&route, viewport).expect("non-empty route fits");
         assert!(zoom <= ROUTE_FIT_MAX_ZOOM);
         assert!(zoom >= strata_render::MIN_ZOOM);
 

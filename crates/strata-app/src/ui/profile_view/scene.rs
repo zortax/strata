@@ -15,8 +15,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use gpui::{
-    App, Bounds, Hsla, Path, PathBuilder, Pixels, Point, Rgba, SharedString, ShapedLine,
-    TextAlign, TextRun, Window, point, px,
+    App, Bounds, Hsla, Path, PathBuilder, Pixels, Point, Rgba, ShapedLine, SharedString, TextAlign,
+    TextRun, Window, point, px,
 };
 use strata_render::layers::style::label_color_from_border;
 
@@ -315,8 +315,15 @@ pub(crate) fn paint_overlay_label(
     window: &mut Window,
     cx: &mut App,
 ) {
-    line.paint(origin, px(LABEL_LINE_HEIGHT), TextAlign::Left, None, window, cx)
-        .ok();
+    line.paint(
+        origin,
+        px(LABEL_LINE_HEIGHT),
+        TextAlign::Left,
+        None,
+        window,
+        cx,
+    )
+    .ok();
 }
 
 // ── pure hit-test helpers ───────────────────────────────────────────────
@@ -425,9 +432,7 @@ mod tests {
     #[test]
     fn world_cache_invalidates_only_on_param_changes() {
         use RebuildDecision::*;
-        let bounds = |w: f32, h: f32| {
-            Bounds::new(gpui::point(px(0.), px(0.)), size(px(w), px(h)))
-        };
+        let bounds = |w: f32, h: f32| Bounds::new(gpui::point(px(0.), px(0.)), size(px(w), px(h)));
         let settled = bounds(800., 300.);
         let moving = bounds(800., 320.);
 
@@ -495,9 +500,18 @@ mod tests {
 
     #[test]
     fn planned_y_interpolates_in_pixel_space() {
-        assert_eq!(sample_polyline_px(&[(0.0, 100.0), (10.0, 0.0)], 5.0), Some(50.0));
-        assert_eq!(sample_polyline_px(&[(0.0, 100.0), (10.0, 0.0)], -5.0), Some(100.0));
-        assert_eq!(sample_polyline_px(&[(0.0, 100.0), (10.0, 0.0)], 50.0), Some(0.0));
+        assert_eq!(
+            sample_polyline_px(&[(0.0, 100.0), (10.0, 0.0)], 5.0),
+            Some(50.0)
+        );
+        assert_eq!(
+            sample_polyline_px(&[(0.0, 100.0), (10.0, 0.0)], -5.0),
+            Some(100.0)
+        );
+        assert_eq!(
+            sample_polyline_px(&[(0.0, 100.0), (10.0, 0.0)], 50.0),
+            Some(0.0)
+        );
         assert_eq!(sample_polyline_px(&[], 5.0), None);
     }
 

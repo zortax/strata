@@ -43,9 +43,8 @@ impl TileRect {
     }
 
     pub(super) fn coords(self) -> impl Iterator<Item = TileXyz> {
-        (self.y_min..=self.y_max).flat_map(move |y| {
-            (self.x_min..=self.x_max).map(move |x| TileXyz { z: self.z, x, y })
-        })
+        (self.y_min..=self.y_max)
+            .flat_map(move |y| (self.x_min..=self.x_max).map(move |x| TileXyz { z: self.z, x, y }))
     }
 }
 
@@ -61,9 +60,7 @@ fn lon_to_x(lon: f64, n: u64) -> u32 {
 }
 
 fn lat_to_y(lat: f64, n: u64) -> u32 {
-    let lat = lat
-        .clamp(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
-        .to_radians();
+    let lat = lat.clamp(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT).to_radians();
     clamp_to_axis(
         (1.0 - lat.tan().asinh() / std::f64::consts::PI) / 2.0 * n as f64,
         n,
@@ -89,7 +86,13 @@ mod tests {
         let rect = TileRect::covering(&germany(), 0);
         assert_eq!(
             rect,
-            TileRect { z: 0, x_min: 0, x_max: 0, y_min: 0, y_max: 0 }
+            TileRect {
+                z: 0,
+                x_min: 0,
+                x_max: 0,
+                y_min: 0,
+                y_max: 0
+            }
         );
         assert_eq!(rect.count(), 1);
     }
@@ -99,7 +102,13 @@ mod tests {
         let rect = TileRect::covering(&germany(), 1);
         assert_eq!(
             rect,
-            TileRect { z: 1, x_min: 1, x_max: 1, y_min: 0, y_max: 0 }
+            TileRect {
+                z: 1,
+                x_min: 1,
+                x_max: 1,
+                y_min: 0,
+                y_max: 0
+            }
         );
     }
 
@@ -110,7 +119,13 @@ mod tests {
         let rect = TileRect::covering(&germany(), 5);
         assert_eq!(
             rect,
-            TileRect { z: 5, x_min: 16, x_max: 17, y_min: 10, y_max: 11 }
+            TileRect {
+                z: 5,
+                x_min: 16,
+                x_max: 17,
+                y_min: 10,
+                y_max: 11
+            }
         );
         assert_eq!(rect.count(), 4);
     }
@@ -121,7 +136,13 @@ mod tests {
         let rect = TileRect::covering(&world, 2);
         assert_eq!(
             rect,
-            TileRect { z: 2, x_min: 0, x_max: 3, y_min: 0, y_max: 3 }
+            TileRect {
+                z: 2,
+                x_min: 0,
+                x_max: 3,
+                y_min: 0,
+                y_max: 3
+            }
         );
         assert_eq!(rect.count(), 16);
     }
@@ -155,7 +176,13 @@ mod tests {
 
     #[test]
     fn coords_enumerates_full_rect() {
-        let rect = TileRect { z: 3, x_min: 2, x_max: 4, y_min: 1, y_max: 2 };
+        let rect = TileRect {
+            z: 3,
+            x_min: 2,
+            x_max: 4,
+            y_min: 1,
+            y_max: 2,
+        };
         let coords: Vec<_> = rect.coords().collect();
         assert_eq!(coords.len() as u64, rect.count());
         assert_eq!(coords[0], TileXyz { z: 3, x: 2, y: 1 });

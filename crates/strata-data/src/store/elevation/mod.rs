@@ -112,8 +112,7 @@ fn encode(cells: &[i16]) -> Result<Vec<u8>, StoreError> {
     for cell in cells {
         raw.extend_from_slice(&cell.to_le_bytes());
     }
-    let mut encoder =
-        flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
     encoder.write_all(&raw)?;
     Ok(encoder.finish()?)
 }
@@ -122,9 +121,7 @@ fn decode(id: ElevationTileId, blob: &[u8]) -> Result<ElevationTile, StoreError>
     let mut raw = Vec::with_capacity(CELLS_PER_TILE * 2);
     flate2::read::ZlibDecoder::new(blob)
         .read_to_end(&mut raw)
-        .map_err(|e| {
-            StoreError::Schema(format!("elevation tile ({}, {}): {e}", id.tx, id.ty))
-        })?;
+        .map_err(|e| StoreError::Schema(format!("elevation tile ({}, {}): {e}", id.tx, id.ty)))?;
     if raw.len() != CELLS_PER_TILE * 2 {
         return Err(StoreError::Schema(format!(
             "elevation tile ({}, {}) decompresses to {} bytes, expected {}",
@@ -151,7 +148,9 @@ pub(super) fn get(
     let mut stmt =
         conn.prepare_cached("SELECT data FROM elevation_tiles WHERE tx = ?1 AND ty = ?2")?;
     let blob: Option<Vec<u8>> = stmt
-        .query_row(params![i64::from(id.tx), i64::from(id.ty)], |row| row.get(0))
+        .query_row(params![i64::from(id.tx), i64::from(id.ty)], |row| {
+            row.get(0)
+        })
         .optional()?;
     blob.map(|blob| decode(id, &blob)).transpose()
 }
@@ -197,7 +196,10 @@ pub(super) fn blobs_in_bbox(
     let mut blobs = Vec::new();
     for row in rows {
         let (tx, ty, blob) = row?;
-        let id = ElevationTileId { tx: tx as u32, ty: ty as u32 };
+        let id = ElevationTileId {
+            tx: tx as u32,
+            ty: ty as u32,
+        };
         blobs.push((id, blob));
     }
     Ok(blobs)
@@ -257,7 +259,11 @@ mod tests {
         let back = decode(tile.id(), &blob).expect("decode");
         assert_eq!(back, tile);
         // Mostly-sentinel tiles compress far below the 128 KiB raw size.
-        assert!(blob.len() < CELLS_PER_TILE / 4, "blob is {} bytes", blob.len());
+        assert!(
+            blob.len() < CELLS_PER_TILE / 4,
+            "blob is {} bytes",
+            blob.len()
+        );
     }
 
     #[test]

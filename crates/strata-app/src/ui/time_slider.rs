@@ -155,17 +155,12 @@ pub fn render_time_slider(
         PanelVisibility::Open => pill.with_animation(
             ("wx-time-slider-enter", root.slider_anim.open_generation()),
             Animation::new(PANEL_ENTER_DURATION).with_easing(ease_out_quint()),
-            |pill, delta| {
-                pill.top(px(SLIDER_SLIDE_PX * (1. - delta)))
-                    .opacity(delta)
-            },
+            |pill, delta| pill.top(px(SLIDER_SLIDE_PX * (1. - delta))).opacity(delta),
         ),
         PanelVisibility::Closing => pill.with_animation(
             ("wx-time-slider-exit", root.slider_anim.close_epoch()),
             Animation::new(PANEL_EXIT_DURATION).with_easing(quadratic),
-            |pill, delta| {
-                pill.top(px(SLIDER_SLIDE_PX * delta)).opacity(1. - delta)
-            },
+            |pill, delta| pill.top(px(SLIDER_SLIDE_PX * delta)).opacity(1. - delta),
         ),
     })
 }
@@ -187,7 +182,10 @@ mod tests {
         drive_visibility(&mut anim, true);
         let epoch = drive_visibility(&mut anim, false).expect("close epoch for unmount timer");
         assert_eq!(anim.visibility(), PanelVisibility::Closing);
-        assert!(anim.animation_done(epoch), "timer with current epoch closes");
+        assert!(
+            anim.animation_done(epoch),
+            "timer with current epoch closes"
+        );
         assert_eq!(anim.visibility(), PanelVisibility::Closed);
     }
 

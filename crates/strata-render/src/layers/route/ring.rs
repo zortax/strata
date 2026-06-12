@@ -207,7 +207,10 @@ mod tests {
         assert_eq!(pulse(0.0).radius_px, r0);
         assert_eq!(pulse(0.0).fade, PULSE_PEAK_ALPHA);
         let end = pulse(PULSE_PERIOD_S - 1e-4);
-        assert!(end.fade < 0.01, "pulse must fade out before the wrap: {end:?}");
+        assert!(
+            end.fade < 0.01,
+            "pulse must fade out before the wrap: {end:?}"
+        );
         // The wrap restarts the cycle (phase is periodic).
         let wrapped = pulse(PULSE_PERIOD_S + 0.2);
         let restarted = pulse(0.2);

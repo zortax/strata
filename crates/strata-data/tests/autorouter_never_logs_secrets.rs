@@ -143,10 +143,16 @@ async fn credentials_and_tokens_never_reach_the_logs() {
     let logged = capture.0.lock().expect("capture lock").clone();
     // Not vacuous: the client's own events demonstrably reached the
     // capture — the token request and the rejection re-auth both logged.
-    assert!(logged.contains("requesting autorouter oauth2 token"), "{logged}");
+    assert!(
+        logged.contains("requesting autorouter oauth2 token"),
+        "{logged}"
+    );
     assert!(logged.contains("autorouter token rejected"), "{logged}");
     // The actual property: neither credential nor any token ever appears.
     for secret in [PASSWORD, EMAIL, "tok-one", "tok-two"] {
-        assert!(!logged.contains(secret), "{secret:?} leaked into logs:\n{logged}");
+        assert!(
+            !logged.contains(secret),
+            "{secret:?} leaked into logs:\n{logged}"
+        );
     }
 }

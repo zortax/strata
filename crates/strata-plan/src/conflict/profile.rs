@@ -26,8 +26,7 @@ pub(crate) fn altitude_at(phases: &PhasePlan, along_track: Meters) -> Option<Met
                 return Some(seg.end_altitude);
             }
             let fraction = (x - seg.start_along_track.0) / span;
-            let alt =
-                seg.start_altitude.0 + fraction * (seg.end_altitude.0 - seg.start_altitude.0);
+            let alt = seg.start_altitude.0 + fraction * (seg.end_altitude.0 - seg.start_altitude.0);
             return Some(MetersAmsl(alt));
         }
     }
@@ -133,10 +132,7 @@ mod tests {
         );
         // Clamped beyond the ends.
         assert_eq!(altitude_at(&plan, Meters(-1.0)), Some(MetersAmsl(0.0)));
-        assert_eq!(
-            altitude_at(&plan, Meters(40_001.0)),
-            Some(MetersAmsl(0.0))
-        );
+        assert_eq!(altitude_at(&plan, Meters(40_001.0)), Some(MetersAmsl(0.0)));
     }
 
     #[test]

@@ -130,19 +130,59 @@ async fn run_country(
     let now = Utc::now();
     runner.check_cancelled()?;
     let ingested = store.insert_airspaces(country, &airspaces)?;
-    datasets.push(record(store, Dataset::Airspaces, country, ingested, airspaces_rep, airac, now)?);
+    datasets.push(record(
+        store,
+        Dataset::Airspaces,
+        country,
+        ingested,
+        airspaces_rep,
+        airac,
+        now,
+    )?);
     runner.check_cancelled()?;
     let ingested = store.insert_airports(country, &airports)?;
-    datasets.push(record(store, Dataset::Airports, country, ingested, airports_rep, airac, now)?);
+    datasets.push(record(
+        store,
+        Dataset::Airports,
+        country,
+        ingested,
+        airports_rep,
+        airac,
+        now,
+    )?);
     runner.check_cancelled()?;
     let ingested = store.insert_navaids(country, &navaids)?;
-    datasets.push(record(store, Dataset::Navaids, country, ingested, navaids_rep, airac, now)?);
+    datasets.push(record(
+        store,
+        Dataset::Navaids,
+        country,
+        ingested,
+        navaids_rep,
+        airac,
+        now,
+    )?);
     runner.check_cancelled()?;
     let ingested = store.insert_reporting_points(country, &points)?;
-    datasets.push(record(store, Dataset::ReportingPoints, country, ingested, points_rep, airac, now)?);
+    datasets.push(record(
+        store,
+        Dataset::ReportingPoints,
+        country,
+        ingested,
+        points_rep,
+        airac,
+        now,
+    )?);
     runner.check_cancelled()?;
     let ingested = store.insert_obstacles(country, &obstacles)?;
-    datasets.push(record(store, Dataset::Obstacles, country, ingested, obstacles_rep, airac, now)?);
+    datasets.push(record(
+        store,
+        Dataset::Obstacles,
+        country,
+        ingested,
+        obstacles_rep,
+        airac,
+        now,
+    )?);
     Ok(())
 }
 

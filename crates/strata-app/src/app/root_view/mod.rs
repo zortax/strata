@@ -6,7 +6,6 @@ pub(crate) mod panel_animation;
 
 use std::time::Duration;
 
-use strata_data::store::{Feature, SearchHit};
 use gpui::{
     AppContext as _, Context, Entity, IntoElement, ParentElement as _, Render, Styled as _,
     Subscription, Task, Window, div, px,
@@ -19,15 +18,16 @@ use gpui_component::{
     button::{Button, ButtonVariants as _},
     h_flex, v_flex,
 };
+use strata_data::store::{Feature, SearchHit};
 
 use crate::assets::IconName;
 use crate::config::Config;
 use crate::map_view::MapView;
-use crate::ui::context_tabs::ContextPanel;
-use crate::ui::profile_drawer::ProfileDrawer;
 use crate::state::weather_time::{MAX_OFFSET_MINUTES, MIN_OFFSET_MINUTES, STEP_MINUTES};
 use crate::state::{AppState, AppStateEvent, NoticeLevel};
 use crate::ui;
+use crate::ui::context_tabs::ContextPanel;
+use crate::ui::profile_drawer::ProfileDrawer;
 use panel_animation::{PANEL_UNMOUNT_DELAY, PanelAnimation, PanelVisibility};
 
 const SEARCH_DEBOUNCE: Duration = Duration::from_millis(200);
@@ -282,10 +282,7 @@ impl RootView {
                         format!("Briefing PDF export failed: {err}"),
                     ),
                 };
-                window.push_notification(
-                    Notification::new().message(message).with_type(kind),
-                    cx,
-                );
+                window.push_notification(Notification::new().message(message).with_type(kind), cx);
             }
             _ => {}
         }

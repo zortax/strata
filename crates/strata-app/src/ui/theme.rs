@@ -11,7 +11,6 @@
 //! next mode toggle re-applies the configured resolution, dropping the
 //! override.
 
-use strata_render::MapTheme;
 use gpui::{
     Anchor, Context, InteractiveElement as _, IntoElement, MouseButton, ParentElement as _,
     Styled as _, Window, div, px,
@@ -21,6 +20,7 @@ use gpui_component::{
     button::{Button, ButtonVariants as _},
     menu::{DropdownMenu as _, PopupMenuItem},
 };
+use strata_render::MapTheme;
 
 use crate::app::RootView;
 use crate::assets::IconName;
@@ -148,7 +148,9 @@ mod tests {
 
         let mut config = Config::default(); // map_theme = auto, mode = dark
         assert_eq!(
-            config.map_theme.resolved(config.mode, &config.ui_theme_dark),
+            config
+                .map_theme
+                .resolved(config.mode, &config.ui_theme_dark),
             "oldworld"
         );
         assert_eq!(strata_render::MapTheme::default().id, "oldworld");
@@ -156,7 +158,9 @@ mod tests {
 
         config.mode = ThemeMode::Light;
         assert_eq!(
-            config.map_theme.resolved(config.mode, &config.ui_theme_light),
+            config
+                .map_theme
+                .resolved(config.mode, &config.ui_theme_light),
             "pastel-light"
         );
     }

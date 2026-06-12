@@ -4,8 +4,8 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use strata_ingest::{IngestEvent, IngestEventReceiver, IngestJob};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use strata_ingest::{IngestEvent, IngestEventReceiver, IngestJob};
 
 const TICK: Duration = Duration::from_millis(100);
 

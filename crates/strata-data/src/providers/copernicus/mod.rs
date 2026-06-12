@@ -53,7 +53,10 @@ pub enum CopernicusError {
         source: tiff::TiffError,
     },
     #[error("DEM tile {tile}: unsupported sample format {found}")]
-    UnsupportedFormat { tile: DemTileId, found: &'static str },
+    UnsupportedFormat {
+        tile: DemTileId,
+        found: &'static str,
+    },
     #[error("DEM tile {tile}: {got} samples do not match {width}x{height}")]
     SampleCountMismatch {
         tile: DemTileId,
@@ -103,8 +106,16 @@ pub(crate) fn dem_tiles_in(west: f64, south: f64, east: f64, north: f64) -> Vec<
 /// AWS Open Data dataset name for a tile, e.g.
 /// `Copernicus_DSM_COG_10_N50_00_E010_00_DEM`.
 fn dataset_name(tile: DemTileId) -> String {
-    let (ns, lat) = if tile.lat_sw >= 0 { ('N', tile.lat_sw) } else { ('S', -tile.lat_sw) };
-    let (ew, lon) = if tile.lon_sw >= 0 { ('E', tile.lon_sw) } else { ('W', -tile.lon_sw) };
+    let (ns, lat) = if tile.lat_sw >= 0 {
+        ('N', tile.lat_sw)
+    } else {
+        ('S', -tile.lat_sw)
+    };
+    let (ew, lon) = if tile.lon_sw >= 0 {
+        ('E', tile.lon_sw)
+    } else {
+        ('W', -tile.lon_sw)
+    };
     format!("Copernicus_DSM_COG_10_{ns}{lat:02}_00_{ew}{lon:03}_00_DEM")
 }
 
@@ -260,15 +271,24 @@ mod tests {
         // E005..E015 (11).
         let tiles = dem_tiles_covering(crate::domain::Country::DE.bounding_box());
         assert_eq!(tiles.len(), 99);
-        assert!(tiles.contains(&DemTileId { lat_sw: 47, lon_sw: 5 }));
-        assert!(tiles.contains(&DemTileId { lat_sw: 55, lon_sw: 15 }));
+        assert!(tiles.contains(&DemTileId {
+            lat_sw: 47,
+            lon_sw: 5
+        }));
+        assert!(tiles.contains(&DemTileId {
+            lat_sw: 55,
+            lon_sw: 15
+        }));
     }
 
     #[test]
     fn bbox_within_one_tile() {
         assert_eq!(
             dem_tiles_covering(bbox(10.2, 50.2, 10.8, 50.8)),
-            vec![DemTileId { lat_sw: 50, lon_sw: 10 }]
+            vec![DemTileId {
+                lat_sw: 50,
+                lon_sw: 10
+            }]
         );
     }
 
@@ -278,8 +298,14 @@ mod tests {
         assert_eq!(
             tiles,
             vec![
-                DemTileId { lat_sw: 50, lon_sw: 9 },
-                DemTileId { lat_sw: 50, lon_sw: 10 },
+                DemTileId {
+                    lat_sw: 50,
+                    lon_sw: 9
+                },
+                DemTileId {
+                    lat_sw: 50,
+                    lon_sw: 10
+                },
             ]
         );
     }
@@ -288,15 +314,24 @@ mod tests {
     fn dataset_names_match_the_bucket_layout() {
         // Pattern verified against the live bucket (see module docs).
         assert_eq!(
-            dataset_name(DemTileId { lat_sw: 50, lon_sw: 10 }),
+            dataset_name(DemTileId {
+                lat_sw: 50,
+                lon_sw: 10
+            }),
             "Copernicus_DSM_COG_10_N50_00_E010_00_DEM"
         );
         assert_eq!(
-            dataset_name(DemTileId { lat_sw: 47, lon_sw: 5 }),
+            dataset_name(DemTileId {
+                lat_sw: 47,
+                lon_sw: 5
+            }),
             "Copernicus_DSM_COG_10_N47_00_E005_00_DEM"
         );
         assert_eq!(
-            dataset_name(DemTileId { lat_sw: -3, lon_sw: -72 }),
+            dataset_name(DemTileId {
+                lat_sw: -3,
+                lon_sw: -72
+            }),
             "Copernicus_DSM_COG_10_S03_00_W072_00_DEM"
         );
     }
@@ -305,14 +340,20 @@ mod tests {
     fn tile_url_pattern() {
         let dem = CopernicusDem::with_base_url("https://example.test/bucket/");
         assert_eq!(
-            dem.tile_url(DemTileId { lat_sw: 50, lon_sw: 10 }),
+            dem.tile_url(DemTileId {
+                lat_sw: 50,
+                lon_sw: 10
+            }),
             "https://example.test/bucket/Copernicus_DSM_COG_10_N50_00_E010_00_DEM/Copernicus_DSM_COG_10_N50_00_E010_00_DEM.tif"
         );
     }
 
     #[test]
     fn no_data_tile_is_uniform_nan() {
-        let tile = no_data_tile(DemTileId { lat_sw: 55, lon_sw: 6 });
+        let tile = no_data_tile(DemTileId {
+            lat_sw: 55,
+            lon_sw: 6,
+        });
         assert_eq!(tile.elevations_m.len(), (tile.width * tile.height) as usize);
         assert!(tile.elevations_m.iter().all(|v| v.is_nan()));
     }

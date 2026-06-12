@@ -10,8 +10,10 @@
 //! cool; CTR/restricted/prohibited carry the burnt orange, danger a
 //! lighter flame, and glider sectors get the hero sand `#CDA869`.
 
-use super::{AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme,
-            MapTheme, MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a};
+use super::{
+    AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme, MapTheme,
+    MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a,
+};
 use crate::layers::style::srgb;
 use crate::terrain::{TerrainStyle, tint_from_srgb8};
 

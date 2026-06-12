@@ -50,7 +50,6 @@ impl JobVm {
             }),
         }
     }
-
 }
 
 /// Callback slot the ingest orchestration fills so the panel's ✕ button

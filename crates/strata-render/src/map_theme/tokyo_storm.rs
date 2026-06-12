@@ -10,8 +10,10 @@
 //! magenta accent (`#b283f8`), which colors the TMZ and the LIFR weather
 //! category and sets it apart from its siblings.
 
-use super::{AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme,
-            MapTheme, MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a};
+use super::{
+    AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme, MapTheme,
+    MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a,
+};
 use crate::layers::style::srgb;
 use crate::terrain::{TerrainStyle, tint_from_srgb8};
 

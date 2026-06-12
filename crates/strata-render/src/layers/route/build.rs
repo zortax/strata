@@ -264,7 +264,10 @@ pub fn build_artifacts(route: &RenderRoute, theme: &RouteTheme) -> Artifacts {
             }
         }
     }
-    for (key, marker) in [(RouteSymbolKey::Toc, route.toc), (RouteSymbolKey::Tod, route.tod)] {
+    for (key, marker) in [
+        (RouteSymbolKey::Toc, route.toc),
+        (RouteSymbolKey::Tod, route.tod),
+    ] {
         if let Some((along_m, pos)) = marker {
             // Interpolate onto the drawn polyline; the explicit position is
             // the fallback for degenerate tracks.
@@ -355,17 +358,18 @@ pub fn assemble_instances(
 ) -> (Vec<SymbolInstance>, Vec<RouteBatch>) {
     let mut instances: Vec<SymbolInstance> = Vec::with_capacity(artifacts.base_instances.len() + 1);
     let mut batches: Vec<RouteBatch> = Vec::new();
-    let mut push = |key: RouteSymbolKey, instance: SymbolInstance, batches: &mut Vec<RouteBatch>| {
-        let index = instances.len() as u32;
-        instances.push(instance);
-        match batches.last_mut() {
-            Some(batch) if batch.key == key => batch.instances.end = index + 1,
-            _ => batches.push(RouteBatch {
-                key,
-                instances: index..index + 1,
-            }),
-        }
-    };
+    let mut push =
+        |key: RouteSymbolKey, instance: SymbolInstance, batches: &mut Vec<RouteBatch>| {
+            let index = instances.len() as u32;
+            instances.push(instance);
+            match batches.last_mut() {
+                Some(batch) if batch.key == key => batch.instances.end = index + 1,
+                _ => batches.push(RouteBatch {
+                    key,
+                    instances: index..index + 1,
+                }),
+            }
+        };
     for base in &artifacts.base_instances {
         let mut inst = base.instance;
         if base.id.is_some() && base.id == highlight {
@@ -454,9 +458,9 @@ fn tessellate_stroke(track: &[DVec2], origin: DVec2, spec: StrokeSpec, out: &mut
         &options,
         &mut BuffersBuilder::new(&mut buffers, |v: LyonStrokeVertex| {
             let pos = from_local(v.position_on_path());
-            let width_world = spec
-                .halfwidth_m
-                .map_or(0.0, |h| corridor_width_world(h, origin.y + f64::from(pos[1])));
+            let width_world = spec.halfwidth_m.map_or(0.0, |h| {
+                corridor_width_world(h, origin.y + f64::from(pos[1]))
+            });
             RouteLineVertex {
                 pos,
                 normal: [v.normal().x, v.normal().y],
@@ -609,7 +613,11 @@ mod tests {
         let mut zero = route();
         zero.corridor_halfwidth_m = Some(0.0);
         assert!(
-            build(&zero).lines.vertices.iter().all(|v| v.width_world == 0.0),
+            build(&zero)
+                .lines
+                .vertices
+                .iter()
+                .all(|v| v.width_world == 0.0),
             "zero half-width draws no corridor"
         );
     }
@@ -632,9 +640,9 @@ mod tests {
             .find(|b| b.key == RouteSymbolKey::Toc)
             .map(|b| b.instance)
             .expect("toc instance");
-        let expected =
-            path::point_at(&artifacts.track_world, &artifacts.cum_m, half).expect("on track")
-                - artifacts.origin_world;
+        let expected = path::point_at(&artifacts.track_world, &artifacts.cum_m, half)
+            .expect("on track")
+            - artifacts.origin_world;
         assert!((f64::from(toc.anchor_local[0]) - expected.x).abs() < 1e-7);
         assert!((f64::from(toc.anchor_local[1]) - expected.y).abs() < 1e-7);
         let tod = artifacts
@@ -643,8 +651,7 @@ mod tests {
             .find(|b| b.key == RouteSymbolKey::Tod)
             .map(|b| b.instance)
             .expect("tod instance");
-        let destination = *artifacts.track_world.last().expect("track")
-            - artifacts.origin_world;
+        let destination = *artifacts.track_world.last().expect("track") - artifacts.origin_world;
         assert!((f64::from(tod.anchor_local[0]) - destination.x).abs() < 1e-7);
         assert_eq!(toc.size_px, RouteSymbolKey::Toc.size_px());
     }
@@ -681,9 +688,9 @@ mod tests {
         }
         assert_eq!(covered as usize, instances.len());
         let scrub = instances.last().expect("scrub instance");
-        let expected =
-            path::point_at(&artifacts.track_world, &artifacts.cum_m, half).expect("on track")
-                - artifacts.origin_world;
+        let expected = path::point_at(&artifacts.track_world, &artifacts.cum_m, half)
+            .expect("on track")
+            - artifacts.origin_world;
         assert!((f64::from(scrub.anchor_local[0]) - expected.x).abs() < 1e-7);
         assert!((f64::from(scrub.anchor_local[1]) - expected.y).abs() < 1e-7);
 
@@ -779,7 +786,10 @@ mod tests {
         assert_eq!(label.placement, LabelPlacement::Center);
         assert_eq!(label.color, theme.line, "route-theme colored");
         assert_eq!(label.priority, priority::ROUTE_LEG);
-        assert!(label.priority < priority::AIRPORT, "yields to airport idents");
+        assert!(
+            label.priority < priority::AIRPORT,
+            "yields to airport idents"
+        );
         assert_eq!(label.min_zoom, LEG_LABEL_MIN_ZOOM);
         assert_eq!(label.id, LABEL_ID_NAMESPACE);
 
@@ -903,9 +913,18 @@ mod tests {
                 .normalize()
                 .as_vec2();
             let offset = label.offset_px;
-            assert!((offset.length() - LEG_LABEL_OFFSET_PX).abs() < 1e-3, "{offset:?}");
-            assert!(offset.dot(along).abs() < 1e-3, "offset must be perpendicular");
-            assert!(offset.y < 0.0, "label sits above the line (screen y is down)");
+            assert!(
+                (offset.length() - LEG_LABEL_OFFSET_PX).abs() < 1e-3,
+                "{offset:?}"
+            );
+            assert!(
+                offset.dot(along).abs() < 1e-3,
+                "offset must be perpendicular"
+            );
+            assert!(
+                offset.y < 0.0,
+                "label sits above the line (screen y is down)"
+            );
         }
 
         // A vertical (meridian) leg labels to the right, never on the line.

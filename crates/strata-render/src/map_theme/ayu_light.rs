@@ -11,8 +11,10 @@
 //! CTR/ED-R/ED-P, orange for danger, ochre for glider/para and a
 //! violet-gray TMZ from the violet accent.
 
-use super::{AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme,
-            MapTheme, MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a};
+use super::{
+    AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme, MapTheme,
+    MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a,
+};
 use crate::layers::style::srgb;
 use crate::terrain::{TerrainStyle, tint_from_srgb8};
 

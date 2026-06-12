@@ -202,8 +202,16 @@ fn destination_point_due_east_worked_example() {
     // dest((50.5, 10.0), 90°, 2000 m) = (50.4999965752275, 10.02827703548337)
     // (a pure east offset loses a hair of latitude on the sphere).
     let p = destination_point(ll(50.5, 10.0), DegreesTrue::new(90.0), Meters(2000.0));
-    assert!((p.lat() - 50.499_996_575_227_5).abs() < 1e-9, "lat {}", p.lat());
-    assert!((p.lon() - 10.028_277_035_483_37).abs() < 1e-9, "lon {}", p.lon());
+    assert!(
+        (p.lat() - 50.499_996_575_227_5).abs() < 1e-9,
+        "lat {}",
+        p.lat()
+    );
+    assert!(
+        (p.lon() - 10.028_277_035_483_37).abs() < 1e-9,
+        "lon {}",
+        p.lon()
+    );
 }
 
 #[test]
@@ -220,8 +228,16 @@ fn project_onto_leg_worked_example() {
     // Python cross-track vs the meridian leg (50,10) → (51,10):
     // point (50.45, 10.02): along = 50037.977 m, cross = 1416.072 m.
     let proj = project_onto_leg(ll(50.0, 10.0), ll(51.0, 10.0), ll(50.45, 10.02));
-    assert!((proj.along.0 - 50_037.977).abs() < 1e-3, "along {}", proj.along.0);
-    assert!((proj.cross.0 - 1_416.072).abs() < 1e-3, "cross {}", proj.cross.0);
+    assert!(
+        (proj.along.0 - 50_037.977).abs() < 1e-3,
+        "along {}",
+        proj.along.0
+    );
+    assert!(
+        (proj.cross.0 - 1_416.072).abs() < 1e-3,
+        "cross {}",
+        proj.cross.0
+    );
 }
 
 #[test]
@@ -229,7 +245,11 @@ fn project_onto_leg_behind_the_start_is_negative() {
     // Point south of the leg start projects behind it.
     let proj = project_onto_leg(ll(50.0, 10.0), ll(51.0, 10.0), ll(49.9, 10.0));
     // 0.1° of arc = 11 119.508 m.
-    assert!((proj.along.0 + 11_119.508).abs() < 1e-3, "along {}", proj.along.0);
+    assert!(
+        (proj.along.0 + 11_119.508).abs() < 1e-3,
+        "along {}",
+        proj.along.0
+    );
     assert!(proj.cross.0.abs() < 1e-6, "cross {}", proj.cross.0);
 }
 
@@ -251,11 +271,21 @@ fn station_count_and_positions_on_the_meridian() {
         let st = s.station;
         assert_eq!(st.index, i);
         assert_eq!(st.leg_index, 0);
-        let expected_along = if i == 12 { MERIDIAN_TOTAL } else { i as f64 * 10_000.0 };
-        assert!((st.along_track.0 - expected_along).abs() < 1e-6, "station {i}");
+        let expected_along = if i == 12 {
+            MERIDIAN_TOTAL
+        } else {
+            i as f64 * 10_000.0
+        };
+        assert!(
+            (st.along_track.0 - expected_along).abs() < 1e-6,
+            "station {i}"
+        );
         // Meridian: lat = 50 + along / total, lon = 10 exactly.
         let expected_lat = 50.0 + expected_along / MERIDIAN_TOTAL;
-        assert!((st.position.lat() - expected_lat).abs() < 1e-9, "station {i}");
+        assert!(
+            (st.position.lat() - expected_lat).abs() < 1e-9,
+            "station {i}"
+        );
         assert!((st.position.lon() - 10.0).abs() < 1e-9, "station {i}");
     }
     // Along-track strictly increasing.
@@ -310,7 +340,10 @@ fn station_on_a_leg_boundary_belongs_to_the_next_leg() {
     assert_eq!(corridor.samples[1].station.leg_index, 0);
     let corner = corridor.samples[2].station;
     assert!((corner.along_track.0 - leg0).abs() < 1e-3);
-    assert_eq!(corner.leg_index, 1, "boundary station belongs to the next leg");
+    assert_eq!(
+        corner.leg_index, 1,
+        "boundary station belongs to the next leg"
+    );
     assert!((corner.position.lat() - 50.2).abs() < 1e-9);
     assert!((corner.position.lon() - 10.0).abs() < 1e-9);
     assert_eq!(corridor.samples[4].station.leg_index, 1);
@@ -337,7 +370,9 @@ fn coincident_route_yields_the_single_departure_station() {
 #[test]
 fn each_station_takes_two_n_plus_one_lateral_samples() {
     for per_side in [0usize, 1, 4] {
-        let counting = CountingTerrain { calls: Cell::new(0) };
+        let counting = CountingTerrain {
+            calls: Cell::new(0),
+        };
         let corridor = sample(
             &meridian_route(),
             &params(2000.0, 10_000.0, per_side),
@@ -369,7 +404,11 @@ fn inclined_plane_along_track_peaks_at_the_station_latitude() {
         &no_airspaces(),
     );
     let terrain = corridor.samples[5].max_terrain.unwrap();
-    assert!((terrain.0 - 5_044.966_018).abs() < 1e-3, "got {}", terrain.0);
+    assert!(
+        (terrain.0 - 5_044.966_018).abs() < 1e-3,
+        "got {}",
+        terrain.0
+    );
     assert!(corridor.samples.iter().all(|s| s.max_terrain.is_some()));
 }
 
@@ -387,7 +426,11 @@ fn inclined_plane_across_track_peaks_at_the_outermost_east_sample() {
         &no_airspaces(),
     );
     let terrain = corridor.samples[5].max_terrain.unwrap();
-    assert!((terrain.0 - 1_002.824_694).abs() < 1e-3, "got {}", terrain.0);
+    assert!(
+        (terrain.0 - 1_002.824_694).abs() < 1e-3,
+        "got {}",
+        terrain.0
+    );
 }
 
 #[test]
@@ -523,7 +566,10 @@ fn obstacle_included_by_lateral_distance_and_assigned_to_the_nearest_station() {
         if i == 5 {
             assert_eq!(s.tallest_obstacle.as_ref(), Some(&tall));
         } else {
-            assert!(s.tallest_obstacle.is_none(), "unexpected obstacle at station {i}");
+            assert!(
+                s.tallest_obstacle.is_none(),
+                "unexpected obstacle at station {i}"
+            );
         }
     }
 }
@@ -540,7 +586,12 @@ fn obstacle_excluded_by_lateral_distance() {
         &VecObstacles(vec![far.clone()]),
         &no_airspaces(),
     );
-    assert!(corridor.samples.iter().all(|s| s.tallest_obstacle.is_none()));
+    assert!(
+        corridor
+            .samples
+            .iter()
+            .all(|s| s.tallest_obstacle.is_none())
+    );
 
     let corridor = sample(
         &meridian_route(),
@@ -607,10 +658,16 @@ fn obstacle_in_the_turn_wedge_is_caught_by_the_vertex_check() {
         &VecObstacles(vec![corner_obstacle.clone()]),
         &no_airspaces(),
     );
-    assert_eq!(corridor.samples[2].tallest_obstacle.as_ref(), Some(&corner_obstacle));
+    assert_eq!(
+        corridor.samples[2].tallest_obstacle.as_ref(),
+        Some(&corner_obstacle)
+    );
     for (i, s) in corridor.samples.iter().enumerate() {
         if i != 2 {
-            assert!(s.tallest_obstacle.is_none(), "unexpected obstacle at station {i}");
+            assert!(
+                s.tallest_obstacle.is_none(),
+                "unexpected obstacle at station {i}"
+            );
         }
     }
 }
@@ -727,7 +784,11 @@ fn hysteresis_bridges_a_single_station_gap() {
         &no_obstacles(),
         &VecAirspaces(vec![zone]),
     );
-    assert_eq!(corridor.crossings.len(), 1, "flicker must not split the crossing");
+    assert_eq!(
+        corridor.crossings.len(),
+        1,
+        "flicker must not split the crossing"
+    );
     let crossing = &corridor.crossings[0];
     assert!((crossing.entry_along_track.0 - 44_500.0).abs() < 1e-6);
     assert!((crossing.exit_along_track.0 - 55_500.0).abs() < 1e-6);
@@ -793,9 +854,7 @@ fn crossings_are_ordered_by_entry_distance() {
     assert_eq!(corridor.crossings.len(), 2);
     assert_eq!(corridor.crossings[0].airspace.name, "EARLIER");
     assert_eq!(corridor.crossings[1].airspace.name, "LATER");
-    assert!(
-        corridor.crossings[0].entry_along_track.0 < corridor.crossings[1].entry_along_track.0
-    );
+    assert!(corridor.crossings[0].entry_along_track.0 < corridor.crossings[1].entry_along_track.0);
 }
 
 // --- errors --------------------------------------------------------------
@@ -817,12 +876,12 @@ fn route_too_short_is_rejected() {
 #[test]
 fn invalid_params_are_rejected() {
     let cases = [
-        params(2000.0, 0.0, 2),            // zero spacing
-        params(2000.0, -1.0, 2),           // negative spacing
-        params(2000.0, f64::NAN, 2),       // NaN spacing
-        params(-1.0, 500.0, 2),            // negative half-width
-        params(f64::INFINITY, 500.0, 2),   // infinite half-width
-        params(2000.0, 1e-9, 2),           // would exceed the station cap
+        params(2000.0, 0.0, 2),          // zero spacing
+        params(2000.0, -1.0, 2),         // negative spacing
+        params(2000.0, f64::NAN, 2),     // NaN spacing
+        params(-1.0, 500.0, 2),          // negative half-width
+        params(f64::INFINITY, 500.0, 2), // infinite half-width
+        params(2000.0, 1e-9, 2),         // would exceed the station cap
     ];
     for p in cases {
         let result = sample_corridor(
@@ -850,8 +909,18 @@ fn zero_half_width_samples_the_centerline_only() {
         &VecObstacles(vec![obstacle("off", 50.45, 10.02, 300.0)]),
         &no_airspaces(),
     );
-    assert!(corridor.samples.iter().all(|s| s.tallest_obstacle.is_none()));
-    assert!(corridor.samples.iter().all(|s| s.max_terrain == Some(MetersAmsl(100.0))));
+    assert!(
+        corridor
+            .samples
+            .iter()
+            .all(|s| s.tallest_obstacle.is_none())
+    );
+    assert!(
+        corridor
+            .samples
+            .iter()
+            .all(|s| s.max_terrain == Some(MetersAmsl(100.0)))
+    );
 }
 
 #[test]
@@ -859,13 +928,31 @@ fn source_errors_propagate() {
     let route = meridian_route();
     let p = params(2000.0, 10_000.0, 2);
 
-    let result = sample_corridor(&route, &p, &FailingTerrain, &no_obstacles(), &no_airspaces());
+    let result = sample_corridor(
+        &route,
+        &p,
+        &FailingTerrain,
+        &no_obstacles(),
+        &no_airspaces(),
+    );
     assert!(matches!(result, Err(CorridorError::Source(_))));
 
-    let result = sample_corridor(&route, &p, &flat_terrain(), &FailingObstacles, &no_airspaces());
+    let result = sample_corridor(
+        &route,
+        &p,
+        &flat_terrain(),
+        &FailingObstacles,
+        &no_airspaces(),
+    );
     assert!(matches!(result, Err(CorridorError::Source(_))));
 
-    let result = sample_corridor(&route, &p, &flat_terrain(), &no_obstacles(), &FailingAirspaces);
+    let result = sample_corridor(
+        &route,
+        &p,
+        &flat_terrain(),
+        &no_obstacles(),
+        &FailingAirspaces,
+    );
     assert!(matches!(result, Err(CorridorError::Source(_))));
 }
 
@@ -886,4 +973,3 @@ fn corridor_round_trips_through_json() {
     let back: Corridor = serde_json::from_str(&json).unwrap();
     assert_eq!(corridor, back);
 }
-

@@ -12,10 +12,7 @@ use crate::app::RootView;
 
 use super::state::FlightPanelState;
 
-pub(super) fn render_header(
-    panel: &FlightPanelState,
-    cx: &Context<RootView>,
-) -> impl IntoElement {
+pub(super) fn render_header(panel: &FlightPanelState, cx: &Context<RootView>) -> impl IntoElement {
     v_flex()
         .p_3()
         .gap_2()

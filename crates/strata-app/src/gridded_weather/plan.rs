@@ -51,8 +51,7 @@ pub struct FieldPlan {
 /// genuine data disagreement between sensor and model, accepted for v1.
 /// Inputs ascending; output ascending.
 pub fn merge_steps(radar: &[i64], icon: &[i64]) -> Vec<(GridSource, i64)> {
-    let mut steps: Vec<(GridSource, i64)> =
-        radar.iter().map(|&t| (GridSource::Radar, t)).collect();
+    let mut steps: Vec<(GridSource, i64)> = radar.iter().map(|&t| (GridSource::Radar, t)).collect();
     let (radar_min, radar_max) = match (radar.first(), radar.last()) {
         (Some(&min), Some(&max)) => (min, max),
         _ => (i64::MAX, i64::MIN), // no radar: every ICON step passes
@@ -235,8 +234,7 @@ mod tests {
 
     #[test]
     fn window_clipping_is_inclusive() {
-        let steps: Vec<(GridSource, i64)> =
-            (0..10).map(|i| (GridSource::Icon, i * H)).collect();
+        let steps: Vec<(GridSource, i64)> = (0..10).map(|i| (GridSource::Icon, i * H)).collect();
         let clipped = clip_to_window(&steps, (2 * H, 5 * H));
         let times: Vec<i64> = clipped.iter().map(|&(_, t)| t).collect();
         assert_eq!(times, vec![2 * H, 3 * H, 4 * H, 5 * H]);
@@ -246,8 +244,7 @@ mod tests {
     /// ENTIRE window, not a fixed radius around the slider.
     #[test]
     fn fetch_order_brackets_first_then_covers_the_whole_window() {
-        let steps: Vec<(GridSource, i64)> =
-            (0..=10).map(|i| (GridSource::Icon, i * H)).collect();
+        let steps: Vec<(GridSource, i64)> = (0..=10).map(|i| (GridSource::Icon, i * H)).collect();
         // Selected between +4 h and +5 h.
         let order = fetch_order(&steps, 4 * H + 1800);
         let times: Vec<i64> = order.iter().map(|&(_, t)| t / H).collect();
@@ -257,8 +254,7 @@ mod tests {
 
     #[test]
     fn fetch_order_on_an_exact_step_starts_with_that_step_alone() {
-        let steps: Vec<(GridSource, i64)> =
-            (0..=10).map(|i| (GridSource::Icon, i * H)).collect();
+        let steps: Vec<(GridSource, i64)> = (0..=10).map(|i| (GridSource::Icon, i * H)).collect();
         let order = fetch_order(&steps, 4 * H);
         let times: Vec<i64> = order.iter().map(|&(_, t)| t / H).collect();
         // lo == hi == 4: the hit first, then ±1, ±2, … to both edges.
@@ -267,8 +263,7 @@ mod tests {
 
     #[test]
     fn fetch_order_clips_at_the_list_edges() {
-        let steps: Vec<(GridSource, i64)> =
-            (0..=3).map(|i| (GridSource::Icon, i * H)).collect();
+        let steps: Vec<(GridSource, i64)> = (0..=3).map(|i| (GridSource::Icon, i * H)).collect();
         // Before the first step: forward only.
         let before: Vec<i64> = fetch_order(&steps, -H)
             .iter()
@@ -288,13 +283,7 @@ mod tests {
     fn plan_field_combines_merge_clip_and_order() {
         let radar: Vec<i64> = (-24..=24).map(|i| i * M5).collect();
         let icon: Vec<i64> = (1..=48).map(|i| i * H).collect();
-        let plan = plan_field(
-            GriddedField::PrecipRate,
-            &radar,
-            &icon,
-            (-2 * H, 24 * H),
-            0,
-        );
+        let plan = plan_field(GriddedField::PrecipRate, &radar, &icon, (-2 * H, 24 * H), 0);
         assert_eq!(plan.field, GriddedField::PrecipRate);
         // Selected sits exactly on the radar analysis step.
         assert_eq!(plan.fetch[0], (GridSource::Radar, 0));
@@ -315,13 +304,7 @@ mod tests {
     fn plan_steps_after_a_re_anchor_are_a_superset() {
         let radar: Vec<i64> = (-24..=24).map(|i| i * M5).collect();
         let icon: Vec<i64> = (1..=48).map(|i| i * H).collect();
-        let before = plan_field(
-            GriddedField::PrecipRate,
-            &radar,
-            &icon,
-            (-2 * H, 24 * H),
-            0,
-        );
+        let before = plan_field(GriddedField::PrecipRate, &radar, &icon, (-2 * H, 24 * H), 0);
         // Anchor drifted 10 min (one refresh interval).
         let shift = 2 * M5;
         let after = plan_field(
@@ -345,10 +328,8 @@ mod tests {
     /// The global queue across fields is rank-major: all brackets first.
     #[test]
     fn interleave_serves_every_fields_bracket_before_deeper_prefetch() {
-        let steps_a: Vec<(GridSource, i64)> =
-            (0..=4).map(|i| (GridSource::Icon, i * H)).collect();
-        let steps_b: Vec<(GridSource, i64)> =
-            (0..=2).map(|i| (GridSource::Radar, i * H)).collect();
+        let steps_a: Vec<(GridSource, i64)> = (0..=4).map(|i| (GridSource::Icon, i * H)).collect();
+        let steps_b: Vec<(GridSource, i64)> = (0..=2).map(|i| (GridSource::Radar, i * H)).collect();
         let plan = |field, steps: &Vec<(GridSource, i64)>| FieldPlan {
             field,
             steps: steps.clone(),

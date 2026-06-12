@@ -19,7 +19,11 @@ pub(crate) fn parse_day_time_z(token: &str) -> Option<(u32, u32, u32)> {
 /// Resolves a day-of-month + hour to the UTC instant closest to `anchor`
 /// (handles month/year boundaries). Hour 24 means midnight of the next day,
 /// as used in TAF validity periods.
-pub(crate) fn resolve_day_hour(day: u32, hour: u32, anchor: DateTime<Utc>) -> Option<DateTime<Utc>> {
+pub(crate) fn resolve_day_hour(
+    day: u32,
+    hour: u32,
+    anchor: DateTime<Utc>,
+) -> Option<DateTime<Utc>> {
     resolve_day_hour_minute(day, hour, 0, anchor)
 }
 
@@ -81,14 +85,23 @@ mod tests {
     #[test]
     fn resolves_within_same_month() {
         let anchor = utc(2026, 6, 9, 23, 0);
-        assert_eq!(resolve_day_hour(10, 0, anchor), Some(utc(2026, 6, 10, 0, 0)));
-        assert_eq!(resolve_day_hour(9, 23, anchor), Some(utc(2026, 6, 9, 23, 0)));
+        assert_eq!(
+            resolve_day_hour(10, 0, anchor),
+            Some(utc(2026, 6, 10, 0, 0))
+        );
+        assert_eq!(
+            resolve_day_hour(9, 23, anchor),
+            Some(utc(2026, 6, 9, 23, 0))
+        );
     }
 
     #[test]
     fn hour_24_is_midnight_next_day() {
         let anchor = utc(2026, 6, 9, 23, 0);
-        assert_eq!(resolve_day_hour(10, 24, anchor), Some(utc(2026, 6, 11, 0, 0)));
+        assert_eq!(
+            resolve_day_hour(10, 24, anchor),
+            Some(utc(2026, 6, 11, 0, 0))
+        );
     }
 
     #[test]
@@ -100,7 +113,10 @@ mod tests {
     #[test]
     fn crosses_month_boundary_backward() {
         let anchor = utc(2026, 7, 1, 0, 30);
-        assert_eq!(resolve_day_hour(30, 22, anchor), Some(utc(2026, 6, 30, 22, 0)));
+        assert_eq!(
+            resolve_day_hour(30, 22, anchor),
+            Some(utc(2026, 6, 30, 22, 0))
+        );
     }
 
     #[test]

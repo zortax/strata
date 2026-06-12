@@ -334,8 +334,7 @@ impl MapView {
     }
 
     fn route_projection(&self) -> Option<Projection> {
-        self.projection_and_pick(DVec2::ZERO)
-            .map(|(proj, _)| proj)
+        self.projection_and_pick(DVec2::ZERO).map(|(proj, _)| proj)
     }
 
     /// One bulk snap-candidate load per drag: the camera cannot move while
@@ -397,7 +396,10 @@ impl MapView {
         cx: &mut Context<Self>,
     ) {
         let local = self.local_px(event.position);
-        let geo = self.cell.as_ref().map(|cell| cell.lock().renderer.pick(local));
+        let geo = self
+            .cell
+            .as_ref()
+            .map(|cell| cell.lock().renderer.pick(local));
         let geo = geo.and_then(|g| GeoLatLon::new(g.lat_deg(), g.lon_deg()).ok());
         self.route_edit.context_click = Some(ContextClick {
             local_px: local,
@@ -512,12 +514,12 @@ fn commit_point(snapped: Option<SnapCandidate>, pos: [f64; 2]) -> Option<RoutePo
     if let Some(candidate) = snapped {
         return Some(candidate.route_point());
     }
-    GeoLatLon::new(pos[1], pos[0])
-        .ok()
-        .map(|position| RoutePoint::Free(FreePoint {
+    GeoLatLon::new(pos[1], pos[0]).ok().map(|position| {
+        RoutePoint::Free(FreePoint {
             name: None,
             position,
-        }))
+        })
+    })
 }
 
 #[cfg(test)]

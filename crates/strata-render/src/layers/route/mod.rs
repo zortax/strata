@@ -537,7 +537,10 @@ mod tests {
         assert!(layer.set_route(Some(route(None))));
         layer.data_dirty = false; // as after a prepare()
         assert!(layer.set_route(Some(route(Some(10_000.0)))));
-        assert!(!layer.data_dirty, "scrub must not re-tessellate the polyline");
+        assert!(
+            !layer.data_dirty,
+            "scrub must not re-tessellate the polyline"
+        );
         assert!(layer.instances_dirty);
         layer.instances_dirty = false;
         assert!(layer.set_route(Some(route(Some(20_000.0)))));
@@ -561,7 +564,10 @@ mod tests {
 
         let mut lit = route(None);
         lit.highlight = Some(2);
-        assert!(layer.set_route(Some(lit.clone())), "highlighting is a change");
+        assert!(
+            layer.set_route(Some(lit.clone())),
+            "highlighting is a change"
+        );
         assert!(!layer.data_dirty, "highlight must not re-tessellate");
         assert!(layer.instances_dirty, "the handle instance is re-assembled");
         layer.instances_dirty = false;
@@ -599,7 +605,9 @@ mod tests {
         };
         assert!(RouteLayer::builds_synchronously(&route(None)));
         assert!(RouteLayer::builds_synchronously(&sized(100)));
-        assert!(RouteLayer::builds_synchronously(&sized(SYNC_BUILD_MAX_POINTS)));
+        assert!(RouteLayer::builds_synchronously(&sized(
+            SYNC_BUILD_MAX_POINTS
+        )));
         assert!(
             !RouteLayer::builds_synchronously(&sized(SYNC_BUILD_MAX_POINTS + 1)),
             "absurd sizes keep the worker fallback"
@@ -636,7 +644,10 @@ mod tests {
 
         let mut snapped = labelled.clone();
         snapped.snap_ring = Some([9.5, 50.1]);
-        assert!(layer.set_route(Some(snapped.clone())), "ring change is a change");
+        assert!(
+            layer.set_route(Some(snapped.clone())),
+            "ring change is a change"
+        );
         assert!(!layer.data_dirty, "ring must not re-tessellate");
         assert!(!layer.instances_dirty, "ring must not re-upload instances");
 

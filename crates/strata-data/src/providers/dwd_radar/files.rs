@@ -84,7 +84,10 @@ pub(super) fn locate_frame(
     analysis: DateTime<Utc>,
     valid_time: DateTime<Utc>,
 ) -> Result<FrameLocation, DwdRadarError> {
-    let err = || DwdRadarError::InvalidValidTime { valid_time, analysis };
+    let err = || DwdRadarError::InvalidValidTime {
+        valid_time,
+        analysis,
+    };
     let delta = valid_time - analysis;
     let seconds = delta.num_seconds();
     if seconds % (60 * i64::from(STEP_MINUTES)) != 0 || delta.subsec_nanos() != 0 {
@@ -96,12 +99,18 @@ pub(super) fn locate_frame(
         if forecast_minutes > NOWCAST_MINUTES {
             return Err(err());
         }
-        Ok(FrameLocation { tarball_time: analysis, forecast_minutes })
+        Ok(FrameLocation {
+            tarball_time: analysis,
+            forecast_minutes,
+        })
     } else {
         if -minutes > i64::from(OBSERVED_WINDOW_MINUTES) {
             return Err(err());
         }
-        Ok(FrameLocation { tarball_time: valid_time, forecast_minutes: 0 })
+        Ok(FrameLocation {
+            tarball_time: valid_time,
+            forecast_minutes: 0,
+        })
     }
 }
 
@@ -115,10 +124,17 @@ pub(super) fn timeline_for(analysis: DateTime<Utc>) -> GriddedTimeline {
         .step_by(STEP_MINUTES as usize)
         .map(|m| TimelineStep {
             valid_time: analysis + Duration::minutes(m),
-            kind: if m <= 0 { StepKind::Observed } else { StepKind::Forecast },
+            kind: if m <= 0 {
+                StepKind::Observed
+            } else {
+                StepKind::Forecast
+            },
         })
         .collect();
-    GriddedTimeline { run_time: analysis, steps }
+    GriddedTimeline {
+        run_time: analysis,
+        steps,
+    }
 }
 
 #[cfg(test)]
@@ -184,21 +200,32 @@ mod tests {
         // The analysis itself: member _000 of the newest tarball.
         assert_eq!(
             locate_frame(analysis, analysis).unwrap(),
-            FrameLocation { tarball_time: analysis, forecast_minutes: 0 }
+            FrameLocation {
+                tarball_time: analysis,
+                forecast_minutes: 0
+            }
         );
         // Nowcast: a member of the newest tarball.
         assert_eq!(
             locate_frame(analysis, t(10, 18, 25)).unwrap(),
-            FrameLocation { tarball_time: analysis, forecast_minutes: 75 }
+            FrameLocation {
+                tarball_time: analysis,
+                forecast_minutes: 75
+            }
         );
         assert_eq!(
-            locate_frame(analysis, t(10, 19, 10)).unwrap().forecast_minutes,
+            locate_frame(analysis, t(10, 19, 10))
+                .unwrap()
+                .forecast_minutes,
             120
         );
         // Past: the analysis frame of the older tarball at that time.
         assert_eq!(
             locate_frame(analysis, t(10, 16, 35)).unwrap(),
-            FrameLocation { tarball_time: t(10, 16, 35), forecast_minutes: 0 }
+            FrameLocation {
+                tarball_time: t(10, 16, 35),
+                forecast_minutes: 0
+            }
         );
         assert_eq!(
             locate_frame(analysis, t(10, 15, 10)).unwrap().tarball_time,
@@ -237,8 +264,11 @@ mod tests {
         assert_eq!(tl.steps[25].valid_time, t(10, 17, 15));
         assert_eq!(tl.steps[25].kind, StepKind::Forecast);
         assert_eq!(tl.steps[48].valid_time, t(10, 19, 10));
-        assert!(tl.steps.windows(2).all(|w| w[1].valid_time - w[0].valid_time
-            == chrono::Duration::minutes(5)));
+        assert!(
+            tl.steps
+                .windows(2)
+                .all(|w| w[1].valid_time - w[0].valid_time == chrono::Duration::minutes(5))
+        );
         // Every advertised step must be locatable.
         for step in &tl.steps {
             assert!(locate_frame(analysis, step.valid_time).is_ok());

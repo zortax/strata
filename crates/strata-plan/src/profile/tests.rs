@@ -110,7 +110,11 @@ fn agl_floor_follows_the_terrain_slope() {
     // Terrain 100 + 25·i m at stations every 1 km; crossing 5–8 km with a
     // 300 m AGL floor and a 2000 m AMSL ceiling: floors 525/550/575/600 m
     // follow the slope, the ceiling stays flat.
-    let corridor = corridor((0..=10).map(|i| sample(i, 0, i as f64 * 1000.0, Some(100.0 + 25.0 * i as f64))).collect());
+    let corridor = corridor(
+        (0..=10)
+            .map(|i| sample(i, 0, i as f64 * 1000.0, Some(100.0 + 25.0 * i as f64)))
+            .collect(),
+    );
     let crossing = crossing(
         VerticalLimit::agl(MetersAgl(300.0)),
         VerticalLimit::amsl(MetersAmsl(2000.0)),
@@ -139,9 +143,20 @@ fn gnd_floor_sits_on_terrain_and_unl_ceiling_stays_open() {
 
     let bands = crossing_bands(&corridor, &crossing);
     assert_eq!(bands.len(), 2);
-    assert_eq!(bands[0].floor, MetersAmsl(412.0), "GND sits on the silhouette");
-    assert_eq!(bands[1].floor, MetersAmsl(0.0), "unknown terrain draws from sea level");
-    assert!(bands.iter().all(|b| b.ceiling.is_none()), "UNL is the view's chart top");
+    assert_eq!(
+        bands[0].floor,
+        MetersAmsl(412.0),
+        "GND sits on the silhouette"
+    );
+    assert_eq!(
+        bands[1].floor,
+        MetersAmsl(0.0),
+        "unknown terrain draws from sea level"
+    );
+    assert!(
+        bands.iter().all(|b| b.ceiling.is_none()),
+        "UNL is the view's chart top"
+    );
 }
 
 #[test]
@@ -163,7 +178,11 @@ fn fl_limits_resolve_on_the_standard_atmosphere() {
 
 #[test]
 fn stations_outside_the_crossing_interval_are_excluded() {
-    let corridor = corridor((0..=10).map(|i| sample(i, 0, i as f64 * 1000.0, Some(100.0))).collect());
+    let corridor = corridor(
+        (0..=10)
+            .map(|i| sample(i, 0, i as f64 * 1000.0, Some(100.0)))
+            .collect(),
+    );
     let crossing = crossing(
         VerticalLimit::gnd(),
         VerticalLimit::amsl(MetersAmsl(1500.0)),
@@ -199,10 +218,7 @@ fn msa_per_leg_takes_the_worst_of_terrain_and_obstacles() {
 fn msa_handles_missing_data_and_station_less_legs() {
     // Stations only on legs 0 and 2 (leg 1 shorter than the spacing);
     // leg 2's stations are outside elevation coverage with no obstacles.
-    let samples = vec![
-        sample(0, 0, 0.0, Some(150.0)),
-        sample(1, 2, 1200.0, None),
-    ];
+    let samples = vec![sample(0, 0, 0.0, Some(150.0)), sample(1, 2, 1200.0, None)];
     let msa = msa_per_leg(&corridor(samples), MetersAgl(100.0));
     assert_eq!(msa, [Some(MetersAmsl(250.0)), None, None]);
 
@@ -215,9 +231,16 @@ fn msa_handles_missing_data_and_station_less_legs() {
 fn planned_altitude_samples_the_phase_plan() {
     // Climb 0→1000 m over the first 10 km, cruise to 30 km, descent over
     // the last 10 km (the conflict tests' shared builder).
-    let plan = crate::conflict::tests::climb_cruise_descent_plan(40_000.0, 10_000.0, 10_000.0, 1000.0);
-    assert_eq!(planned_altitude_at(&plan, Meters(5_000.0)), Some(MetersAmsl(500.0)));
-    assert_eq!(planned_altitude_at(&plan, Meters(20_000.0)), Some(MetersAmsl(1000.0)));
+    let plan =
+        crate::conflict::tests::climb_cruise_descent_plan(40_000.0, 10_000.0, 10_000.0, 1000.0);
+    assert_eq!(
+        planned_altitude_at(&plan, Meters(5_000.0)),
+        Some(MetersAmsl(500.0))
+    );
+    assert_eq!(
+        planned_altitude_at(&plan, Meters(20_000.0)),
+        Some(MetersAmsl(1000.0))
+    );
 
     let empty = PhasePlan {
         segments: Vec::new(),

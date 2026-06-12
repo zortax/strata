@@ -99,12 +99,14 @@ fn waypoint_row(
         .rounded(cx.theme().radius)
         .cursor_pointer()
         .hover(|s| s.bg(cx.theme().accent))
-        .on_hover(cx.listener(move |this: &mut RootView, hovered: &bool, _, cx| {
-            this.app_state.update(cx, |state, cx| match hovered {
-                true => state.set_route_highlight(Some(index as u64), cx),
-                false => state.clear_route_highlight(index as u64, cx),
-            });
-        }))
+        .on_hover(
+            cx.listener(move |this: &mut RootView, hovered: &bool, _, cx| {
+                this.app_state.update(cx, |state, cx| match hovered {
+                    true => state.set_route_highlight(Some(index as u64), cx),
+                    false => state.clear_route_highlight(index as u64, cx),
+                });
+            }),
+        )
         .on_click(cx.listener(move |this: &mut RootView, _, _, cx| {
             this.map_view.update(cx, |map, cx| {
                 map.fly_to(position.lat(), position.lon(), zoom, cx)
@@ -254,12 +256,14 @@ fn alternate_row(
         .rounded(cx.theme().radius)
         .cursor_pointer()
         .hover(|s| s.bg(cx.theme().accent))
-        .on_hover(cx.listener(move |this: &mut RootView, hovered: &bool, _, cx| {
-            this.app_state.update(cx, |state, cx| match hovered {
-                true => state.set_route_highlight(Some(highlight_id), cx),
-                false => state.clear_route_highlight(highlight_id, cx),
-            });
-        }))
+        .on_hover(
+            cx.listener(move |this: &mut RootView, hovered: &bool, _, cx| {
+                this.app_state.update(cx, |state, cx| match hovered {
+                    true => state.set_route_highlight(Some(highlight_id), cx),
+                    false => state.clear_route_highlight(highlight_id, cx),
+                });
+            }),
+        )
         .on_click(cx.listener(move |this: &mut RootView, _, _, cx| {
             this.map_view.update(cx, |map, cx| {
                 map.fly_to(position.lat(), position.lon(), zoom, cx)

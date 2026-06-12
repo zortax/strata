@@ -218,8 +218,7 @@ mod tests {
             ],
             "rawSigmet": "WSDL31 EDGG ..."
         }]"#;
-        let sigmets =
-            parse_response(body, &Country::DE.bounding_box()).expect("body parses");
+        let sigmets = parse_response(body, &Country::DE.bounding_box()).expect("body parses");
         assert_eq!(sigmets.len(), 2);
         assert!(sigmets.iter().all(|s| s.fir == "EDGG"));
     }
@@ -235,8 +234,7 @@ mod tests {
                        {"lat": 48.0, "lon": 8.0}],
             "rawSigmet": "WSDL31 EDGG ..."
         }]"#;
-        let sigmets =
-            parse_response(body, &Country::DE.bounding_box()).expect("body parses");
+        let sigmets = parse_response(body, &Country::DE.bounding_box()).expect("body parses");
         assert!(sigmets.is_empty());
     }
 }

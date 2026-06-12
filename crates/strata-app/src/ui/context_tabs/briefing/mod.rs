@@ -373,9 +373,8 @@ pub(crate) fn start_pdf_export(app_state: &Entity<AppState>, cx: &mut App) {
         state.flight.as_ref().map(|flight| {
             let weather_taken_at = state.weather.last_fetched_at.map(|at| {
                 Utc::now()
-                    - chrono::Duration::from_std(at.elapsed()).unwrap_or_else(|_| {
-                        chrono::Duration::zero()
-                    })
+                    - chrono::Duration::from_std(at.elapsed())
+                        .unwrap_or_else(|_| chrono::Duration::zero())
             });
             input::briefing_input(&input::BriefingSources {
                 doc: &flight.doc,

@@ -62,10 +62,10 @@ use std::rc::Rc;
 
 use gpui::prelude::FluentBuilder as _;
 use gpui::{
-    AnyElement, App, Bounds, Context, CursorStyle, DispatchPhase, Entity,
-    InteractiveElement as _, IntoElement, MouseButton, MouseDownEvent, MouseMoveEvent,
-    MouseUpEvent, ParentElement as _, Pixels, Point, Render, StatefulInteractiveElement as _,
-    Styled as _, Subscription, WeakEntity, Window, canvas, div, point, px,
+    AnyElement, App, Bounds, Context, CursorStyle, DispatchPhase, Entity, InteractiveElement as _,
+    IntoElement, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, ParentElement as _,
+    Pixels, Point, Render, StatefulInteractiveElement as _, Styled as _, Subscription, WeakEntity,
+    Window, canvas, div, point, px,
 };
 use gpui_component::{ActiveTheme as _, h_flex, v_flex};
 use strata_data::domain::{Meters, MetersAmsl};
@@ -82,8 +82,8 @@ use scene::{
     HoverTarget, RebuildDecision, Scene, ShapedTextCache, band_label_color, linear_to_rgba,
     paint_overlay_label, paint_scene, realize_scene, rebuild_decision, shape_overlay_label,
 };
-use world::{BandStyle, Palette, SceneParams, WorldScene, build_world_scene};
 pub use series::{ProfileSeries, ScrubReadout};
+use world::{BandStyle, Palette, SceneParams, WorldScene, build_world_scene};
 // Part of the public series shape (`ProfileSeries::bands`), re-exported
 // for the drawer even though this module never names them itself.
 #[allow(unused_imports)]
@@ -163,9 +163,7 @@ impl ProfileView {
     /// Creates the view bound to the app state. The host (drawer) only
     /// embeds the entity — all data flow is internal.
     pub fn new(app_state: Entity<AppState>, cx: &mut Context<Self>) -> Self {
-        let subscriptions = vec![
-            cx.subscribe(&app_state, Self::on_app_state_event),
-        ];
+        let subscriptions = vec![cx.subscribe(&app_state, Self::on_app_state_event)];
         let mut this = Self {
             app_state,
             series: None,
@@ -315,12 +313,7 @@ impl ProfileView {
         }
     }
 
-    fn on_mouse_up(
-        &mut self,
-        event: &MouseUpEvent,
-        _window: &mut Window,
-        cx: &mut Context<Self>,
-    ) {
+    fn on_mouse_up(&mut self, event: &MouseUpEvent, _window: &mut Window, cx: &mut Context<Self>) {
         if self.drag.is_some() {
             self.commit_drag(cx);
             return;
@@ -410,8 +403,7 @@ impl ProfileView {
     /// Palette + per-band styles resolved from the UI theme and the active
     /// map theme (band colors must match the map — design §3.3).
     fn resolve_styles(&self, cx: &App) -> (Palette, Vec<BandStyle>) {
-        let map_theme =
-            MapTheme::by_id(self.app_state.read(cx).map_theme_id).unwrap_or_default();
+        let map_theme = MapTheme::by_id(self.app_state.read(cx).map_theme_id).unwrap_or_default();
         let theme = cx.theme();
         let terrain = gpui::Hsla::from(linear_to_rgba(map_theme.terrain.light_tint));
         let palette = Palette {
@@ -457,12 +449,15 @@ impl ProfileView {
     /// The "nothing to draw yet" body (no flight / not computed).
     fn render_placeholder(&self, cx: &Context<Self>) -> AnyElement {
         let state = self.app_state.read(cx);
-        let hint = state.flight.as_ref().map(|flight| match &flight.compute_state {
-            ComputeState::Pending => "Computing…".to_owned(),
-            ComputeState::Computed => "Profile data unavailable.".to_owned(),
-            ComputeState::NotComputable(reason) => format!("Plan incomplete: {reason}."),
-            ComputeState::Failed(error) => format!("Compute failed: {error}"),
-        });
+        let hint = state
+            .flight
+            .as_ref()
+            .map(|flight| match &flight.compute_state {
+                ComputeState::Pending => "Computing…".to_owned(),
+                ComputeState::Computed => "Profile data unavailable.".to_owned(),
+                ComputeState::NotComputable(reason) => format!("Plan incomplete: {reason}."),
+                ComputeState::Failed(error) => format!("Compute failed: {error}"),
+            });
         v_flex()
             .size_full()
             .items_center()
@@ -606,10 +601,17 @@ impl ProfileView {
             // the chart tracks the panel edge with no lag.
             let mapping = chart_mapping(world, bounds);
             let text = &mut cache.text;
-            let mut measure =
-                |content: &gpui::SharedString, color: gpui::Hsla| text.width(content, color, window);
+            let mut measure = |content: &gpui::SharedString, color: gpui::Hsla| {
+                text.width(content, color, window)
+            };
             let layout = layout_world(world, &mapping, &mut measure);
-            cache.scene = Some(realize_scene(layout, mapping, bounds, &mut cache.text, window));
+            cache.scene = Some(realize_scene(
+                layout,
+                mapping,
+                bounds,
+                &mut cache.text,
+                window,
+            ));
             tracing::trace!(
                 ?decision,
                 elapsed_us = started.elapsed().as_micros() as u64,
@@ -634,7 +636,10 @@ impl ProfileView {
             paint_overlays(scene, &overlay, window, cx);
         };
 
-        canvas(prepaint, paint).absolute().size_full().into_any_element()
+        canvas(prepaint, paint)
+            .absolute()
+            .size_full()
+            .into_any_element()
     }
 }
 
@@ -669,7 +674,10 @@ fn paint_overlays(scene: &Scene, overlay: &OverlayInput, window: &mut Window, cx
             let r = SCRUB_MARKER_RADIUS;
             window.paint_quad(
                 gpui::fill(
-                    Bounds::new(point(px(x - r), px(y - r)), gpui::size(px(2. * r), px(2. * r))),
+                    Bounds::new(
+                        point(px(x - r), px(y - r)),
+                        gpui::size(px(2. * r), px(2. * r)),
+                    ),
                     overlay.palette.marker_fill,
                 )
                 .corner_radii(px(r)),

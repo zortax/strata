@@ -90,7 +90,9 @@ pub enum BasemapNeed {
     /// The archive file exists and covers the country (possibly a
     /// resumable partial extraction — MBTiles cannot tell). `maxzoom`
     /// comes from the archive metadata, `None` if absent or unreadable.
-    Present { maxzoom: Option<u8> },
+    Present {
+        maxzoom: Option<u8>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -99,10 +101,14 @@ pub enum TerrainNeed {
     /// Tiles exist but no terrain run ever completed for **any** country
     /// (the dataset meta is only written after a pass's last tile) — an
     /// interrupted pre-completion run, deliberately not auto-restarted.
-    Partial { tiles: u64 },
+    Partial {
+        tiles: u64,
+    },
     /// A terrain run completed for this country; `tiles` counts all
     /// stored hillshade tiles (the table is global).
-    Present { tiles: u64 },
+    Present {
+        tiles: u64,
+    },
 }
 
 /// State of the max-pooled elevation grid (written by the terrain stage,
@@ -615,7 +621,12 @@ mod tests {
     fn partially_ingested_aero_is_missing() {
         let dir = TempDir::new().unwrap();
         let mut store = open_store(&dir);
-        put_aero_meta(&mut store, Country::DE, &AERO_DATASETS[..3], &AiracCycle::current());
+        put_aero_meta(
+            &mut store,
+            Country::DE,
+            &AERO_DATASETS[..3],
+            &AiracCycle::current(),
+        );
         drop(store);
 
         assert_eq!(inspect(dir.path(), DE).aero, AeroNeed::Missing);
@@ -625,7 +636,12 @@ mod tests {
     fn oldest_cycle_determines_staleness() {
         let dir = TempDir::new().unwrap();
         let mut store = open_store(&dir);
-        put_aero_meta(&mut store, Country::DE, &AERO_DATASETS[..4], &AiracCycle::current());
+        put_aero_meta(
+            &mut store,
+            Country::DE,
+            &AERO_DATASETS[..4],
+            &AiracCycle::current(),
+        );
         let old = stale_cycle();
         put_aero_meta(&mut store, Country::DE, &AERO_DATASETS[4..], &old);
         drop(store);
@@ -724,7 +740,10 @@ mod tests {
             country_needs(&needs, Country::DE).terrain,
             TerrainNeed::Present { .. }
         ));
-        assert_eq!(country_needs(&needs, Country::AT).terrain, TerrainNeed::Missing);
+        assert_eq!(
+            country_needs(&needs, Country::AT).terrain,
+            TerrainNeed::Missing
+        );
         assert_eq!(needs.terrain, TerrainNeed::Missing, "worst country wins");
     }
 
@@ -1007,7 +1026,12 @@ mod tests {
     fn missing_elevation_alone_triggers_a_need() {
         let dir = TempDir::new().unwrap();
         let mut store = open_store(&dir);
-        put_aero_meta(&mut store, Country::DE, &AERO_DATASETS, &AiracCycle::current());
+        put_aero_meta(
+            &mut store,
+            Country::DE,
+            &AERO_DATASETS,
+            &AiracCycle::current(),
+        );
         store.put_terrain_tile(5, 16, 10, &[1]).unwrap();
         put_marker_meta(
             &mut store,
@@ -1035,16 +1059,12 @@ mod tests {
         // 2026-05-14 is superseded on 2026-06-11.
         let dir = TempDir::new().unwrap();
         let mut store = open_store(&dir);
-        let cycle = AiracCycle::new(
-            "2506",
-            NaiveDate::from_ymd_opt(2026, 5, 14).unwrap(),
-        );
+        let cycle = AiracCycle::new("2506", NaiveDate::from_ymd_opt(2026, 5, 14).unwrap());
         put_aero_meta(&mut store, Country::DE, &AERO_DATASETS, &cycle);
         drop(store);
 
-        let on = |y, m, d| {
-            inspect_at(dir.path(), DE, NaiveDate::from_ymd_opt(y, m, d).unwrap()).aero
-        };
+        let on =
+            |y, m, d| inspect_at(dir.path(), DE, NaiveDate::from_ymd_opt(y, m, d).unwrap()).aero;
         assert!(matches!(on(2026, 6, 10), AeroNeed::Current(_)));
         assert!(matches!(on(2026, 6, 11), AeroNeed::Stale(_)));
     }

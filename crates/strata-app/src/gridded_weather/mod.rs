@@ -23,12 +23,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use gpui::Task;
 use strata_data::domain::GriddedTimeline;
 use strata_data::providers::GriddedWeatherProvider;
 use strata_data::providers::dwd_icon::DwdIconD2;
 use strata_data::providers::dwd_radar::DwdRadarRv;
 use strata_render::GriddedField;
-use gpui::Task;
 
 use cache::{FrameCache, FrameKey};
 use plan::GridSource;

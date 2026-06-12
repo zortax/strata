@@ -739,7 +739,11 @@ impl FieldState {
 fn texels_rg16(values: &[f32]) -> Vec<u8> {
     let mut out = Vec::with_capacity(values.len() * 4);
     for &v in values {
-        let (value, coverage) = if v.is_finite() { (v, 1.0f32) } else { (0.0, 0.0) };
+        let (value, coverage) = if v.is_finite() {
+            (v, 1.0f32)
+        } else {
+            (0.0, 0.0)
+        };
         out.extend_from_slice(&half::f16::from_f32(value).to_le_bytes());
         out.extend_from_slice(&half::f16::from_f32(coverage).to_le_bytes());
     }

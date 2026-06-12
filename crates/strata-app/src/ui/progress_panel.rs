@@ -249,7 +249,10 @@ pub fn render_progress_panel(root: &RootView, cx: &mut Context<RootView>) -> Opt
         PanelVisibility::Closed => return None, // unreachable: handled above
         PanelVisibility::Open => shell
             .with_animation(
-                ("ingest-progress-enter", root.progress_anim.open_generation()),
+                (
+                    "ingest-progress-enter",
+                    root.progress_anim.open_generation(),
+                ),
                 Animation::new(PANEL_ENTER_DURATION).with_easing(ease_out_quint()),
                 |shell, delta| shell.top(px(PANEL_SLIDE_PX * (1. - delta))).opacity(delta),
             )

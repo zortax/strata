@@ -179,6 +179,10 @@ mod tests {
         let times: Vec<i64> = frames.iter().map(|f| f.valid_time).collect();
         assert_eq!(times, vec![0, 7200]);
         // Different field: nothing.
-        assert!(cache.frames_for(GriddedField::CloudCover, &steps).is_empty());
+        assert!(
+            cache
+                .frames_for(GriddedField::CloudCover, &steps)
+                .is_empty()
+        );
     }
 }

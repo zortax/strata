@@ -56,11 +56,7 @@ pub struct LibraryView {
 }
 
 impl LibraryView {
-    fn new(
-        app_state: Entity<AppState>,
-        root: Entity<RootView>,
-        cx: &mut Context<Self>,
-    ) -> Self {
+    fn new(app_state: Entity<AppState>, root: Entity<RootView>, cx: &mut Context<Self>) -> Self {
         let mut this = Self {
             app_state,
             root,
@@ -106,7 +102,12 @@ impl LibraryView {
     }
 
     /// Delete a row — after a confirm dialog (stacked over the library).
-    fn confirm_delete(&mut self, flight: FlightSummary, window: &mut Window, cx: &mut Context<Self>) {
+    fn confirm_delete(
+        &mut self,
+        flight: FlightSummary,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         let view = cx.entity();
         window.open_alert_dialog(cx, move |alert, _, _| {
             let view = view.clone();

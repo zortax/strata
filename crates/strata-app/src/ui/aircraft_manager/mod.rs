@@ -26,8 +26,8 @@ use gpui::{
 use gpui_component::button::{Button, ButtonVariant, ButtonVariants as _};
 use gpui_component::dialog::DialogButtonProps;
 use gpui_component::{
-    ActiveTheme as _, Icon, Sizable as _, StyledExt as _, TITLE_BAR_HEIGHT, WindowExt as _,
-    h_flex, v_flex,
+    ActiveTheme as _, Icon, Sizable as _, StyledExt as _, TITLE_BAR_HEIGHT, WindowExt as _, h_flex,
+    v_flex,
 };
 use strata_data::domain::Meters;
 use strata_plan::AircraftProfile;
@@ -251,7 +251,13 @@ impl AircraftManagerView {
 
     /// Delete with confirmation (stacked alert over the manager dialog,
     /// like the flight library's delete).
-    fn confirm_delete(&mut self, profile_id: AircraftId, name: String, window: &mut Window, cx: &mut Context<Self>) {
+    fn confirm_delete(
+        &mut self,
+        profile_id: AircraftId,
+        name: String,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         let view = cx.entity();
         window.open_alert_dialog(cx, move |alert, _, _| {
             let view = view.clone();
@@ -449,7 +455,11 @@ impl AircraftManagerView {
             )
     }
 
-    fn render_warnings(&self, draft: &AircraftProfile, cx: &Context<Self>) -> Option<impl IntoElement + use<>> {
+    fn render_warnings(
+        &self,
+        draft: &AircraftProfile,
+        cx: &Context<Self>,
+    ) -> Option<impl IntoElement + use<>> {
         let warnings = validation::warnings(draft);
         if warnings.is_empty() {
             return None;
@@ -460,7 +470,12 @@ impl AircraftManagerView {
                 h_flex()
                     .gap_2()
                     .items_start()
-                    .child(div().flex_shrink_0().mt_0p5().child(Icon::new(IconName::TriangleAlert).xsmall()))
+                    .child(
+                        div()
+                            .flex_shrink_0()
+                            .mt_0p5()
+                            .child(Icon::new(IconName::TriangleAlert).xsmall()),
+                    )
                     .child(div().flex_1().min_w_0().text_sm().child(warning)),
             );
         }
@@ -500,13 +515,7 @@ impl AircraftManagerView {
             .min_w_0()
             .h_full()
             .overflow_y_scroll()
-            .child(
-                v_flex()
-                    .p_4()
-                    .gap_4()
-                    .children(warnings)
-                    .children(sections),
-            )
+            .child(v_flex().p_4().gap_4().children(warnings).children(sections))
             .into_any_element()
     }
 }

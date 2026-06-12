@@ -262,7 +262,10 @@ pub enum FlightCategory {
 impl FlightCategory {
     /// Derives the category from ceiling (ft AGL; `None` = unlimited) and
     /// visibility, using the US thresholds. The worse of the two governs.
-    pub fn from_ceiling_and_visibility(ceiling_ft_agl: Option<u32>, visibility: Visibility) -> Self {
+    pub fn from_ceiling_and_visibility(
+        ceiling_ft_agl: Option<u32>,
+        visibility: Visibility,
+    ) -> Self {
         let by_ceiling = match ceiling_ft_agl {
             None => Self::Vfr,
             Some(ft) if ft < 500 => Self::Lifr,

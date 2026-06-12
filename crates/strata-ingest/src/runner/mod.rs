@@ -198,9 +198,8 @@ mod tests {
         let (runner, _rx) = runner_with_events(dir.path());
         let cancel = runner.cancel_token().clone();
 
-        let work = runner.cancellable(async {
-            std::future::pending::<Result<(), IngestError>>().await
-        });
+        let work =
+            runner.cancellable(async { std::future::pending::<Result<(), IngestError>>().await });
         // join polls `work` first (registering the cancel waker), then the
         // second future fires the token.
         let (result, ()) = tokio::join!(work, async { cancel.cancel() });

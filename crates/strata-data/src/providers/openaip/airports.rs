@@ -11,8 +11,9 @@ use crate::domain::{
 };
 
 use super::NormalizationReport;
-use super::common::{RawMeasurement, distance_meters, elevation_amsl, item_id, point_position,
-    radio_frequency};
+use super::common::{
+    RawMeasurement, distance_meters, elevation_amsl, item_id, point_position, radio_frequency,
+};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -136,7 +137,8 @@ fn runway(raw: RawRunway) -> Runway {
         .map_or(RunwaySurface::Unknown, runway_surface);
     let (length, width) = raw.dimension.map_or((None, None), |d| {
         (
-            d.length.and_then(|l| dimension(l, "length", &raw.designator)),
+            d.length
+                .and_then(|l| dimension(l, "length", &raw.designator)),
             d.width.and_then(|w| dimension(w, "width", &raw.designator)),
         )
     });
@@ -158,7 +160,10 @@ fn dimension(
     match distance_meters(raw.value, raw.unit) {
         Ok(meters) => Some(meters),
         Err(reason) => {
-            warn!(runway = designator, what, reason, "dropping runway dimension");
+            warn!(
+                runway = designator,
+                what, reason, "dropping runway dimension"
+            );
             None
         }
     }
@@ -168,7 +173,11 @@ fn dimension(
 /// whole airport.
 fn frequency(raw: RawFrequency, airport: &str) -> Option<Frequency> {
     let Some(kind) = raw.kind else {
-        warn!(airport, value = raw.value, "dropping frequency without type");
+        warn!(
+            airport,
+            value = raw.value,
+            "dropping frequency without type"
+        );
         return None;
     };
     match radio_frequency(&raw.value, raw.unit) {

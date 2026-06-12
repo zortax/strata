@@ -103,7 +103,9 @@ pub(super) fn warnings(profile: &AircraftProfile) -> Vec<String> {
         );
     }
     if distances.takeoff_safety_factor < 1.0 || distances.landing_safety_factor < 1.0 {
-        out.push("A safety factor below 1.0 shortens the distance — that is not a margin.".to_owned());
+        out.push(
+            "A safety factor below 1.0 shortens the distance — that is not a margin.".to_owned(),
+        );
     }
 
     out
@@ -111,9 +113,9 @@ pub(super) fn warnings(profile: &AircraftProfile) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
+    use strata_data::domain::Meters;
     use strata_plan::aircraft::{AircraftId, EnvelopePoint, WbStation};
     use strata_plan::units::{Kilograms, Liters};
-    use strata_data::domain::Meters;
 
     use crate::flight_io::aircraft::example_c172;
 
@@ -135,7 +137,10 @@ mod tests {
     #[test]
     fn example_data_is_called_out() {
         let listed = warnings(&example_c172());
-        assert!(listed.iter().any(|w| w.contains("example data")), "{listed:?}");
+        assert!(
+            listed.iter().any(|w| w.contains("example data")),
+            "{listed:?}"
+        );
     }
 
     #[test]
@@ -149,7 +154,10 @@ mod tests {
         assert!(listed.iter().any(|w| w.contains("three points")));
         // Empty stations list: the missing-fuel-station warning would be
         // noise before any station exists.
-        assert!(!listed.iter().any(|w| w.contains("fuel station")), "{listed:?}");
+        assert!(
+            !listed.iter().any(|w| w.contains("fuel station")),
+            "{listed:?}"
+        );
     }
 
     #[test]
@@ -159,10 +167,19 @@ mod tests {
         profile.fuel.density = strata_plan::units::KilogramsPerLiter(1.4);
         profile.weight_balance.max_landing = Some(Kilograms(2000.0));
         profile.weight_balance.envelope = vec![
-            EnvelopePoint { arm: Meters(1.0), mass: Kilograms(700.0) },
-            EnvelopePoint { arm: Meters(1.2), mass: Kilograms(700.0) },
+            EnvelopePoint {
+                arm: Meters(1.0),
+                mass: Kilograms(700.0),
+            },
+            EnvelopePoint {
+                arm: Meters(1.2),
+                mass: Kilograms(700.0),
+            },
         ];
-        profile.weight_balance.stations.retain(|s| s.kind != StationKind::Fuel);
+        profile
+            .weight_balance
+            .stations
+            .retain(|s| s.kind != StationKind::Fuel);
         profile.weight_balance.stations.push(WbStation {
             name: "Ballast".to_owned(),
             arm: Meters(3.0),

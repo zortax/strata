@@ -27,20 +27,14 @@ use crate::state::AppState;
 use super::SettingsView;
 
 /// The page header paragraph — the honest semantics statement.
-const SEMANTICS: &str =
-    "Controls which countries' aeronautical data, basemap and terrain are \
+const SEMANTICS: &str = "Controls which countries' aeronautical data, basemap and terrain are \
      downloaded and kept current. Already-downloaded data stays on disk \
      when a country is disabled.";
 
 /// Builds the Countries page: a search row plus one switch row per country
 /// matching the current filter (all of [`Country::ALL`] when empty).
 pub(super) fn page(this: &SettingsView, cx: &App) -> SettingPage {
-    let query = this
-        .countries_filter
-        .read(cx)
-        .value()
-        .trim()
-        .to_lowercase();
+    let query = this.countries_filter.read(cx).value().trim().to_lowercase();
     let app_state = &this.app_state;
     let enabled_count = app_state.read(cx).config.countries.len();
 
@@ -65,11 +59,13 @@ pub(super) fn page(this: &SettingsView, cx: &App) -> SettingPage {
         .filter(|country| matches_query(*country, &query))
         .collect();
     if matching.is_empty() {
-        group = group.item(SettingItem::render(move |_options, _window, cx: &mut App| {
-            Label::new(format!("No countries match \"{query}\"."))
-                .text_sm()
-                .text_color(cx.theme().muted_foreground)
-        }));
+        group = group.item(SettingItem::render(
+            move |_options, _window, cx: &mut App| {
+                Label::new(format!("No countries match \"{query}\"."))
+                    .text_sm()
+                    .text_color(cx.theme().muted_foreground)
+            },
+        ));
     }
     for country in matching {
         group = group.item(country_item(app_state, country));

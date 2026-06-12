@@ -151,10 +151,7 @@ impl WindsAloftFrames {
             .as_ref()
             .and_then(|grid| grid.sample(position))
         {
-            return Some((
-                MetersAmsl(f64::from(meters)),
-                FreezingLevelSource::Forecast,
-            ));
+            return Some((MetersAmsl(f64::from(meters)), FreezingLevelSource::Forecast));
         }
         // Real temperatures at their ISA level altitudes, ascending.
         let mut profile: Vec<(f64, f64)> = step
@@ -241,10 +238,7 @@ impl WindsAloftSampler for GriddedWindsAloftSampler {
                 .and_then(|grid| grid.sample(position))
             {
                 Some(t) => (Celsius(f64::from(t)), Provenance::Real),
-                None => (
-                    isa_temperature(level.level.isa_altitude()),
-                    Provenance::Isa,
-                ),
+                None => (isa_temperature(level.level.isa_altitude()), Provenance::Isa),
             };
             samples.push(PressureLevelSample {
                 level: level.level,
@@ -391,9 +385,8 @@ mod tests {
         assert_eq!(at850.temperature_provenance, Provenance::Real);
 
         // Midway between 850 and 700 hPa: the arithmetic mean, 5 °C.
-        let h_mid = (PressureLevel::P850.isa_altitude().0
-            + PressureLevel::P700.isa_altitude().0)
-            / 2.0;
+        let h_mid =
+            (PressureLevel::P850.isa_altitude().0 + PressureLevel::P700.isa_altitude().0) / 2.0;
         let mid = sampler
             .sample(p(), MetersAmsl(h_mid), t(9))
             .unwrap()
@@ -417,9 +410,8 @@ mod tests {
         assert_eq!(low.temperature_provenance, Provenance::Real);
 
         // 850–700 band: mixed → honestly Isa.
-        let h_mid = (PressureLevel::P850.isa_altitude().0
-            + PressureLevel::P700.isa_altitude().0)
-            / 2.0;
+        let h_mid =
+            (PressureLevel::P850.isa_altitude().0 + PressureLevel::P700.isa_altitude().0) / 2.0;
         let mid = sampler
             .sample(p(), MetersAmsl(h_mid), t(9))
             .unwrap()

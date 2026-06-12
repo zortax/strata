@@ -24,8 +24,7 @@ use crate::providers::{DemTileId, TerrainProvider};
 use super::dem_cache::{DemCache, ElevationSampler};
 use super::hillshade::shade_pixel;
 use super::tile_math::{
-    TILE_SIZE, TileRange, ground_resolution_m_per_px, tile_extent_deg, x_norm_to_lon,
-    y_norm_to_lat,
+    TILE_SIZE, TileRange, ground_resolution_m_per_px, tile_extent_deg, x_norm_to_lon, y_norm_to_lat,
 };
 use super::{CopernicusError, dem_tiles_in};
 
@@ -60,7 +59,10 @@ pub struct HillshadeTiler {
 impl HillshadeTiler {
     /// Spec default range is z5..=z11. Arguments are reordered if reversed.
     pub fn new(min_zoom: u8, max_zoom: u8) -> Self {
-        Self { min_zoom: min_zoom.min(max_zoom), max_zoom: min_zoom.max(max_zoom) }
+        Self {
+            min_zoom: min_zoom.min(max_zoom),
+            max_zoom: min_zoom.max(max_zoom),
+        }
     }
 
     /// Number of tiles [`Self::render_tiles`] will produce for `bbox` —
@@ -84,7 +86,8 @@ impl HillshadeTiler {
     where
         F: FnMut(TerrainTile) -> Result<(), Error> + Send,
     {
-        self.render_tiles_with_progress(provider, bbox, sink, |_, _| {}).await
+        self.render_tiles_with_progress(provider, bbox, sink, |_, _| {})
+            .await
     }
 
     /// Like [`Self::render_tiles`] but reports `(done, total)` after every
@@ -103,7 +106,9 @@ impl HillshadeTiler {
         let total = self.count_tiles(bbox);
         let coverage: BTreeSet<DemTileId> = provider.tiles_for(bbox).into_iter().collect();
         let cache = DemCache::new(CACHE_BUDGET_BYTES);
-        let threads = std::thread::available_parallelism().map_or(4, |n| n.get()).min(8);
+        let threads = std::thread::available_parallelism()
+            .map_or(4, |n| n.get())
+            .min(8);
 
         let mut done = 0usize;
         for z in self.min_zoom..=self.max_zoom {
@@ -267,13 +272,19 @@ fn render_tile(
         }
     }
 
-    let image = GrayAlphaImage::from_raw(TILE_SIZE, TILE_SIZE, pixels)
-        .ok_or(CopernicusError::Internal("hillshade pixel buffer size mismatch"))?;
+    let image = GrayAlphaImage::from_raw(TILE_SIZE, TILE_SIZE, pixels).ok_or(
+        CopernicusError::Internal("hillshade pixel buffer size mismatch"),
+    )?;
     let mut png = Cursor::new(Vec::new());
     image
         .write_to(&mut png, ImageFormat::Png)
         .map_err(|source| CopernicusError::PngEncode { z, x, y, source })?;
-    Ok(TerrainTile { z, x, y, png: png.into_inner() })
+    Ok(TerrainTile {
+        z,
+        x,
+        y,
+        png: png.into_inner(),
+    })
 }
 
 #[cfg(test)]
@@ -313,14 +324,18 @@ mod tests {
     }
 
     fn mean_luma(png: &[u8]) -> f64 {
-        let img = image::load_from_memory(png).expect("png decodes").into_luma8();
+        let img = image::load_from_memory(png)
+            .expect("png decodes")
+            .into_luma8();
         assert_eq!(img.dimensions(), (TILE_SIZE, TILE_SIZE));
         let sum: u64 = img.pixels().map(|p| p.0[0] as u64).sum();
         sum as f64 / (TILE_SIZE as u64 * TILE_SIZE as u64) as f64
     }
 
     fn luma_alpha(png: &[u8]) -> image::GrayAlphaImage {
-        let img = image::load_from_memory(png).expect("png decodes").into_luma_alpha8();
+        let img = image::load_from_memory(png)
+            .expect("png decodes")
+            .into_luma_alpha8();
         assert_eq!(img.dimensions(), (TILE_SIZE, TILE_SIZE));
         img
     }
@@ -411,7 +426,10 @@ mod tests {
 
         let plane_mean = mean_luma(&plane_tiles[0].png);
         let sea_mean = mean_luma(&sea_tiles[0].png);
-        assert!((sea_mean - 180.0).abs() < 2.0, "flat sea should be ~180, got {sea_mean}");
+        assert!(
+            (sea_mean - 180.0).abs() < 2.0,
+            "flat sea should be ~180, got {sea_mean}"
+        );
         assert!(
             plane_mean > sea_mean + 15.0,
             "sun-facing plane {plane_mean} should out-shine sea {sea_mean}"
@@ -456,19 +474,32 @@ mod tests {
 
         // Inside the covered DEM square (50..51°N, 10..11°E): opaque data.
         let (px, py) = tile_pixel(5, tile.x, tile.y, 50.5, 10.5);
-        assert_eq!(img.get_pixel(px, py).0[1], 255, "covered pixel must be opaque");
+        assert_eq!(
+            img.get_pixel(px, py).0[1],
+            255,
+            "covered pixel must be opaque"
+        );
 
         // The tile corners are hundreds of km outside the coverage.
         for (cx, cy) in [(0, 0), (255, 0), (0, 255), (255, 255)] {
             let [luma, alpha] = img.get_pixel(cx, cy).0;
-            assert_eq!(alpha, 0, "out-of-coverage pixel ({cx},{cy}) must be transparent");
-            assert_eq!(luma, NO_DATA_LUMA, "transparent pixels carry the flat shade");
+            assert_eq!(
+                alpha, 0,
+                "out-of-coverage pixel ({cx},{cy}) must be transparent"
+            );
+            assert_eq!(
+                luma, NO_DATA_LUMA,
+                "transparent pixels carry the flat shade"
+            );
         }
 
         // Sanity: the covered square is a small part of an 11.25° z5 tile.
         let opaque = img.pixels().filter(|p| p.0[1] == 255).count();
         let total = (TILE_SIZE * TILE_SIZE) as usize;
-        assert!(opaque > 0 && opaque < total / 4, "opaque {opaque} of {total}");
+        assert!(
+            opaque > 0 && opaque < total / 4,
+            "opaque {opaque} of {total}"
+        );
     }
 
     /// Plateau at 800 m with a no-data hole (e.g. a DEM void): the hole
@@ -491,7 +522,11 @@ mod tests {
         let img = luma_alpha(&tile.png);
 
         let (hx, hy) = tile_pixel(9, tile.x, tile.y, 50.5, 10.5);
-        assert_eq!(img.get_pixel(hx, hy).0[1], 0, "hole center must be transparent");
+        assert_eq!(
+            img.get_pixel(hx, hy).0[1],
+            0,
+            "hole center must be transparent"
+        );
 
         // Same tile, west of the hole, still inside the covered DEM square.
         let (dx, dy) = tile_pixel(9, tile.x, tile.y, 50.5, 10.2);
@@ -511,7 +546,10 @@ mod tests {
 
         let tile = tile_containing(&tiles, 9, 50.5, 10.5);
         let img = luma_alpha(&tile.png);
-        assert!(img.pixels().all(|p| p.0[1] == 255), "interior tile must be fully opaque");
+        assert!(
+            img.pixels().all(|p| p.0[1] == 255),
+            "interior tile must be fully opaque"
+        );
     }
 
     #[tokio::test]

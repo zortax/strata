@@ -42,9 +42,15 @@ pub(crate) type TextMeasure<'a> = &'a mut dyn FnMut(&SharedString, Hsla) -> f32;
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum LayoutOp {
     /// Ready triangles in px (flat vertex list, `len % 3 == 0`).
-    Mesh { vertices: Vec<(f32, f32)>, color: Hsla },
+    Mesh {
+        vertices: Vec<(f32, f32)>,
+        color: Hsla,
+    },
     /// A filled closed polygon (small per-frame shapes: badges, diamonds).
-    Fill { polygon: Vec<(f32, f32)>, color: Hsla },
+    Fill {
+        polygon: Vec<(f32, f32)>,
+        color: Hsla,
+    },
     /// Solid stroked subpaths sharing one style.
     Stroke {
         subpaths: Vec<Vec<(f32, f32)>>,
@@ -104,7 +110,14 @@ pub(crate) fn layout_world(
     terrain(world, mapping, palette, &mut layout.ops);
     obstacles(world, mapping, palette, &mut layout.ops);
     bands(world, mapping, &mut layout, measure);
-    reference_line(&world.msa, mapping, 1.2, (6.0, 4.0), palette.msa, &mut layout.ops);
+    reference_line(
+        &world.msa,
+        mapping,
+        1.2,
+        (6.0, 4.0),
+        palette.msa,
+        &mut layout.ops,
+    );
     reference_line(
         &world.freezing,
         mapping,
@@ -229,7 +242,11 @@ fn grid_and_axes(
         });
     }
     for (index, &ft) in y_ticks.iter().enumerate() {
-        let unit = if index == y_ticks.len() - 1 { " ft" } else { "" };
+        let unit = if index == y_ticks.len() - 1 {
+            " ft"
+        } else {
+            ""
+        };
         let text: SharedString = format!("{ft:.0}{unit}").into();
         let width = measure(&text, palette.axis_text);
         let y = mapping.y_at(ft / FEET_PER_METER);
@@ -258,7 +275,11 @@ fn grid_and_axes(
         });
     }
     for (index, &nm) in x_ticks.iter().enumerate() {
-        let unit = if index == x_ticks.len() - 1 { " NM" } else { "" };
+        let unit = if index == x_ticks.len() - 1 {
+            " NM"
+        } else {
+            ""
+        };
         let text: SharedString = format!("{nm:.0}{unit}").into();
         let width = measure(&text, palette.axis_text);
         let x = mapping.x_at(nm * METERS_PER_NAUTICAL_MILE) - width / 2.0;
@@ -272,12 +293,7 @@ fn grid_and_axes(
 
 /// The corridor max-terrain silhouette: the cached fill mesh per
 /// contiguous run (already closed to the chart floor) plus the top stroke.
-fn terrain(
-    world: &WorldScene,
-    mapping: &ChartMapping,
-    palette: &Palette,
-    ops: &mut Vec<LayoutOp>,
-) {
+fn terrain(world: &WorldScene, mapping: &ChartMapping, palette: &Palette, ops: &mut Vec<LayoutOp>) {
     for (run, mesh) in world.terrain_runs.iter().zip(&world.terrain_meshes) {
         ops.push(LayoutOp::Mesh {
             vertices: mesh_to_px(mesh, mapping),
@@ -324,12 +340,7 @@ fn obstacles(
 /// Airspace bands: fill + border per crossing, label when wide enough,
 /// conflict badge, hit polygon. Pixel gates (thinness, label fit) live
 /// here so they follow the live size.
-fn bands(
-    world: &WorldScene,
-    mapping: &ChartMapping,
-    layout: &mut PxLayout,
-    measure: TextMeasure,
-) {
+fn bands(world: &WorldScene, mapping: &ChartMapping, layout: &mut PxLayout, measure: TextMeasure) {
     let params = world.params();
     let px_per_m = mapping.px_per_alt_m();
     for band in &world.bands {
@@ -546,8 +557,8 @@ fn exaggeration_indicator(mapping: &ChartMapping, palette: &Palette, ops: &mut V
 mod tests {
     use gpui::{point, px, size};
 
-    use super::super::world::fixtures::{test_params, test_series};
     use super::super::world::build_world_scene;
+    use super::super::world::fixtures::{test_params, test_series};
     use super::*;
 
     fn bounds(w: f32, h: f32) -> Bounds<Pixels> {
@@ -572,7 +583,9 @@ mod tests {
         // Deterministic LCG; covers tiny through 4K-ish sizes.
         let mut state: u64 = 0x5DEECE66D;
         let mut next = |range: f32| {
-            state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            state = state
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
             ((state >> 33) as f32 / u32::MAX as f32 * 2.0).fract() * range
         };
         for round in 0..200 {
@@ -686,9 +699,7 @@ mod tests {
             layout
                 .ops
                 .iter()
-                .filter(|op| {
-                    matches!(op, LayoutOp::Text { text, .. } if text.contains('·'))
-                })
+                .filter(|op| matches!(op, LayoutOp::Text { text, .. } if text.contains('·')))
                 .count()
         };
 
@@ -714,9 +725,7 @@ mod tests {
             .ops
             .iter()
             .filter_map(|op| match op {
-                LayoutOp::Text { text, origin, .. } if origin.1 == ident_y => {
-                    Some(text.as_ref())
-                }
+                LayoutOp::Text { text, origin, .. } if origin.1 == ident_y => Some(text.as_ref()),
                 _ => None,
             })
             .collect();

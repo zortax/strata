@@ -19,9 +19,9 @@ use strata_data::domain::{BoundingBox, LatLon, Meters, Polygon, PreparedPolygon}
 
 use crate::sources::{AirspaceSource, SourceError};
 
+use super::AirspaceCrossing;
 use super::geometry::pad_bbox;
 use super::stations::TrackedStation;
-use super::AirspaceCrossing;
 
 /// Maximum number of consecutive outside stations bridged between two
 /// inside runs of the same airspace.

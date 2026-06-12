@@ -154,7 +154,11 @@ pub fn set_name(doc: &mut FlightDoc, name: String) -> bool {
 /// affect route geometry.
 pub fn set_waypoint_notes(doc: &mut FlightDoc, index: usize, notes: String) -> bool {
     let Some(waypoint) = doc.route.get_mut(index) else {
-        tracing::warn!(index, len = doc.route.len(), "set_waypoint_notes out of range");
+        tracing::warn!(
+            index,
+            len = doc.route.len(),
+            "set_waypoint_notes out of range"
+        );
         return false;
     };
     if waypoint.notes == notes {

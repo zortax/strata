@@ -8,7 +8,10 @@ fn ll(lat: f64, lon: f64) -> LatLon {
 }
 
 fn wp(lat: f64, lon: f64) -> RouteWaypoint {
-    RouteWaypoint::new(RoutePoint::Free(FreePoint { name: None, position: ll(lat, lon) }))
+    RouteWaypoint::new(RoutePoint::Free(FreePoint {
+        name: None,
+        position: ll(lat, lon),
+    }))
 }
 
 fn wp_alt(lat: f64, lon: f64, feet: f64) -> RouteWaypoint {
@@ -151,7 +154,11 @@ fn leg_iteration() {
 #[test]
 fn reverse_moves_leg_plans_with_their_segments() {
     // A --1000ft--> B --2000ft--> C
-    let mut route = vec![wp_alt(50.0, 10.0, 1000.0), wp_alt(51.0, 10.0, 2000.0), wp(52.0, 10.0)];
+    let mut route = vec![
+        wp_alt(50.0, 10.0, 1000.0),
+        wp_alt(51.0, 10.0, 2000.0),
+        wp(52.0, 10.0),
+    ];
     reverse(&mut route);
     // C --2000ft--> B --1000ft--> A
     assert_eq!(route[0].position(), ll(52.0, 10.0));
@@ -164,7 +171,11 @@ fn reverse_moves_leg_plans_with_their_segments() {
 
 #[test]
 fn reverse_twice_is_identity() {
-    let original = vec![wp_alt(50.0, 10.0, 1000.0), wp_alt(51.0, 10.0, 2000.0), wp(52.0, 10.0)];
+    let original = vec![
+        wp_alt(50.0, 10.0, 1000.0),
+        wp_alt(51.0, 10.0, 2000.0),
+        wp(52.0, 10.0),
+    ];
     let mut route = original.clone();
     reverse(&mut route);
     reverse(&mut route);
@@ -186,8 +197,15 @@ fn reverse_handles_trivial_routes() {
 #[test]
 fn insert_into_a_leg_inherits_its_plan() {
     let mut route = vec![wp_alt(50.0, 10.0, 3000.0), wp(52.0, 10.0)];
-    insert(&mut route, 1, RoutePoint::Free(FreePoint { name: None, position: ll(51.0, 10.0) }))
-        .unwrap();
+    insert(
+        &mut route,
+        1,
+        RoutePoint::Free(FreePoint {
+            name: None,
+            position: ll(51.0, 10.0),
+        }),
+    )
+    .unwrap();
     assert_eq!(route.len(), 3);
     // Both halves of the split leg keep the 3000 ft plan.
     assert_eq!(alt_feet(&route[0]), Some(3000.0));
@@ -197,27 +215,55 @@ fn insert_into_a_leg_inherits_its_plan() {
 #[test]
 fn insert_at_ends_starts_unplanned() {
     let mut route = vec![wp_alt(50.0, 10.0, 3000.0), wp(52.0, 10.0)];
-    insert(&mut route, 0, RoutePoint::Free(FreePoint { name: None, position: ll(49.0, 10.0) }))
-        .unwrap();
+    insert(
+        &mut route,
+        0,
+        RoutePoint::Free(FreePoint {
+            name: None,
+            position: ll(49.0, 10.0),
+        }),
+    )
+    .unwrap();
     assert_eq!(route[0].leg_altitude, None);
     let len = route.len();
-    insert(&mut route, len, RoutePoint::Free(FreePoint { name: None, position: ll(53.0, 10.0) }))
-        .unwrap();
+    insert(
+        &mut route,
+        len,
+        RoutePoint::Free(FreePoint {
+            name: None,
+            position: ll(53.0, 10.0),
+        }),
+    )
+    .unwrap();
     assert_eq!(route.last().unwrap().leg_altitude, None);
 }
 
 #[test]
 fn insert_out_of_range_errors() {
     let mut route = vec![wp(50.0, 10.0)];
-    let result =
-        insert(&mut route, 5, RoutePoint::Free(FreePoint { name: None, position: ll(51.0, 10.0) }));
-    assert_eq!(result, Err(RouteError::IndexOutOfRange { index: 5, len: 1 }));
+    let result = insert(
+        &mut route,
+        5,
+        RoutePoint::Free(FreePoint {
+            name: None,
+            position: ll(51.0, 10.0),
+        }),
+    );
+    assert_eq!(
+        result,
+        Err(RouteError::IndexOutOfRange { index: 5, len: 1 })
+    );
 }
 
 #[test]
 fn normalize_drops_zero_length_legs_and_inherits_plans() {
     // B duplicated; the first B has no plan, the duplicate carries one.
-    let mut route = vec![wp_alt(50.0, 10.0, 1000.0), wp(51.0, 10.0), wp_alt(51.0, 10.0, 2000.0), wp(52.0, 10.0)];
+    let mut route = vec![
+        wp_alt(50.0, 10.0, 1000.0),
+        wp(51.0, 10.0),
+        wp_alt(51.0, 10.0, 2000.0),
+        wp(52.0, 10.0),
+    ];
     assert!(normalize(&mut route));
     assert_eq!(route.len(), 3);
     assert_eq!(alt_feet(&route[1]), Some(2000.0));
@@ -225,7 +271,12 @@ fn normalize_drops_zero_length_legs_and_inherits_plans() {
 
 #[test]
 fn normalize_keeps_predecessor_plan_when_set() {
-    let mut route = vec![wp(50.0, 10.0), wp_alt(51.0, 10.0, 4000.0), wp_alt(51.0, 10.0, 2000.0), wp(52.0, 10.0)];
+    let mut route = vec![
+        wp(50.0, 10.0),
+        wp_alt(51.0, 10.0, 4000.0),
+        wp_alt(51.0, 10.0, 2000.0),
+        wp(52.0, 10.0),
+    ];
     assert!(normalize(&mut route));
     assert_eq!(alt_feet(&route[1]), Some(4000.0));
 }
@@ -250,7 +301,10 @@ fn normalize_merges_notes_and_keeps_them_on_the_final_waypoint() {
     assert!(normalize(&mut route));
     assert_eq!(route.len(), 2);
     assert_eq!(route[0].notes, "duplicate's note");
-    assert_eq!(route[1].notes, "close flight plan", "destination notes stay");
+    assert_eq!(
+        route[1].notes, "close flight plan",
+        "destination notes stay"
+    );
     assert!(!normalize(&mut route), "idempotent");
 
     // A set note on the keeper wins over the removed duplicate's.

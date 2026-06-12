@@ -92,12 +92,7 @@ impl fmt::Display for LatLon {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let ns = if self.lat >= 0.0 { 'N' } else { 'S' };
         let ew = if self.lon >= 0.0 { 'E' } else { 'W' };
-        write!(
-            f,
-            "{:.5}°{ns} {:.5}°{ew}",
-            self.lat.abs(),
-            self.lon.abs()
-        )
+        write!(f, "{:.5}°{ns} {:.5}°{ew}", self.lat.abs(), self.lon.abs())
     }
 }
 
@@ -224,7 +219,10 @@ impl BoundingBox {
     }
 
     pub fn contains(&self, p: LatLon) -> bool {
-        p.lon() >= self.west && p.lon() <= self.east && p.lat() >= self.south && p.lat() <= self.north
+        p.lon() >= self.west
+            && p.lon() <= self.east
+            && p.lat() >= self.south
+            && p.lat() <= self.north
     }
 
     pub fn intersects(&self, other: &BoundingBox) -> bool {
@@ -397,10 +395,7 @@ mod tests {
     #[test]
     fn latlon_validation() {
         assert!(LatLon::new(50.0, 8.0).is_ok());
-        assert_eq!(
-            LatLon::new(90.1, 0.0),
-            Err(GeoError::InvalidLatitude(90.1))
-        );
+        assert_eq!(LatLon::new(90.1, 0.0), Err(GeoError::InvalidLatitude(90.1)));
         assert_eq!(
             LatLon::new(0.0, -180.5),
             Err(GeoError::InvalidLongitude(-180.5))
@@ -474,7 +469,13 @@ mod tests {
     #[test]
     fn polygon_normalizes_closed_rings() {
         let square = Polygon::new(
-            vec![ll(0.0, 0.0), ll(0.0, 4.0), ll(4.0, 4.0), ll(4.0, 0.0), ll(0.0, 0.0)],
+            vec![
+                ll(0.0, 0.0),
+                ll(0.0, 4.0),
+                ll(4.0, 4.0),
+                ll(4.0, 0.0),
+                ll(0.0, 0.0),
+            ],
             vec![],
         )
         .unwrap();
@@ -510,7 +511,8 @@ mod tests {
 
     #[test]
     fn polygon_bbox() {
-        let tri = Polygon::new(vec![ll(48.0, 9.0), ll(49.0, 10.0), ll(48.5, 11.0)], vec![]).unwrap();
+        let tri =
+            Polygon::new(vec![ll(48.0, 9.0), ll(49.0, 10.0), ll(48.5, 11.0)], vec![]).unwrap();
         let bbox = tri.bounding_box();
         assert_eq!(bbox.west(), 9.0);
         assert_eq!(bbox.north(), 49.0);

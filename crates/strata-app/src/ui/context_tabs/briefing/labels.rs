@@ -67,8 +67,8 @@ fn capitalized(s: &str) -> String {
 
 /// `"GND → FL 100"`; `None` for the say-nothing full GND → UNL band.
 pub(crate) fn q_limits(q: &QLine) -> Option<String> {
-    let full_band = q.lower.reference == VerticalReference::Gnd
-        && q.upper.reference == VerticalReference::Unl;
+    let full_band =
+        q.lower.reference == VerticalReference::Gnd && q.upper.reference == VerticalReference::Unl;
     (!full_band).then(|| format!("{} → {}", q.lower, q.upper))
 }
 
@@ -135,7 +135,9 @@ mod tests {
     use super::*;
 
     fn utc(d: u32, h: u32, mi: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(2026, 6, d, h, mi, 0).single().expect("valid")
+        Utc.with_ymd_and_hms(2026, 6, d, h, mi, 0)
+            .single()
+            .expect("valid")
     }
 
     #[test]
@@ -229,6 +231,9 @@ mod tests {
             fmt_planned_altitude(PlannedAltitude::Amsl(MetersAmsl::from_feet(5500.0))),
             "5500 ft AMSL"
         );
-        assert_eq!(fmt_planned_altitude(PlannedAltitude::FlightLevel(95)), "FL95");
+        assert_eq!(
+            fmt_planned_altitude(PlannedAltitude::FlightLevel(95)),
+            "FL95"
+        );
     }
 }

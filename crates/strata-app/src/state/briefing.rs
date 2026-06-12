@@ -29,6 +29,7 @@ use std::sync::Arc;
 
 use chrono::{DateTime, Duration, Utc};
 use gpui::{AppContext as _, Context};
+use gpui_tokio::Tokio;
 use serde::{Deserialize, Serialize};
 use strata_data::domain::{IcaoCode, Notam};
 use strata_data::providers::autorouter::AutorouterClient;
@@ -36,11 +37,8 @@ use strata_data::providers::{NotamProvider, TimeWindow as ProviderWindow};
 use strata_plan::compute::ComputedFlight;
 use strata_plan::flight::{FlightDoc, NOTAM_SNAPSHOT_FORMAT_VERSION, NotamSnapshot};
 use strata_plan::fpl::{self, FplError, PilotInfo};
-use strata_plan::notam_relevance::{
-    self, AltitudeBand, RelevanceInput, RelevantNotam, TimeWindow,
-};
+use strata_plan::notam_relevance::{self, AltitudeBand, RelevanceInput, RelevantNotam, TimeWindow};
 use strata_plan::units::Minutes;
-use gpui_tokio::Tokio;
 
 use crate::config::Config;
 
@@ -164,7 +162,10 @@ pub fn fetch_scope(doc: &FlightDoc, now: DateTime<Utc>) -> NotamFetchScope {
             .iter()
             .map(|fir| IcaoCode::new(fir).expect("FIR constants are valid ICAO codes"))
             .collect(),
-        window: TimeWindow::new(anchor - SNAPSHOT_WINDOW_BEHIND, anchor + SNAPSHOT_WINDOW_AHEAD),
+        window: TimeWindow::new(
+            anchor - SNAPSHOT_WINDOW_BEHIND,
+            anchor + SNAPSHOT_WINDOW_AHEAD,
+        ),
     }
 }
 
@@ -293,8 +294,15 @@ fn flight_window(
     let Some(departure) = doc.departure_time else {
         return briefing_window;
     };
+    if let Some(arrival) = computed
+        .and_then(|computed| computed.navlog.rows.last())
+        .and_then(|row| row.eta)
+        .filter(|arrival| *arrival > departure)
+    {
+        return TimeWindow::new(departure, arrival);
+    }
     let duration = computed
-        .map(|computed| computed.phases.total_duration)
+        .map(|computed| computed.navlog.totals.ete)
         .filter(|ete| ete.0 > 0.0)
         .unwrap_or(Minutes(24.0 * 60.0));
     TimeWindow::new(
@@ -472,7 +480,11 @@ impl AppState {
 
         // The autorouter client is reqwest-based → tokio bridge (the
         // fixture provider doesn't care where it runs).
-        let fetch = Tokio::spawn_result(cx, async move { fetch_notams(provider, scope.clone()).await.map(|notams| (notams, scope)) });
+        let fetch = Tokio::spawn_result(cx, async move {
+            fetch_notams(provider, scope.clone())
+                .await
+                .map(|notams| (notams, scope))
+        });
         self.notam_fetch_task = Some(cx.spawn(async move |this, cx| {
             let result = fetch.await;
             this.update(cx, |this, cx| {
@@ -564,7 +576,11 @@ impl AppState {
     /// locally validated per item. Pure read — the Briefing tab calls this
     /// for the preview, the export action gates on `Ready`.
     pub fn icao_fpl(&self) -> FplOutcome {
-        fpl_outcome(self.flight.as_ref(), self.flight_aircraft(), &self.config.pilot)
+        fpl_outcome(
+            self.flight.as_ref(),
+            self.flight_aircraft(),
+            &self.config.pilot,
+        )
     }
 
     /// Exports the briefing PDF for the open flight. The caller converts
@@ -675,7 +691,9 @@ impl AppState {
             let path = with_extension(path, "txt");
             let write_path = path.clone();
             let result = cx
-                .background_spawn(async move { std::fs::write(&write_path, format!("{message}\n")) })
+                .background_spawn(
+                    async move { std::fs::write(&write_path, format!("{message}\n")) },
+                )
                 .await;
             this.update(cx, |_, cx| {
                 let notice = match result {
@@ -718,7 +736,9 @@ mod tests {
     use super::*;
 
     fn utc(y: i32, mo: u32, d: u32, h: u32, mi: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(y, mo, d, h, mi, 0).single().expect("valid")
+        Utc.with_ymd_and_hms(y, mo, d, h, mi, 0)
+            .single()
+            .expect("valid")
     }
 
     fn airport(id: &str, lat: f64, lon: f64) -> RoutePoint {
@@ -825,10 +845,7 @@ mod tests {
             scope.locations,
             vec![icao("EDDF"), icao("EDDM"), icao("EDDS")]
         );
-        assert_eq!(
-            scope.firs,
-            vec![icao("EDGG"), icao("EDMM"), icao("EDWW")]
-        );
+        assert_eq!(scope.firs, vec![icao("EDGG"), icao("EDMM"), icao("EDWW")]);
         assert_eq!(scope.window.from, utc(2026, 6, 16, 8, 0));
         assert_eq!(scope.window.to, utc(2026, 6, 17, 9, 0));
 
@@ -836,6 +853,36 @@ mod tests {
         doc.departure_time = None;
         let scope = fetch_scope(&doc, utc(2026, 6, 1, 12, 0));
         assert_eq!(scope.window.from, utc(2026, 6, 1, 11, 0));
+    }
+
+    #[test]
+    fn flight_window_prefers_the_displayed_navlog_eta() {
+        let (_dir, doc, computed) = computed_flight();
+        let mut computed = (*computed).clone();
+        let departure = doc.departure_time.expect("fixture has departure");
+        let displayed_arrival = departure + Duration::minutes(73);
+        computed.phases.total_duration = Minutes(20.0);
+        computed.navlog.totals.ete = Minutes(73.0);
+        computed
+            .navlog
+            .rows
+            .last_mut()
+            .expect("destination row")
+            .eta = Some(displayed_arrival);
+
+        let fallback = TimeWindow::new(utc(2026, 6, 16, 8, 0), utc(2026, 6, 17, 9, 0));
+        let window = flight_window(&doc, Some(&computed), fallback);
+        assert_eq!(window.from, departure);
+        assert_eq!(window.to, displayed_arrival);
+
+        computed
+            .navlog
+            .rows
+            .last_mut()
+            .expect("destination row")
+            .eta = None;
+        let window = flight_window(&doc, Some(&computed), fallback);
+        assert_eq!(window.to, departure + Duration::minutes(73));
     }
 
     #[tokio::test]
@@ -931,9 +978,7 @@ mod tests {
         let corridor_ids: Vec<String> = briefing
             .relevant
             .iter()
-            .filter(|entry| {
-                matches!(entry.relevance, NotamRelevance::RouteCorridor { .. })
-            })
+            .filter(|entry| matches!(entry.relevance, NotamRelevance::RouteCorridor { .. }))
             .map(|entry| entry.notam.id.to_string())
             .collect();
         assert_eq!(
@@ -1059,9 +1104,8 @@ mod tests {
         let mut store = Store::open(&dir.path().join("store.sqlite")).expect("store opens");
         for lon in [8.0, 8.5, 9.0] {
             let id = ElevationTileId::containing(50.0, lon);
-            let tile =
-                ElevationTile::new(id, vec![250; ELEVATION_TILE_SIDE * ELEVATION_TILE_SIDE])
-                    .expect("tile");
+            let tile = ElevationTile::new(id, vec![250; ELEVATION_TILE_SIDE * ELEVATION_TILE_SIDE])
+                .expect("tile");
             store.put_elevation_tile(&tile).expect("tile stored");
         }
 
@@ -1117,8 +1161,7 @@ mod tests {
         let mut doc = FlightDoc::new("x");
         doc.aircraft_id = Some(aircraft.id.clone());
         let flight = open_flight(doc, None);
-        let FplOutcome::NotComputed(reason) =
-            fpl_outcome(Some(&flight), Some(&aircraft), &pilot)
+        let FplOutcome::NotComputed(reason) = fpl_outcome(Some(&flight), Some(&aircraft), &pilot)
         else {
             panic!("uncomputed → NotComputed");
         };

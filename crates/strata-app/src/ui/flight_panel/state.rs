@@ -105,7 +105,11 @@ impl FlightPanelState {
             cx.subscribe_in(&cruise_input, window, RootView::on_flight_cruise_input),
             cx.subscribe_in(&time_input, window, RootView::on_flight_time_input),
             cx.subscribe_in(&date_picker, window, RootView::on_flight_date_picker),
-            cx.subscribe_in(&aircraft_select, window, RootView::on_flight_aircraft_select),
+            cx.subscribe_in(
+                &aircraft_select,
+                window,
+                RootView::on_flight_aircraft_select,
+            ),
         ];
 
         Self {
@@ -210,7 +214,12 @@ impl RootView {
     /// Brings every header/leg field to the document's canonical text.
     /// `force` overwrites focused fields too (fresh mounts); otherwise the
     /// field being typed in is left alone.
-    fn sync_flight_panel_fields(&mut self, force: bool, window: &mut Window, cx: &mut Context<Self>) {
+    fn sync_flight_panel_fields(
+        &mut self,
+        force: bool,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         let Some(panel) = &self.flight_panel else {
             return;
         };
@@ -465,11 +474,8 @@ impl RootView {
                     .and_then(|f| f.doc.departure_time);
                 match model::parse_time_utc(&input.read(cx).value()) {
                     Some(Some(time)) => {
-                        let departure = model::departure_with_time(
-                            current,
-                            time,
-                            Utc::now().date_naive(),
-                        );
+                        let departure =
+                            model::departure_with_time(current, time, Utc::now().date_naive());
                         self.app_state.update(cx, |state, cx| {
                             state.set_departure_time(Some(departure), cx);
                         });

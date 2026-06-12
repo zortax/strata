@@ -9,8 +9,8 @@ use crate::features::{
     RenderPointFeature, RenderRoute, RenderSigmet, RoutePointKind, RouteVertex, WeatherGridFrame,
 };
 use crate::geo::LatLon;
-use crate::gpu::{GLOBALS_BIND_GROUP_INDEX, Globals};
 use crate::gpu::shader::ShaderLibrary;
+use crate::gpu::{GLOBALS_BIND_GROUP_INDEX, Globals};
 use crate::layer::{DrawCtx, FrameInfo, LayerToggles, MapLayer, PrepareCtx};
 use crate::layers::{AirspaceLayer, GriddedWeatherLayer, PointLayer, RouteLayer, WeatherLayer};
 use crate::workers::WorkerPool;
@@ -190,7 +190,12 @@ fn airspace_layer_prepares_and_draws_on_gpu() {
             id: 1,
             style: AirspaceStyleKey::Ctr,
             polygon: vec![[10.0, 50.0], [10.3, 50.0], [10.3, 50.2], [10.0, 50.2]],
-            holes: vec![vec![[10.1, 50.05], [10.2, 50.05], [10.2, 50.1], [10.1, 50.1]]],
+            holes: vec![vec![
+                [10.1, 50.05],
+                [10.2, 50.05],
+                [10.2, 50.1],
+                [10.1, 50.1],
+            ]],
             lower_label: "GND".into(),
             upper_label: "2500 MSL".into(),
             name: "TEST CTR".into(),
@@ -325,7 +330,10 @@ fn route_layer_prepares_and_draws_on_gpu() {
     scrubbed.scrub_along_m = Some(90_000.0);
     assert!(layer.set_route(Some(scrubbed.clone())));
     harness.prepare_once(&mut layer);
-    assert!(!layer.wants_redraw(), "scrub must not start a worker rebuild");
+    assert!(
+        !layer.wants_redraw(),
+        "scrub must not start a worker rebuild"
+    );
     harness.draw_validated(&layer, "route gpu draw after scrub");
 
     // Snap ring on: the ring uniform/pipeline draw validates and the layer

@@ -14,21 +14,22 @@ use super::DwdRadarError;
 
 /// Extracts the archive member named `member_name` (path compared by file
 /// name — RV tarballs store flat members).
-pub(super) fn extract_member(
-    tar_bz2: &[u8],
-    member_name: &str,
-) -> Result<Vec<u8>, DwdRadarError> {
+pub(super) fn extract_member(tar_bz2: &[u8], member_name: &str) -> Result<Vec<u8>, DwdRadarError> {
     let mut archive = Archive::new(MultiBzDecoder::new(tar_bz2));
     for entry in archive.entries().map_err(DwdRadarError::Archive)? {
         let mut entry = entry.map_err(DwdRadarError::Archive)?;
         let path = entry.path().map_err(DwdRadarError::Archive)?;
         if path.file_name().is_some_and(|n| n == member_name) {
             let mut bytes = Vec::new();
-            entry.read_to_end(&mut bytes).map_err(DwdRadarError::Archive)?;
+            entry
+                .read_to_end(&mut bytes)
+                .map_err(DwdRadarError::Archive)?;
             return Ok(bytes);
         }
     }
-    Err(DwdRadarError::MemberNotFound { name: member_name.to_owned() })
+    Err(DwdRadarError::MemberNotFound {
+        name: member_name.to_owned(),
+    })
 }
 
 #[cfg(test)]
@@ -48,8 +49,7 @@ mod tests {
             builder.append_data(&mut header, name, *data).unwrap();
         }
         let tar_bytes = builder.into_inner().unwrap();
-        let mut encoder =
-            bzip2::write::BzEncoder::new(Vec::new(), bzip2::Compression::default());
+        let mut encoder = bzip2::write::BzEncoder::new(Vec::new(), bzip2::Compression::default());
         encoder.write_all(&tar_bytes).unwrap();
         encoder.finish().unwrap()
     }

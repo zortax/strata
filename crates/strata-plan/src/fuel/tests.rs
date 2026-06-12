@@ -89,6 +89,7 @@ fn worked_ladder_default_policy() {
     let ladder = compute_fuel_ladder(
         &FuelPolicy::default(),
         &trainer(),
+        None,
         &trip_plan(),
         None,
         Liters(100.0),
@@ -119,6 +120,7 @@ fn alternate_plan_adds_its_trip_fuel() {
     let ladder = compute_fuel_ladder(
         &FuelPolicy::default(),
         &trainer(),
+        None,
         &trip_plan(),
         Some(&alternate),
         Liters(100.0),
@@ -143,10 +145,17 @@ fn contingency_switches_between_percentage_and_fixed() {
         ..FuelPolicy::default()
     };
 
-    let percent_ladder =
-        compute_fuel_ladder(&percent, &trainer(), &trip_plan(), None, Liters(100.0)).unwrap();
+    let percent_ladder = compute_fuel_ladder(
+        &percent,
+        &trainer(),
+        None,
+        &trip_plan(),
+        None,
+        Liters(100.0),
+    )
+    .unwrap();
     let fixed_ladder =
-        compute_fuel_ladder(&fixed, &trainer(), &trip_plan(), None, Liters(100.0)).unwrap();
+        compute_fuel_ladder(&fixed, &trainer(), None, &trip_plan(), None, Liters(100.0)).unwrap();
 
     assert_close(percent_ladder.contingency.0, 3.0);
     assert_close(fixed_ladder.contingency.0, 10.0);
@@ -159,6 +168,7 @@ fn under_fueled_margin_is_negative() {
     let ladder = compute_fuel_ladder(
         &FuelPolicy::default(),
         &trainer(),
+        None,
         &trip_plan(),
         None,
         Liters(50.0),
@@ -179,6 +189,7 @@ fn reserve_flow_falls_back_to_first_cruise_setting() {
     let ladder = compute_fuel_ladder(
         &FuelPolicy::default(),
         &trainer(),
+        None,
         &no_cruise,
         None,
         Liters(100.0),
@@ -186,6 +197,25 @@ fn reserve_flow_falls_back_to_first_cruise_setting() {
     .unwrap();
     assert_close(ladder.final_reserve.0, 16.0);
     assert_close(ladder.minimum_required.0, 32.75);
+}
+
+#[test]
+fn reserve_flow_falls_back_to_selected_setting_when_the_trip_never_cruises() {
+    let no_cruise = plan(vec![
+        seg(PhaseKind::Climb, 15.0, 10.0),
+        seg(PhaseKind::Descent, 10.0, 5.0),
+    ]);
+    let ladder = compute_fuel_ladder(
+        &FuelPolicy::default(),
+        &trainer(),
+        Some("55 %"),
+        &no_cruise,
+        None,
+        Liters(100.0),
+    )
+    .unwrap();
+    assert_close(ladder.final_reserve.0, 13.0);
+    assert_close(ladder.minimum_required.0, 29.75);
 }
 
 #[test]
@@ -198,6 +228,7 @@ fn unresolvable_reserve_flow_errors() {
     let err = compute_fuel_ladder(
         &FuelPolicy::default(),
         &profile,
+        None,
         &no_cruise,
         None,
         Liters(100.0),
@@ -210,6 +241,7 @@ fn unresolvable_reserve_flow_errors() {
     let err = compute_fuel_ladder(
         &FuelPolicy::default(),
         &profile,
+        None,
         &zero_flow_cruise,
         None,
         Liters(100.0),
@@ -228,7 +260,7 @@ fn zero_reserve_needs_no_cruise_flow() {
     };
     let no_cruise = plan(vec![seg(PhaseKind::Climb, 15.0, 10.0)]);
     let ladder =
-        compute_fuel_ladder(&policy, &profile, &no_cruise, None, Liters(100.0)).unwrap();
+        compute_fuel_ladder(&policy, &profile, None, &no_cruise, None, Liters(100.0)).unwrap();
     assert_close(ladder.final_reserve.0, 0.0);
 }
 
@@ -243,7 +275,7 @@ fn negative_policy_values_clamp_to_zero() {
         extra: Liters(-2.0),
     };
     let ladder =
-        compute_fuel_ladder(&policy, &trainer(), &trip_plan(), None, Liters(100.0)).unwrap();
+        compute_fuel_ladder(&policy, &trainer(), None, &trip_plan(), None, Liters(100.0)).unwrap();
     assert_close(ladder.taxi.0, 0.0);
     assert_close(ladder.contingency.0, 0.0);
     assert_close(ladder.final_reserve.0, 0.0);
@@ -255,7 +287,7 @@ fn negative_policy_values_clamp_to_zero() {
         ..policy
     };
     let ladder =
-        compute_fuel_ladder(&fixed, &trainer(), &trip_plan(), None, Liters(100.0)).unwrap();
+        compute_fuel_ladder(&fixed, &trainer(), None, &trip_plan(), None, Liters(100.0)).unwrap();
     assert_close(ladder.contingency.0, 0.0);
 }
 
@@ -266,7 +298,7 @@ fn extra_fuel_raises_the_minimum() {
         ..FuelPolicy::default()
     };
     let ladder =
-        compute_fuel_ladder(&policy, &trainer(), &trip_plan(), None, Liters(100.0)).unwrap();
+        compute_fuel_ladder(&policy, &trainer(), None, &trip_plan(), None, Liters(100.0)).unwrap();
     assert_close(ladder.extra.0, 8.0);
     assert_close(ladder.minimum_required.0, 87.0);
 }
@@ -326,6 +358,7 @@ fn zero_taxi_flow_zeroes_the_taxi_rung() {
     let ladder = compute_fuel_ladder(
         &FuelPolicy::default(),
         &profile,
+        None,
         &trip_plan(),
         None,
         Liters(100.0),

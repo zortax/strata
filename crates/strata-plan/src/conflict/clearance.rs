@@ -187,11 +187,8 @@ fn worst_of(run: &[Violation]) -> &Violation {
 fn terrain_message(run: &[Violation], corridor: &Corridor) -> String {
     let worst = worst_of(run);
     let (from_nm, to_nm) = run_extent(run, corridor);
-    let at_nm = corridor.samples[worst.sample_index]
-        .station
-        .along_track
-        .0
-        / METERS_PER_NAUTICAL_MILE;
+    let at_nm =
+        corridor.samples[worst.sample_index].station.along_track.0 / METERS_PER_NAUTICAL_MILE;
     let terrain_ft = worst.reference.as_feet().round();
     if worst.clearance < 0.0 {
         format!(

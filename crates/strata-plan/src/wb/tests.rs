@@ -122,8 +122,7 @@ fn state(report: &WbReport, kind: WbStateKind) -> WbState {
 #[test]
 fn worked_example_states() {
     let report =
-        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0))
-            .unwrap();
+        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0)).unwrap();
 
     let kinds: Vec<WbStateKind> = report.states.iter().map(|s| s.kind).collect();
     assert_eq!(
@@ -162,8 +161,7 @@ fn fuel_mass_uses_profile_density() {
     // Volume → mass via the profile density: 100 L × 0.72 kg/L = 72 kg is
     // exactly the ramp-minus-zero-fuel mass difference.
     let report =
-        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0))
-            .unwrap();
+        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0)).unwrap();
     let ramp = state(&report, WbStateKind::Ramp);
     let zfw = state(&report, WbStateKind::ZeroFuel);
     assert_close(ramp.mass.0 - zfw.mass.0, 72.0);
@@ -182,8 +180,7 @@ fn zfw_and_landing_states_diverge() {
     // Landing still has 32 L on board, so it is heavier than zero-fuel and —
     // with the fuel arm (1.20 m) aft of the loaded CG — sits further aft.
     let report =
-        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0))
-            .unwrap();
+        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0)).unwrap();
     let takeoff = state(&report, WbStateKind::Takeoff);
     let zfw = state(&report, WbStateKind::ZeroFuel);
     let landing = state(&report, WbStateKind::Landing);
@@ -285,7 +282,12 @@ fn aft_cg_flags_all_states_despite_legal_mass() {
 #[test]
 fn envelope_rejects_points_beyond_each_edge() {
     // Plain rectangle: forward 0.9, aft 1.2, masses 700–1100.
-    let square = [ep(0.9, 700.0), ep(0.9, 1100.0), ep(1.2, 1100.0), ep(1.2, 700.0)];
+    let square = [
+        ep(0.9, 700.0),
+        ep(0.9, 1100.0),
+        ep(1.2, 1100.0),
+        ep(1.2, 700.0),
+    ];
     assert!(within_envelope(&square, cg(1.0, 900.0))); // inside
     assert!(!within_envelope(&square, cg(0.85, 900.0))); // forward of fwd limit
     assert!(!within_envelope(&square, cg(1.25, 900.0))); // aft of aft limit
@@ -306,7 +308,10 @@ fn envelope_honors_sloped_forward_limit() {
 #[test]
 fn degenerate_envelope_contains_nothing() {
     assert!(!within_envelope(&[], cg(1.0, 900.0)));
-    assert!(!within_envelope(&[ep(0.9, 700.0), ep(1.2, 1100.0)], cg(1.0, 900.0)));
+    assert!(!within_envelope(
+        &[ep(0.9, 700.0), ep(1.2, 1100.0)],
+        cg(1.0, 900.0)
+    ));
 }
 
 // --- burn track -------------------------------------------------------------
@@ -314,8 +319,7 @@ fn degenerate_envelope_contains_nothing() {
 #[test]
 fn burn_track_runs_from_takeoff_to_zero_fuel() {
     let report =
-        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0))
-            .unwrap();
+        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0)).unwrap();
     let takeoff = state(&report, WbStateKind::Takeoff);
     let zfw = state(&report, WbStateKind::ZeroFuel);
 
@@ -337,8 +341,7 @@ fn burn_track_follows_the_constant_moment_arc() {
     //   arm(m) = a_f + (M₀ − m₀·a_f)/m = 1.20 − 132/m
     // — a hyperbola in (arm, mass) space. The landing CG lies on it too.
     let report =
-        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0))
-            .unwrap();
+        compute_weight_balance(&trainer(), &standard_loading(), Liters(8.0), Liters(60.0)).unwrap();
     for point in &report.burn_track {
         assert_close(point.arm.0, 1.20 - 132.0 / point.mass.0);
     }
@@ -462,7 +465,10 @@ fn missing_or_degenerate_envelope_errors() {
 #[test]
 fn fuel_without_fuel_station_errors() {
     let mut profile = trainer();
-    profile.weight_balance.stations.retain(|s| s.kind != StationKind::Fuel);
+    profile
+        .weight_balance
+        .stations
+        .retain(|s| s.kind != StationKind::Fuel);
     let err = compute_weight_balance(&profile, &standard_loading(), Liters(8.0), Liters(60.0))
         .unwrap_err();
     assert!(matches!(err, WbError::NoFuelStation));

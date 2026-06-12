@@ -11,9 +11,7 @@ use crate::geo::world_from_lat_lon;
 use crate::layer::{DrawCtx, LayerId, LayerToggles, MapLayer, PrepareCtx};
 use crate::layers::pipelines::{self, OriginBinding};
 use crate::layers::style::{flight_category_color, priority};
-use crate::layers::symbols::{
-    SymbolAtlas, SymbolInstance, SymbolMeshKey, SymbolVertex,
-};
+use crate::layers::symbols::{SymbolAtlas, SymbolInstance, SymbolMeshKey, SymbolVertex};
 use crate::map_theme::MapTheme;
 use crate::text::{LabelAnchor, LabelPlacement, LabelRequest};
 use crate::workers::JobQueue;
@@ -528,10 +526,7 @@ mod tests {
         };
         let mut toggles = LayerToggles::all_enabled();
         toggles.set(LayerId::Navaids, false);
-        let visible: Vec<&str> = layer
-            .visible_labels(&toggles)
-            .map(|l| &*l.text)
-            .collect();
+        let visible: Vec<&str> = layer.visible_labels(&toggles).map(|l| &*l.text).collect();
         assert_eq!(visible, vec!["EDDF"]);
     }
 
@@ -576,7 +571,10 @@ mod tests {
         for key in SymbolMeshKey::ALL {
             let offset = label_offset_px(key);
             let [sx, sy] = symbol_offset_px(key);
-            assert_eq!(offset.x, sx, "{key:?}: label must stay centered on its symbol");
+            assert_eq!(
+                offset.x, sx,
+                "{key:?}: label must stay centered on its symbol"
+            );
             assert_eq!(
                 offset.y,
                 sy + key.size_px() + LABEL_GAP_PX,
@@ -600,7 +598,10 @@ mod tests {
         };
         // Per-kind: the big airport disc pushes its ident further down than
         // the small reporting-point triangle.
-        assert_eq!(offset_of("EDDF"), label_offset_px(SymbolMeshKey::AirportIntl));
+        assert_eq!(
+            offset_of("EDDF"),
+            label_offset_px(SymbolMeshKey::AirportIntl)
+        );
         assert!(offset_of("EDDF").y > offset_of("MIKE").y);
     }
 

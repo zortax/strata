@@ -175,9 +175,19 @@ fn fuel_with_margin(margin: f64) -> FuelLadder {
     }
 }
 
-fn detect(corridor: &Corridor, phases: &PhasePlan, thresholds: &ConflictThresholds) -> Vec<Conflict> {
-    detect_conflicts(corridor, phases, &ok_wb(), &fuel_with_margin(5.0), thresholds)
-        .expect("consistent inputs")
+fn detect(
+    corridor: &Corridor,
+    phases: &PhasePlan,
+    thresholds: &ConflictThresholds,
+) -> Vec<Conflict> {
+    detect_conflicts(
+        corridor,
+        phases,
+        &ok_wb(),
+        &fuel_with_margin(5.0),
+        thresholds,
+    )
+    .expect("consistent inputs")
 }
 
 fn thresholds_m(terrain: f64, obstacle: f64) -> ConflictThresholds {
@@ -328,7 +338,11 @@ fn obstacle_clearance_boundary() {
     let conflicts = detect(&corridor, &phases, &thresholds);
     assert_eq!(conflicts.len(), 1);
     assert_eq!(conflicts[0].kind, ConflictKind::Obstacle);
-    assert!(conflicts[0].message.contains("mast"), "got: {}", conflicts[0].message);
+    assert!(
+        conflicts[0].message.contains("mast"),
+        "got: {}",
+        conflicts[0].message
+    );
 }
 
 #[test]
@@ -339,16 +353,20 @@ fn endpoint_grace_exempts_the_climb_out_and_letdown_mile() {
     // at 5 km (planned 300 m — below it) still conflicts.
     let thresholds = thresholds_m(300.0, 300.0);
     let phases = climb_cruise_descent_plan(30_000.0, 10_000.0, 10_000.0, 600.0);
-    let knoll = |at: usize| corridor_with_terrain(31, 1000.0, move |i| {
-        Some(if i == at { 500.0 } else { 0.0 })
-    });
+    let knoll = |at: usize| {
+        corridor_with_terrain(31, 1000.0, move |i| Some(if i == at { 500.0 } else { 0.0 }))
+    };
 
     assert!(
         detect(&knoll(1), &phases, &thresholds).is_empty(),
         "knoll inside the departure grace is exempt"
     );
     let conflicts = detect(&knoll(5), &phases, &thresholds);
-    assert_eq!(conflicts.len(), 1, "the same knoll beyond the grace conflicts");
+    assert_eq!(
+        conflicts.len(),
+        1,
+        "the same knoll beyond the grace conflicts"
+    );
     assert_eq!(conflicts[0].kind, ConflictKind::Terrain);
 
     // Mirror at the destination: 1 km before the route end, inside the
@@ -412,14 +430,22 @@ fn agl_floor_follows_sloping_terrain() {
     let conflicts = detect(&corridor, &phases, &thresholds_m(50.0, 50.0));
     assert_eq!(conflicts.len(), 1);
     assert_eq!(conflicts[0].kind, ConflictKind::Airspace);
-    assert_eq!(conflicts[0].severity, ConflictSeverity::Warning, "ED-R is always red");
+    assert_eq!(
+        conflicts[0].severity,
+        ConflictSeverity::Warning,
+        "ED-R is always red"
+    );
     let ConflictLocation::Station { along_track, .. } = conflicts[0].location else {
         panic!("airspace conflicts anchor at the first penetrating station");
     };
     assert_eq!(along_track, Meters(5000.0));
     assert!(conflicts[0].message.contains("ED-R SLOPE"));
     // 300 m AGL renders chart-style as feet (984 ft AGL).
-    assert!(conflicts[0].message.contains("984 ft AGL"), "got: {}", conflicts[0].message);
+    assert!(
+        conflicts[0].message.contains("984 ft AGL"),
+        "got: {}",
+        conflicts[0].message
+    );
 }
 
 #[test]
@@ -515,12 +541,21 @@ fn fl_and_gnd_and_unl_limits_normalize() {
             )],
             ..corridor_with_terrain(3, 1000.0, |_| Some(0.0))
         };
-        detect(&corridor, &cruise_only_plan(2000.0, alt), &thresholds_m(1.0, 1.0)).len()
+        detect(
+            &corridor,
+            &cruise_only_plan(2000.0, alt),
+            &thresholds_m(1.0, 1.0),
+        )
+        .len()
     };
     assert_eq!(fl_floor(1523.9), 0, "just below FL 50");
     // Exactly at the floor: derive the altitude through the same ft→m
     // conversion the engine uses (1524 m up to the last ULP).
-    assert_eq!(fl_floor(MetersAmsl::from_feet(5000.0).0), 1, "at FL 50 (inclusive)");
+    assert_eq!(
+        fl_floor(MetersAmsl::from_feet(5000.0).0),
+        1,
+        "at FL 50 (inclusive)"
+    );
     assert_eq!(fl_floor(9000.0), 1, "UNL ceiling is unbounded");
 
     let gnd = Corridor {
@@ -537,9 +572,21 @@ fn fl_and_gnd_and_unl_limits_normalize() {
         )],
         ..corridor_with_terrain(3, 1000.0, |_| Some(0.0))
     };
-    let conflicts = detect(&gnd, &cruise_only_plan(2000.0, 300.0), &thresholds_m(1.0, 1.0));
-    assert_eq!(conflicts.len(), 1, "GND floor catches any altitude below the ceiling");
-    assert!(conflicts[0].message.contains("floor GND"), "got: {}", conflicts[0].message);
+    let conflicts = detect(
+        &gnd,
+        &cruise_only_plan(2000.0, 300.0),
+        &thresholds_m(1.0, 1.0),
+    );
+    assert_eq!(
+        conflicts.len(),
+        1,
+        "GND floor catches any altitude below the ceiling"
+    );
+    assert!(
+        conflicts[0].message.contains("floor GND"),
+        "got: {}",
+        conflicts[0].message
+    );
 }
 
 #[test]
@@ -556,12 +603,27 @@ fn severity_table_matches_the_design() {
         ))
     };
     // ED-R/D/P always red.
-    assert_eq!(sev(C::Unclassified, K::Restricted), Some(ConflictSeverity::Warning));
-    assert_eq!(sev(C::Unclassified, K::Danger), Some(ConflictSeverity::Warning));
-    assert_eq!(sev(C::Unclassified, K::Prohibited), Some(ConflictSeverity::Warning));
+    assert_eq!(
+        sev(C::Unclassified, K::Restricted),
+        Some(ConflictSeverity::Warning)
+    );
+    assert_eq!(
+        sev(C::Unclassified, K::Danger),
+        Some(ConflictSeverity::Warning)
+    );
+    assert_eq!(
+        sev(C::Unclassified, K::Prohibited),
+        Some(ConflictSeverity::Warning)
+    );
     // TMZ/RMZ amber-informational.
-    assert_eq!(sev(C::Unclassified, K::Tmz), Some(ConflictSeverity::Caution));
-    assert_eq!(sev(C::Unclassified, K::Rmz), Some(ConflictSeverity::Caution));
+    assert_eq!(
+        sev(C::Unclassified, K::Tmz),
+        Some(ConflictSeverity::Caution)
+    );
+    assert_eq!(
+        sev(C::Unclassified, K::Rmz),
+        Some(ConflictSeverity::Caution)
+    );
     // Clearance-bound airspace.
     assert_eq!(sev(C::D, K::Ctr), Some(ConflictSeverity::Caution));
     assert_eq!(sev(C::C, K::Tma), Some(ConflictSeverity::Caution));
@@ -569,7 +631,10 @@ fn severity_table_matches_the_design() {
     assert_eq!(sev(C::A, K::Cta), Some(ConflictSeverity::Warning));
     // Pattern/activity areas inform.
     assert_eq!(sev(C::Unclassified, K::Atz), Some(ConflictSeverity::Info));
-    assert_eq!(sev(C::Unclassified, K::ParachuteJumpArea), Some(ConflictSeverity::Info));
+    assert_eq!(
+        sev(C::Unclassified, K::ParachuteJumpArea),
+        Some(ConflictSeverity::Info)
+    );
     // Legal-to-enter VFR airspace stays quiet.
     assert_eq!(sev(C::E, K::Tma), None);
     assert_eq!(sev(C::G, K::Area), None);
@@ -594,7 +659,11 @@ fn crossing_without_vertical_overlap_is_no_conflict() {
         )],
         ..corridor_with_terrain(5, 1000.0, |_| Some(0.0))
     };
-    let conflicts = detect(&corridor, &cruise_only_plan(4000.0, 700.0), &thresholds_m(1.0, 1.0));
+    let conflicts = detect(
+        &corridor,
+        &cruise_only_plan(4000.0, 700.0),
+        &thresholds_m(1.0, 1.0),
+    );
     assert!(conflicts.is_empty());
 }
 
@@ -631,11 +700,18 @@ fn fuel_margin_boundary() {
         )
         .expect("consistent")
     };
-    assert!(detect_fuel(0.0).is_empty(), "exactly at minimum is not a conflict");
+    assert!(
+        detect_fuel(0.0).is_empty(),
+        "exactly at minimum is not a conflict"
+    );
     let conflicts = detect_fuel(-2.5);
     assert_eq!(conflicts.len(), 1);
     assert_eq!(conflicts[0].kind, ConflictKind::Fuel);
-    assert!(conflicts[0].message.contains("2.5 L under"), "got: {}", conflicts[0].message);
+    assert!(
+        conflicts[0].message.contains("2.5 L under"),
+        "got: {}",
+        conflicts[0].message
+    );
 }
 
 #[test]
@@ -724,10 +800,21 @@ fn active_edr_notam_in_corridor_is_red() {
     let conflicts = detect_notam_conflicts(&corridor, &phases, &[notam], from, to);
     assert_eq!(conflicts.len(), 1);
     assert_eq!(conflicts[0].kind, ConflictKind::Notam);
-    assert_eq!(conflicts[0].severity, ConflictSeverity::Warning, "R-group is red");
+    assert_eq!(
+        conflicts[0].severity,
+        ConflictSeverity::Warning,
+        "R-group is red"
+    );
     assert!(conflicts[0].message.contains("D0123/26"));
-    assert!(conflicts[0].message.contains("ED-R 123 WERTHEIM"), "got: {}", conflicts[0].message);
-    assert!(matches!(conflicts[0].location, ConflictLocation::Station { .. }));
+    assert!(
+        conflicts[0].message.contains("ED-R 123 WERTHEIM"),
+        "got: {}",
+        conflicts[0].message
+    );
+    assert!(matches!(
+        conflicts[0].location,
+        ConflictLocation::Station { .. }
+    ));
 }
 
 #[test]

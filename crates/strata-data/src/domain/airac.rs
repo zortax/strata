@@ -37,8 +37,8 @@ impl AiracCycle {
         let effective = grid_date(n);
         // Ordinal within the effective year: count cycles since the first
         // cycle whose effective date falls in that year.
-        let jan1 = NaiveDate::from_ymd_opt(effective.year(), 1, 1)
-            .expect("January 1st always exists");
+        let jan1 =
+            NaiveDate::from_ymd_opt(effective.year(), 1, 1).expect("January 1st always exists");
         let mut first_of_year = grid_date((jan1 - epoch()).num_days().div_euclid(CYCLE_DAYS));
         if first_of_year < jan1 {
             first_of_year = first_of_year + Days::new(CYCLE_DAYS as u64);

@@ -19,7 +19,9 @@ use crate::domain::vertical::MetersAmsl;
 pub enum GriddedError {
     #[error("grid needs at least 2x2 points, got {ni}x{nj}")]
     GridTooSmall { ni: usize, nj: usize },
-    #[error("grid spacing must be finite and positive, got {lat_spacing_deg} x {lon_spacing_deg} deg")]
+    #[error(
+        "grid spacing must be finite and positive, got {lat_spacing_deg} x {lon_spacing_deg} deg"
+    )]
     InvalidSpacing {
         lat_spacing_deg: f64,
         lon_spacing_deg: f64,
@@ -176,10 +178,9 @@ impl WeatherField {
     /// Display unit of the grid values.
     pub fn unit(&self) -> &'static str {
         match self {
-            Self::CloudCover
-            | Self::CloudCoverLow
-            | Self::CloudCoverMid
-            | Self::CloudCoverHigh => "%",
+            Self::CloudCover | Self::CloudCoverLow | Self::CloudCoverMid | Self::CloudCoverHigh => {
+                "%"
+            }
             Self::PrecipRate => "mm/h",
             Self::ThunderstormPotential | Self::Cape => "J/kg",
             Self::Ceiling => "m AGL",
@@ -389,10 +390,30 @@ impl RegularLatLonGrid {
             let idx = if round_up { x.ceil() } else { x.floor() };
             (idx.max(0.0) as usize).min(max)
         };
-        let mut i0 = node(west - self.origin.lon(), self.lon_spacing_deg, false, self.ni - 1);
-        let mut i1 = node(east - self.origin.lon(), self.lon_spacing_deg, true, self.ni - 1);
-        let mut j0 = node(south - self.origin.lat(), self.lat_spacing_deg, false, self.nj - 1);
-        let mut j1 = node(north - self.origin.lat(), self.lat_spacing_deg, true, self.nj - 1);
+        let mut i0 = node(
+            west - self.origin.lon(),
+            self.lon_spacing_deg,
+            false,
+            self.ni - 1,
+        );
+        let mut i1 = node(
+            east - self.origin.lon(),
+            self.lon_spacing_deg,
+            true,
+            self.ni - 1,
+        );
+        let mut j0 = node(
+            south - self.origin.lat(),
+            self.lat_spacing_deg,
+            false,
+            self.nj - 1,
+        );
+        let mut j1 = node(
+            north - self.origin.lat(),
+            self.lat_spacing_deg,
+            true,
+            self.nj - 1,
+        );
         // Keep at least two nodes per axis (`ni >= 2` by construction).
         if i0 == i1 {
             if i1 + 1 < self.ni {
@@ -513,7 +534,10 @@ impl GriddedTimeline {
     /// latest step at-or-before and the earliest step at-or-after. Both are
     /// the same step when `t` hits a step exactly; either side is `None`
     /// when `t` lies outside the timeline.
-    pub fn bracketing_steps(&self, t: DateTime<Utc>) -> (Option<TimelineStep>, Option<TimelineStep>) {
+    pub fn bracketing_steps(
+        &self,
+        t: DateTime<Utc>,
+    ) -> (Option<TimelineStep>, Option<TimelineStep>) {
         let before = self
             .steps
             .iter()
@@ -548,8 +572,15 @@ mod tests {
     ///             10E 11E 12E
     /// ```
     fn grid() -> RegularLatLonGrid {
-        RegularLatLonGrid::new(ll(50.0, 10.0), 1.0, 1.0, 3, 2, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
-            .unwrap()
+        RegularLatLonGrid::new(
+            ll(50.0, 10.0),
+            1.0,
+            1.0,
+            3,
+            2,
+            vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+        )
+        .unwrap()
     }
 
     #[test]
@@ -564,7 +595,11 @@ mod tests {
         ));
         assert!(matches!(
             RegularLatLonGrid::new(ll(50.0, 10.0), 1.0, 1.0, 2, 2, vec![0.0; 3]),
-            Err(GriddedError::ValueCountMismatch { got: 3, ni: 2, nj: 2 })
+            Err(GriddedError::ValueCountMismatch {
+                got: 3,
+                ni: 2,
+                nj: 2
+            })
         ));
         // North-east node would sit at 92N.
         assert!(matches!(
@@ -642,7 +677,11 @@ mod tests {
         assert_eq!(c.value_at(2, 3), g.value_at(3, 3));
         // Bilinear samples inside the crop bbox are identical.
         for &(lat, lon) in &[(50.6, 11.4), (51.0, 12.0), (52.2, 12.7), (51.37, 12.41)] {
-            assert_eq!(c.sample(ll(lat, lon)), g.sample(ll(lat, lon)), "({lat}, {lon})");
+            assert_eq!(
+                c.sample(ll(lat, lon)),
+                g.sample(ll(lat, lon)),
+                "({lat}, {lon})"
+            );
         }
     }
 
@@ -660,7 +699,10 @@ mod tests {
     #[test]
     fn crop_clamps_to_the_domain_and_misses_are_none() {
         let g = grid();
-        assert!(g.crop(BoundingBox::new(0.0, 0.0, 5.0, 5.0).unwrap()).is_none());
+        assert!(
+            g.crop(BoundingBox::new(0.0, 0.0, 5.0, 5.0).unwrap())
+                .is_none()
+        );
         // Partial overlap clamps to the shared part.
         let c = g
             .crop(BoundingBox::new(11.5, 50.5, 20.0, 60.0).unwrap())
@@ -810,7 +852,10 @@ mod tests {
     #[test]
     fn timeline_valid_range() {
         assert_eq!(timeline().valid_range(), Some((t(12, 0), t(15, 0))));
-        let empty = GriddedTimeline { run_time: t(12, 0), steps: vec![] };
+        let empty = GriddedTimeline {
+            run_time: t(12, 0),
+            steps: vec![],
+        };
         assert_eq!(empty.valid_range(), None);
         assert_eq!(empty.nearest_step(t(12, 0)), None);
         assert_eq!(empty.bracketing_steps(t(12, 0)), (None, None));

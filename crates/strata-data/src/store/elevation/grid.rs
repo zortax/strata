@@ -36,13 +36,19 @@ pub(crate) struct Cell {
 /// Global cell column of a longitude (finite degrees; the world edges
 /// clamp into the outermost column).
 pub(crate) fn cell_x_of(lon: f64) -> u32 {
-    clamp_floor((lon + 180.0) * f64::from(ELEVATION_CELLS_PER_DEGREE), CELLS_X)
+    clamp_floor(
+        (lon + 180.0) * f64::from(ELEVATION_CELLS_PER_DEGREE),
+        CELLS_X,
+    )
 }
 
 /// Global cell row of a latitude (finite degrees; the poles clamp into the
 /// outermost row).
 pub(crate) fn cell_y_of(lat: f64) -> u32 {
-    clamp_floor((lat + 90.0) * f64::from(ELEVATION_CELLS_PER_DEGREE), CELLS_Y)
+    clamp_floor(
+        (lat + 90.0) * f64::from(ELEVATION_CELLS_PER_DEGREE),
+        CELLS_Y,
+    )
 }
 
 fn clamp_floor(value: f64, count: u32) -> u32 {
@@ -144,22 +150,46 @@ mod tests {
         let origin = id.origin();
         assert_eq!(id.index_of(origin), Some(0));
         assert_eq!(
-            id.index_of(Cell { x: origin.x + 1, y: origin.y }),
+            id.index_of(Cell {
+                x: origin.x + 1,
+                y: origin.y
+            }),
             Some(1)
         );
         assert_eq!(
-            id.index_of(Cell { x: origin.x, y: origin.y + 1 }),
+            id.index_of(Cell {
+                x: origin.x,
+                y: origin.y + 1
+            }),
             Some(ELEVATION_TILE_SIDE)
         );
         assert_eq!(
-            id.index_of(Cell { x: origin.x + SIDE - 1, y: origin.y + SIDE - 1 }),
+            id.index_of(Cell {
+                x: origin.x + SIDE - 1,
+                y: origin.y + SIDE - 1
+            }),
             Some(ELEVATION_TILE_SIDE * ELEVATION_TILE_SIDE - 1)
         );
         // Outside in every direction.
-        assert_eq!(id.index_of(Cell { x: origin.x + SIDE, y: origin.y }), None);
-        assert_eq!(id.index_of(Cell { x: origin.x, y: origin.y + SIDE }), None);
         assert_eq!(
-            id.index_of(Cell { x: origin.x.wrapping_sub(1), y: origin.y }),
+            id.index_of(Cell {
+                x: origin.x + SIDE,
+                y: origin.y
+            }),
+            None
+        );
+        assert_eq!(
+            id.index_of(Cell {
+                x: origin.x,
+                y: origin.y + SIDE
+            }),
+            None
+        );
+        assert_eq!(
+            id.index_of(Cell {
+                x: origin.x.wrapping_sub(1),
+                y: origin.y
+            }),
             None
         );
     }

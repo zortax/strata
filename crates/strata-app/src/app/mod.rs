@@ -43,7 +43,10 @@ pub fn run() {
 fn migrate_legacy_user_dirs() {
     use strata_data::paths;
     for base in [dirs::data_dir(), dirs::config_dir()].into_iter().flatten() {
-        paths::migrate_legacy_dir(&base.join(paths::LEGACY_DIR_NAME), &base.join(paths::DIR_NAME));
+        paths::migrate_legacy_dir(
+            &base.join(paths::LEGACY_DIR_NAME),
+            &base.join(paths::DIR_NAME),
+        );
     }
 }
 

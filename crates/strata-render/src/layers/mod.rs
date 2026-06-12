@@ -21,9 +21,7 @@ mod tests_gpu;
 mod weather;
 mod weather_grid;
 
-pub use airspace::{
-    AIRSPACE_LABEL_MIN_ZOOM, AirspaceLayer, DEFAULT_AIRSPACE_MESH_CACHE_BYTES,
-};
+pub use airspace::{AIRSPACE_LABEL_MIN_ZOOM, AirspaceLayer, DEFAULT_AIRSPACE_MESH_CACHE_BYTES};
 pub use points::PointLayer;
 pub use route::{LEG_LABEL_MIN_ZOOM, LEG_LABEL_OFFSET_PX, RouteLayer};
 pub use weather::{SIGMET_LABEL_MIN_ZOOM, WeatherLayer};

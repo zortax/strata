@@ -102,10 +102,7 @@ fn is_area_relevant(notam: &Notam) -> bool {
     }
     match subject_group(subject) {
         Some('R') | Some('W') => true,
-        _ => matches!(
-            condition,
-            QCondition::Activated | QCondition::WillTakePlace
-        ),
+        _ => matches!(condition, QCondition::Activated | QCondition::WillTakePlace),
     }
 }
 
@@ -128,7 +125,8 @@ fn first_intersecting_station(
     phases: &PhasePlan,
     notam: &Notam,
 ) -> Option<usize> {
-    let reach = f64::from(notam.q.radius_nm) * METERS_PER_NAUTICAL_MILE + corridor.params.half_width.0;
+    let reach =
+        f64::from(notam.q.radius_nm) * METERS_PER_NAUTICAL_MILE + corridor.params.half_width.0;
     corridor.samples.iter().position(|sample| {
         let distance = great_circle_distance(sample.station.position, notam.q.centre);
         if distance.0 > reach {

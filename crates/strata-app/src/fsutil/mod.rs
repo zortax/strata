@@ -106,10 +106,7 @@ pub fn write_atomic_ordered(
         // Check-and-rename is one atomic step under the lock — otherwise
         // an older write could still rename after a newer one checked.
         let mut committed = committed_lock();
-        if committed
-            .get(path)
-            .is_some_and(|&latest| latest > ticket.0)
-        {
+        if committed.get(path).is_some_and(|&latest| latest > ticket.0) {
             drop(committed);
             let _ = fs::remove_file(&tmp);
             return Ok(WriteOutcome::SupersededByNewer);
@@ -196,7 +193,10 @@ mod tests {
             WriteOutcome::SupersededByNewer
         );
         assert_eq!(fs::read_to_string(&path).unwrap(), "new");
-        assert!(temp_files_in(dir.path()).is_empty(), "superseded temp removed");
+        assert!(
+            temp_files_in(dir.path()).is_empty(),
+            "superseded temp removed"
+        );
     }
 
     #[test]

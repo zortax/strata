@@ -46,9 +46,7 @@ pub(crate) fn fuel_conflicts(fuel: &FuelLadder) -> Vec<Conflict> {
             location: ConflictLocation::Flight,
             message: format!(
                 "loaded fuel {:.1} L is {:.1} L under the minimum required {:.1} L",
-                fuel.loaded.0,
-                -fuel.margin.0,
-                fuel.minimum_required.0
+                fuel.loaded.0, -fuel.margin.0, fuel.minimum_required.0
             ),
         }]
     } else {

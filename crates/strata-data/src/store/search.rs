@@ -61,9 +61,10 @@ fn collect<T: FeatureRecord>(
     );
     let mut stmt = conn.prepare(&sql)?;
     let rows = stmt
-        .query_map(params![needle, i64::try_from(limit).unwrap_or(i64::MAX)], |row| {
-            Ok((row.get::<_, Vec<u8>>(0)?, row.get::<_, u8>(1)?))
-        })?
+        .query_map(
+            params![needle, i64::try_from(limit).unwrap_or(i64::MAX)],
+            |row| Ok((row.get::<_, Vec<u8>>(0)?, row.get::<_, u8>(1)?)),
+        )?
         .collect::<Result<Vec<_>, _>>()?;
     for (blob, rank) in rows {
         let item: T = postcard::from_bytes(&blob)?;

@@ -131,8 +131,11 @@ impl Mbtiles {
         let mut rows = stmt.query([])?;
         while let Some(row) = rows.next()? {
             let (z, column, tms): (i64, i64, i64) = (row.get(0)?, row.get(1)?, row.get(2)?);
-            let tile = tile_from_tms(z, column, tms)
-                .ok_or(MbtilesError::InvalidStoredTile { z, column, row: tms })?;
+            let tile = tile_from_tms(z, column, tms).ok_or(MbtilesError::InvalidStoredTile {
+                z,
+                column,
+                row: tms,
+            })?;
             tiles.insert(tile);
         }
         Ok(tiles)
@@ -162,7 +165,11 @@ fn tile_from_tms(z: i64, column: i64, row: i64) -> Option<TileXyz> {
     if u64::from(x) >= n || tms >= n {
         return None;
     }
-    Some(TileXyz { z, x, y: (n - 1 - tms) as u32 })
+    Some(TileXyz {
+        z,
+        x,
+        y: (n - 1 - tms) as u32,
+    })
 }
 
 #[cfg(test)]

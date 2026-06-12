@@ -31,7 +31,12 @@ pub(super) fn resample_to_latlon(
     ny: usize,
 ) -> Result<RegularLatLonGrid, DwdRadarError> {
     if values.len() != nx * ny {
-        return Err(GriddedError::ValueCountMismatch { got: values.len(), ni: nx, nj: ny }.into());
+        return Err(GriddedError::ValueCountMismatch {
+            got: values.len(),
+            ni: nx,
+            nj: ny,
+        }
+        .into());
     }
     let bounds = pixel_center_bounds(nx, ny)?;
     let origin = LatLon::new(
@@ -170,12 +175,12 @@ mod tests {
         let grid = resample_to_latlon(&column_ramp(), NX, NY).unwrap();
         let extent = grid.extent();
         for (i, j) in [(0, 0), (NX - 1, 0), (0, NY - 1), (NX - 1, NY - 1)] {
-            let p = projection::inverse(
-                i as f64 * 1000.0,
-                (j as f64 - (NY - 1) as f64) * 1000.0,
-            )
-            .unwrap();
-            assert!(extent.contains(p), "corner pixel center {p} outside {extent:?}");
+            let p = projection::inverse(i as f64 * 1000.0, (j as f64 - (NY - 1) as f64) * 1000.0)
+                .unwrap();
+            assert!(
+                extent.contains(p),
+                "corner pixel center {p} outside {extent:?}"
+            );
         }
         // Snapped origin sits on the spacing lattice.
         assert!((grid.origin().lat() / TARGET_LAT_SPACING_DEG).fract().abs() < 1e-9);
@@ -204,7 +209,10 @@ mod tests {
             }
         }
         // The vast majority of nodes must lie inside the source.
-        assert!(checked > grid.values().len() / 2, "only {checked} nodes had data");
+        assert!(
+            checked > grid.values().len() / 2,
+            "only {checked} nodes had data"
+        );
     }
 
     #[test]
@@ -232,14 +240,23 @@ mod tests {
         let grid = resample_to_latlon(&half, NX, NY).unwrap();
         let real = grid.values().iter().filter(|v| !v.is_nan()).count();
         assert!(real > 0);
-        assert!(grid.values().iter().filter(|v| !v.is_nan()).all(|&v| v == 1.5));
+        assert!(
+            grid.values()
+                .iter()
+                .filter(|v| !v.is_nan())
+                .all(|&v| v == 1.5)
+        );
     }
 
     #[test]
     fn value_count_mismatch_is_rejected() {
         assert!(matches!(
             resample_to_latlon(&[0.0; 7], 2, 3),
-            Err(DwdRadarError::Gridded(GriddedError::ValueCountMismatch { got: 7, ni: 2, nj: 3 }))
+            Err(DwdRadarError::Gridded(GriddedError::ValueCountMismatch {
+                got: 7,
+                ni: 2,
+                nj: 3
+            }))
         ));
     }
 

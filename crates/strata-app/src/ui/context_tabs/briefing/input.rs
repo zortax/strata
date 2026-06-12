@@ -71,9 +71,7 @@ pub(crate) fn briefing_input(sources: &BriefingSources<'_>) -> BriefingInput {
     BriefingInput {
         flight: flight_summary(sources),
         generated_at: sources.generated_at,
-        navlog: sources
-            .computed
-            .map(|c| navlog_section(sources.doc, c)),
+        navlog: sources.computed.map(|c| navlog_section(sources.doc, c)),
         fuel: sources.computed.map(|c| fuel_section(sources, c)),
         weight_balance: sources
             .computed
@@ -431,12 +429,8 @@ pub(crate) fn winds_source_note(winds: &[strata_plan::wind::LegWind]) -> Option<
 
     if !sampled {
         return Some(match (manual, fallback) {
-            (true, false) => {
-                "Manual wind overrides — temperatures are ISA estimates".to_owned()
-            }
-            (true, true) => {
-                "Manual wind overrides and ISA estimates — no forecast data".to_owned()
-            }
+            (true, false) => "Manual wind overrides — temperatures are ISA estimates".to_owned(),
+            (true, true) => "Manual wind overrides and ISA estimates — no forecast data".to_owned(),
             _ => "ISA estimate — no forecast data".to_owned(),
         });
     }
@@ -519,7 +513,9 @@ mod tests {
     use super::*;
 
     fn utc(d: u32, h: u32, mi: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(2026, 6, d, h, mi, 0).single().expect("valid")
+        Utc.with_ymd_and_hms(2026, 6, d, h, mi, 0)
+            .single()
+            .expect("valid")
     }
 
     fn airport(id: &str, name: &str, lat: f64, lon: f64) -> RoutePoint {
@@ -533,16 +529,20 @@ mod tests {
 
     /// The computed-flight recipe shared with the briefing state tests:
     /// EDFE → EDQN over a synthetic elevation store.
-    fn computed_flight() -> (tempfile::TempDir, FlightDoc, AircraftProfile, ComputedFlight) {
+    fn computed_flight() -> (
+        tempfile::TempDir,
+        FlightDoc,
+        AircraftProfile,
+        ComputedFlight,
+    ) {
         use strata_data::store::{ELEVATION_TILE_SIDE, ElevationTile, ElevationTileId, Store};
 
         let dir = tempfile::tempdir().expect("temp dir");
         let mut store = Store::open(&dir.path().join("store.sqlite")).expect("store opens");
         for lon in [8.0, 8.5, 9.0] {
             let id = ElevationTileId::containing(50.0, lon);
-            let tile =
-                ElevationTile::new(id, vec![250; ELEVATION_TILE_SIDE * ELEVATION_TILE_SIDE])
-                    .expect("tile");
+            let tile = ElevationTile::new(id, vec![250; ELEVATION_TILE_SIDE * ELEVATION_TILE_SIDE])
+                .expect("tile");
             store.put_elevation_tile(&tile).expect("tile stored");
         }
 
@@ -569,7 +569,12 @@ mod tests {
         let crate::state::flight::compute::ComputeOutcome::Computed(computed) = outcome else {
             panic!("test flight computes: {outcome:?}");
         };
-        (dir, doc, aircraft, std::sync::Arc::unwrap_or_clone(computed))
+        (
+            dir,
+            doc,
+            aircraft,
+            std::sync::Arc::unwrap_or_clone(computed),
+        )
     }
 
     fn briefing_relevance(doc: &FlightDoc, computed: &ComputedFlight) -> BriefingRelevance {
@@ -578,8 +583,7 @@ mod tests {
             window: TimeWindow::new(utc(16, 8, 0), utc(17, 9, 0)),
         };
         let mut doc = doc.clone();
-        doc.notam_snapshot =
-            Some(encode_snapshot(&payload, utc(16, 8, 30)).expect("encodes"));
+        doc.notam_snapshot = Some(encode_snapshot(&payload, utc(16, 8, 30)).expect("encodes"));
         crate::state::briefing::derive_briefing(&doc, Some(computed)).expect("derives")
     }
 
@@ -587,10 +591,9 @@ mod tests {
     fn full_flight_populates_every_section() {
         let (_dir, doc, aircraft, computed) = computed_flight();
         let briefing = briefing_relevance(&doc, &computed);
-        let metar = strata_data::decode::decode_metar(
-            "EDDF 160920Z 24008KT 9999 FEW035 18/09 Q1021",
-        )
-        .expect("decodes");
+        let metar =
+            strata_data::decode::decode_metar("EDDF 160920Z 24008KT 9999 FEW035 18/09 Q1021")
+                .expect("decodes");
         let metars: HashMap<IcaoCode, Metar> = [(
             IcaoCode::new("EDFE").expect("valid"),
             Metar {
@@ -620,7 +623,10 @@ mod tests {
         assert_eq!(input.flight.route, ["EDFE", "EDQN"].map(str::to_owned));
         assert_eq!(input.flight.alternate.as_deref(), Some("EDQA Bamberg"));
         assert_eq!(input.flight.aircraft_type.as_deref(), Some("C172"));
-        assert_eq!(input.flight.cruise_altitude.as_deref(), Some("4500 ft AMSL"));
+        assert_eq!(
+            input.flight.cruise_altitude.as_deref(),
+            Some("4500 ft AMSL")
+        );
         assert!(input.flight.total_distance_nm.expect("computed") > 30.0);
         assert_eq!(input.generated_at, utc(16, 9, 30));
 
@@ -651,7 +657,9 @@ mod tests {
         assert_eq!(wb.states[0].label, "Ramp");
         assert!(wb.loading[0].station == "Empty aircraft");
         assert!(
-            wb.loading.iter().any(|row| row.station.starts_with("Fuel (150 L")),
+            wb.loading
+                .iter()
+                .any(|row| row.station.starts_with("Fuel (150 L")),
             "{:?}",
             wb.loading
         );
@@ -667,7 +675,13 @@ mod tests {
         assert_eq!(departure.icao, "EDFE");
         assert_eq!(departure.role, "Departure");
         assert_eq!(departure.flight_category.as_deref(), Some("VFR"));
-        assert!(departure.metar_decoded.as_deref().expect("decoded").contains("240°"));
+        assert!(
+            departure
+                .metar_decoded
+                .as_deref()
+                .expect("decoded")
+                .contains("240°")
+        );
         let alternate = &weather.aerodromes[2];
         assert_eq!(alternate.role, "Alternate");
         assert_eq!(alternate.metar_raw, None);
@@ -783,7 +797,10 @@ mod tests {
         let card = &notam_section(&briefing, NotamSource::Autorouter).notams[0];
         assert_eq!(card.id, "D0001/26");
         assert_eq!(card.location, "EDMM");
-        assert_eq!(card.relevance.as_deref(), Some("Corridor · 1.2 NM off track"));
+        assert_eq!(
+            card.relevance.as_deref(),
+            Some("Corridor · 1.2 NM off track")
+        );
         assert_eq!(card.validity, "16 Jun 07:00Z → 18 Jun 15:00Z");
         assert_eq!(card.limits.as_deref(), Some("GND → FL 100"));
         assert_eq!(card.summary, "ED-R 136 ACT");
@@ -875,13 +892,11 @@ mod tests {
 
         // Every source class present: both qualifiers.
         assert_eq!(
-            winds_source_note(&[
-                leg(Sampled, Real),
-                leg(Manual, Isa),
-                leg(IsaFallback, Isa)
-            ])
-            .as_deref(),
-            Some("ICON-D2 forecast (DWD); manual overrides on some legs; ISA estimates where no data")
+            winds_source_note(&[leg(Sampled, Real), leg(Manual, Isa), leg(IsaFallback, Isa)])
+                .as_deref(),
+            Some(
+                "ICON-D2 forecast (DWD); manual overrides on some legs; ISA estimates where no data"
+            )
         );
     }
 

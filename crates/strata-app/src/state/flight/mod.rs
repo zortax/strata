@@ -711,7 +711,11 @@ impl AppState {
     /// (see [`AppState::flush_pending_aircraft_save_on_quit`]).
     pub fn upsert_aircraft_profile(&mut self, profile: AircraftProfile, cx: &mut Context<Self>) {
         let id = profile.id.clone();
-        match self.aircraft_library.iter_mut().find(|p| p.id == profile.id) {
+        match self
+            .aircraft_library
+            .iter_mut()
+            .find(|p| p.id == profile.id)
+        {
             Some(slot) => *slot = profile,
             None => {
                 self.aircraft_library.push(profile);
@@ -982,11 +986,9 @@ mod tests {
                 ),
             ],
         );
-        let target = first_conflict_target(
-            &computed,
-            &[ConflictKind::Terrain, ConflictKind::Obstacle],
-        )
-        .expect("a terrain conflict exists");
+        let target =
+            first_conflict_target(&computed, &[ConflictKind::Terrain, ConflictKind::Obstacle])
+                .expect("a terrain conflict exists");
         assert_eq!(target.along_track, Meters(12_500.0), "earliest along track");
         assert_eq!(target.position, station);
     }
@@ -1009,8 +1011,8 @@ mod tests {
                 conflict(ConflictKind::Airspace, ConflictLocation::Leg { index: 0 }),
             ],
         );
-        let target = first_conflict_target(&computed, &[ConflictKind::Airspace])
-            .expect("conflicts resolve");
+        let target =
+            first_conflict_target(&computed, &[ConflictKind::Airspace]).expect("conflicts resolve");
         assert_eq!(target.along_track, Meters(5_000.0));
         assert_eq!(target.position, computed.legs[0].midpoint);
     }
@@ -1043,7 +1045,10 @@ mod tests {
                 conflict(ConflictKind::Airspace, ConflictLocation::Leg { index: 7 }),
             ],
         );
-        assert_eq!(first_conflict_target(&computed, &[ConflictKind::Fuel]), None);
+        assert_eq!(
+            first_conflict_target(&computed, &[ConflictKind::Fuel]),
+            None
+        );
         assert_eq!(
             first_conflict_target(&computed, &[ConflictKind::Airspace]),
             None
@@ -1130,7 +1135,10 @@ mod tests {
 
         let save_epoch = flight.edit_epoch;
         assert!(flight.apply_notes_only_edit(0, "racing note".to_owned()));
-        assert_ne!(flight.edit_epoch, save_epoch, "the save completion must not clear dirty");
+        assert_ne!(
+            flight.edit_epoch, save_epoch,
+            "the save completion must not clear dirty"
+        );
     }
 
     // --- the notes-only fast path -------------------------------------------

@@ -210,7 +210,10 @@ mod tests {
 
         // Alternates are hit-testable handles too.
         let alt = proj.px_of([10.4, 49.9]);
-        assert_eq!(hit_test(&route, &proj, alt), Some(RouteHit::Handle(1 << 32)));
+        assert_eq!(
+            hit_test(&route, &proj, alt),
+            Some(RouteHit::Handle(1 << 32))
+        );
     }
 
     #[test]
@@ -230,7 +233,10 @@ mod tests {
 
         // On a handle the handle takes precedence over both adjoining legs.
         let on_handle = proj.px_of([10.2, 50.0]) + DVec2::new(3.0, 0.0);
-        assert_eq!(hit_test(&route, &proj, on_handle), Some(RouteHit::Handle(1)));
+        assert_eq!(
+            hit_test(&route, &proj, on_handle),
+            Some(RouteHit::Handle(1))
+        );
     }
 
     /// The dashed destination→alternate link is not a leg: a press on it

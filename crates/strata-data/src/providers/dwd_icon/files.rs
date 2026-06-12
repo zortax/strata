@@ -80,7 +80,12 @@ pub(super) fn file_name(field: WeatherField, run: DateTime<Utc>, step: u32) -> S
 }
 
 /// Full download URL for one step of one field of one run.
-pub(super) fn step_url(base_url: &str, field: WeatherField, run: DateTime<Utc>, step: u32) -> String {
+pub(super) fn step_url(
+    base_url: &str,
+    field: WeatherField,
+    run: DateTime<Utc>,
+    step: u32,
+) -> String {
     format!(
         "{base_url}/{:02}/{}/{}",
         run.hour(),
@@ -120,7 +125,11 @@ pub(super) fn step_for(
     run: DateTime<Utc>,
     valid_time: DateTime<Utc>,
 ) -> Result<u32, DwdIconError> {
-    let err = || DwdIconError::InvalidValidTime { field, valid_time, run };
+    let err = || DwdIconError::InvalidValidTime {
+        field,
+        valid_time,
+        run,
+    };
     let delta = valid_time - run;
     if delta < Duration::zero() || delta.num_seconds() % 3600 != 0 {
         return Err(err());
@@ -193,7 +202,11 @@ mod tests {
             "icon-d2_germany_regular-lat-lon_pressure-level_2026061100_007_500_v.grib2.bz2"
         );
         assert_eq!(
-            file_name(WeatherField::Temperature(PressureLevel::P950), t(11, 12, 0), 0),
+            file_name(
+                WeatherField::Temperature(PressureLevel::P950),
+                t(11, 12, 0),
+                0
+            ),
             "icon-d2_germany_regular-lat-lon_pressure-level_2026061112_000_950_t.grib2.bz2"
         );
     }
@@ -201,7 +214,12 @@ mod tests {
     #[test]
     fn step_url_includes_run_hour_and_field_dir() {
         assert_eq!(
-            step_url("https://example.test/grib", WeatherField::Cape, t(10, 9, 0), 7),
+            step_url(
+                "https://example.test/grib",
+                WeatherField::Cape,
+                t(10, 9, 0),
+                7
+            ),
             "https://example.test/grib/09/cape_ml/icon-d2_germany_regular-lat-lon_single-level_2026061009_007_2d_cape_ml.grib2.bz2"
         );
         // Pressure-level fields live in the bare u/v/t directories.
@@ -240,9 +258,18 @@ mod tests {
     #[test]
     fn step_for_accepts_whole_hours_within_the_run() {
         let run = t(10, 12, 0);
-        assert_eq!(step_for(WeatherField::CloudCover, run, t(10, 12, 0)).unwrap(), 0);
-        assert_eq!(step_for(WeatherField::CloudCover, run, t(10, 15, 0)).unwrap(), 3);
-        assert_eq!(step_for(WeatherField::CloudCover, run, t(12, 12, 0)).unwrap(), 48);
+        assert_eq!(
+            step_for(WeatherField::CloudCover, run, t(10, 12, 0)).unwrap(),
+            0
+        );
+        assert_eq!(
+            step_for(WeatherField::CloudCover, run, t(10, 15, 0)).unwrap(),
+            3
+        );
+        assert_eq!(
+            step_for(WeatherField::CloudCover, run, t(12, 12, 0)).unwrap(),
+            48
+        );
     }
 
     #[test]
@@ -257,7 +284,10 @@ mod tests {
     fn precip_rate_has_no_step_zero() {
         let run = t(10, 12, 0);
         assert!(step_for(WeatherField::PrecipRate, run, run).is_err());
-        assert_eq!(step_for(WeatherField::PrecipRate, run, t(10, 13, 0)).unwrap(), 1);
+        assert_eq!(
+            step_for(WeatherField::PrecipRate, run, t(10, 13, 0)).unwrap(),
+            1
+        );
         assert_eq!(first_step(WeatherField::PrecipRate), 1);
         assert_eq!(first_step(WeatherField::CloudCover), 0);
     }

@@ -75,7 +75,11 @@ fn print_store_status(config: &IngestConfig, now: DateTime<Utc>) -> Result<()> {
         }
     }
     if !stray.is_empty() {
-        let codes = stray.iter().map(|c| c.code()).collect::<Vec<_>>().join(", ");
+        let codes = stray
+            .iter()
+            .map(|c| c.code())
+            .collect::<Vec<_>>()
+            .join(", ");
         println!();
         println!("also in store (not selected): {codes}");
     }

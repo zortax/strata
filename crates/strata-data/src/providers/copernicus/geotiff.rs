@@ -39,7 +39,9 @@ pub(crate) fn decode_dem<R: Read + Seek>(
 
     // Default limits allow a 256 MiB decode buffer; the largest GLO-30
     // raster (3600×3600 f32) needs ~52 MiB.
-    let mut decoder = Decoder::new(reader).map_err(tiff)?.with_limits(Limits::default());
+    let mut decoder = Decoder::new(reader)
+        .map_err(tiff)?
+        .with_limits(Limits::default());
     let (width, height) = decoder.dimensions().map_err(tiff)?;
     check_georeferencing(&mut decoder, id);
 
@@ -73,7 +75,12 @@ pub(crate) fn decode_dem<R: Read + Seek>(
         }
     }
 
-    Ok(DemTile { id, width, height, elevations_m })
+    Ok(DemTile {
+        id,
+        width,
+        height,
+        elevations_m,
+    })
 }
 
 /// Warn-only sanity check that the tiepoint matches the point-registered
@@ -135,7 +142,10 @@ mod tests {
     use super::*;
 
     fn tile_id() -> DemTileId {
-        DemTileId { lat_sw: 50, lon_sw: 10 }
+        DemTileId {
+            lat_sw: 50,
+            lon_sw: 10,
+        }
     }
 
     fn encode_gray_f32(width: u32, height: u32, data: &[f32]) -> Vec<u8> {

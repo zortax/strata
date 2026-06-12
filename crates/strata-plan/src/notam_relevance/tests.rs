@@ -100,8 +100,10 @@ fn corridor(points: &[RoutePoint], spacing_m: f64, half_width_nm: f64) -> Corrid
 /// One synthetic NOTAM in transmission format. `c` may be `"PERM"`, a
 /// compact datetime, or carry an `EST` suffix.
 fn notam(id: &str, q: &str, a: &str, b: &str, c: &str, e: &str) -> Notam {
-    Notam::parse(&format!("{id} NOTAMN\nQ) {q}\nA) {a} B) {b} C) {c}\nE) {e}"))
-        .expect("synthetic test NOTAM parses")
+    Notam::parse(&format!(
+        "{id} NOTAMN\nQ) {q}\nA) {a} B) {b} C) {c}\nE) {e}"
+    ))
+    .expect("synthetic test NOTAM parses")
 }
 
 fn band(floor_ft: f64, ceiling_ft: f64) -> AltitudeBand {
@@ -202,8 +204,7 @@ fn fixture_corpus_briefs_an_eddf_eddm_flight() {
     for entry in &relevant {
         let expected_active = entry.notam.id.to_string() != "B0788/26";
         assert_eq!(
-            entry.active_during_flight,
-            expected_active,
+            entry.active_during_flight, expected_active,
             "{} active flag",
             entry.notam.id
         );
@@ -335,9 +336,23 @@ fn estimated_ends_count_as_the_working_end_and_perm_never_expires() {
     let q = "EDGG/QWPLW/IV/M/W/000/050/5000N00815E003";
     let notams = vec![
         // Estimate passed before the briefing window: dropped.
-        notam("W0020/26", q, "EDGG", "2606010600", "2606140000EST", "EST PASSED"),
+        notam(
+            "W0020/26",
+            q,
+            "EDGG",
+            "2606010600",
+            "2606140000EST",
+            "EST PASSED",
+        ),
         // Estimate inside the window: kept.
-        notam("W0021/26", q, "EDGG", "2606140600", "2606151200EST", "EST CURRENT"),
+        notam(
+            "W0021/26",
+            q,
+            "EDGG",
+            "2606140600",
+            "2606151200EST",
+            "EST CURRENT",
+        ),
         // Permanent: kept forever.
         notam("W0022/26", q, "EDGG", "2606010600", "PERM", "PERMANENT"),
     ];
@@ -415,12 +430,26 @@ fn cancelled_and_replaced_notams_collapse() {
     let route = route(&points);
     let corridor = corridor(&points, 1_000.0, 5.0);
     let q = "EDGG/QMXLC/IV/M/A/000/999/5000N00800E005";
-    let cancelled = notam("A0100/26", q, "AAAA", "2606100600", "2606302000", "OLD WORK");
+    let cancelled = notam(
+        "A0100/26",
+        q,
+        "AAAA",
+        "2606100600",
+        "2606302000",
+        "OLD WORK",
+    );
     let cancellation = Notam::parse(&format!(
         "A0101/26 NOTAMC A0100/26\nQ) {q}\nA) AAAA B) 2606140600\nE) WORK COMPLETED"
     ))
     .expect("cancellation parses");
-    let replaced = notam("A0102/26", q, "AAAA", "2606100600", "2606302000", "OLD TEXT");
+    let replaced = notam(
+        "A0102/26",
+        q,
+        "AAAA",
+        "2606100600",
+        "2606302000",
+        "OLD TEXT",
+    );
     let replacement = Notam::parse(&format!(
         "A0103/26 NOTAMR A0102/26\nQ) {q}\nA) AAAA B) 2606140600 C) 2606302000\nE) NEW TEXT"
     ))
@@ -467,18 +496,60 @@ fn briefing_order_is_aerodromes_then_corridor_then_fir() {
     let c = "2606152000";
     let notams = vec![
         // Input deliberately shuffled.
-        notam("E0001/26", "EDGG/QGWAU/IV/NBO/E/000/999/5000N00815E999", "EDGG", b, c, "FIR WIDE"),
+        notam(
+            "E0001/26",
+            "EDGG/QGWAU/IV/NBO/E/000/999/5000N00815E999",
+            "EDGG",
+            b,
+            c,
+            "FIR WIDE",
+        ),
         // Corridor at ~28.6 km along (8°24'E), on the centerline.
-        notam("W0051/26", "EDGG/QWPLW/IV/M/W/000/050/5000N00824E002", "EDGG", b, c, "LATE PJE"),
+        notam(
+            "W0051/26",
+            "EDGG/QWPLW/IV/M/W/000/050/5000N00824E002",
+            "EDGG",
+            b,
+            c,
+            "LATE PJE",
+        ),
         // Alternate.
-        notam("C0001/26", "EDGG/QFAXX/IV/BO/A/000/999/5012N00815E005", "CCCC", b, c, "ALTN BIRDS"),
+        notam(
+            "C0001/26",
+            "EDGG/QFAXX/IV/BO/A/000/999/5012N00815E005",
+            "CCCC",
+            b,
+            c,
+            "ALTN BIRDS",
+        ),
         // Destination — its circle covers the track, but the aerodrome
         // class wins over corridor geometry.
-        notam("B0001/26", "EDGG/QMRLC/IV/NBO/A/000/999/5000N00830E005", "BBBB", b, c, "DEST RWY"),
+        notam(
+            "B0001/26",
+            "EDGG/QMRLC/IV/NBO/A/000/999/5000N00830E005",
+            "BBBB",
+            b,
+            c,
+            "DEST RWY",
+        ),
         // Corridor at ~7.1 km along (8°06'E).
-        notam("W0050/26", "EDGG/QWPLW/IV/M/W/000/050/5000N00806E002", "EDGG", b, c, "EARLY PJE"),
+        notam(
+            "W0050/26",
+            "EDGG/QWPLW/IV/M/W/000/050/5000N00806E002",
+            "EDGG",
+            b,
+            c,
+            "EARLY PJE",
+        ),
         // Departure.
-        notam("A0001/26", "EDGG/QMXLC/IV/M/A/000/999/5000N00800E005", "AAAA", b, c, "DEP TWY"),
+        notam(
+            "A0001/26",
+            "EDGG/QMXLC/IV/M/A/000/999/5000N00800E005",
+            "AAAA",
+            b,
+            c,
+            "DEP TWY",
+        ),
     ];
     let mut input = synthetic_input(&notams, &route_wps, &corridor);
     input.alternates = &alternates;
@@ -499,10 +570,7 @@ fn briefing_order_is_aerodromes_then_corridor_then_fir() {
         relevant[2].relevance,
         NotamRelevance::Aerodrome(IcaoCode::new("CCCC").expect("valid"))
     );
-    assert!(matches!(
-        relevant[5].relevance,
-        NotamRelevance::Fir
-    ));
+    assert!(matches!(relevant[5].relevance, NotamRelevance::Fir));
 }
 
 // --- helpers --------------------------------------------------------------------
@@ -548,9 +616,7 @@ fn altitude_band_spans_the_phase_plan() {
 fn restriction_activation_requires_group_r_and_an_activation_condition() {
     let b = "2606150600";
     let c = "2606152000";
-    let case = |q: &str| {
-        is_restriction_activation(&notam("D0001/26", q, "EDGG", b, c, "X"))
-    };
+    let case = |q: &str| is_restriction_activation(&notam("D0001/26", q, "EDGG", b, c, "X"));
     // ED-R activated / danger area will take place: yes.
     assert!(case("EDMM/QRRCA/IV/BO/W/000/100/4942N01156E010"));
     assert!(case("EDMM/QRDLW/IV/BO/W/000/100/4942N01156E010"));

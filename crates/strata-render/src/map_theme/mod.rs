@@ -506,7 +506,9 @@ mod tests {
 
     /// WCAG relative luminance of an opaque display-space basemap color.
     fn display_rel_luminance(c: [f32; 4]) -> f32 {
-        0.2126 * srgb_to_linear(c[0]) + 0.7152 * srgb_to_linear(c[1]) + 0.0722 * srgb_to_linear(c[2])
+        0.2126 * srgb_to_linear(c[0])
+            + 0.7152 * srgb_to_linear(c[1])
+            + 0.0722 * srgb_to_linear(c[2])
     }
 
     /// WCAG relative luminance of a premultiplied *linear* color (labels):
@@ -582,7 +584,10 @@ mod tests {
         // Presentation order: the three originals first, then alphabetical.
         assert_eq!(&MapTheme::BUILT_IN_IDS[..3], &ORIGINAL_IDS);
         let catalog = &MapTheme::BUILT_IN_IDS[3..];
-        assert!(catalog.windows(2).all(|w| w[0] < w[1]), "catalog must stay sorted");
+        assert!(
+            catalog.windows(2).all(|w| w[0] < w[1]),
+            "catalog must stay sorted"
+        );
         assert!(MapTheme::by_id("does-not-exist").is_none());
         // The default map theme is Oldworld (the soft pastel dark palette).
         assert_eq!(MapTheme::default(), MapTheme::oldworld());
@@ -705,7 +710,11 @@ mod tests {
         assert!(luma(light.basemap.place_label) < luma(light.basemap.land) * 0.6);
         // Dark themes: urban lighter than land.
         for theme in [MapTheme::oldworld(), MapTheme::high_contrast()] {
-            assert!(luma(theme.basemap.urban) > luma(theme.basemap.land), "{}", theme.id);
+            assert!(
+                luma(theme.basemap.urban) > luma(theme.basemap.land),
+                "{}",
+                theme.id
+            );
         }
         // High Contrast keeps motorways clearly traceable …
         let hc = MapTheme::high_contrast();
@@ -715,7 +724,10 @@ mod tests {
         // the network never competes with the airspace overlays.
         let ow = MapTheme::oldworld();
         let ratio = luma(ow.basemap.road_highway) / luma(ow.basemap.land);
-        assert!(ratio > 1.2, "oldworld motorways must stay (faintly) visible");
+        assert!(
+            ratio > 1.2,
+            "oldworld motorways must stay (faintly) visible"
+        );
         assert!(ratio < 2.0, "oldworld roads must stay faint texture");
     }
 
@@ -735,7 +747,10 @@ mod tests {
             let ratio = luma(b.road_highway) / land.max(1e-4);
             match theme.mode {
                 MapThemeMode::Dark => {
-                    assert!(land < 0.25, "{id}: dark land must stay near-black, luma {land:.3}");
+                    assert!(
+                        land < 0.25,
+                        "{id}: dark land must stay near-black, luma {land:.3}"
+                    );
                     assert!(
                         ratio > 1.05,
                         "{id}: motorways must stay (faintly) visible, ratio {ratio:.2}"
@@ -746,7 +761,10 @@ mod tests {
                     );
                 }
                 MapThemeMode::Light => {
-                    assert!(land > 0.55, "{id}: light land must read as paper, luma {land:.3}");
+                    assert!(
+                        land > 0.55,
+                        "{id}: light land must read as paper, luma {land:.3}"
+                    );
                     assert!(
                         ratio > 0.5 && ratio < 0.95,
                         "{id}: light roads must sit slightly darker than ground, ratio {ratio:.2}"
@@ -776,7 +794,10 @@ mod tests {
                 linear_rel_luminance(theme.labels.text),
                 display_rel_luminance(theme.basemap.land),
             );
-            assert!(ratio >= 4.5, "{id}: label/land contrast {ratio:.2} below 4.5");
+            assert!(
+                ratio >= 4.5,
+                "{id}: label/land contrast {ratio:.2} below 4.5"
+            );
             match theme.mode {
                 MapThemeMode::Dark => assert_eq!(
                     theme.labels.halo[3], 0.0,
@@ -809,7 +830,11 @@ mod tests {
     fn saturation(c: [f32; 4]) -> f32 {
         let max = c[0].max(c[1]).max(c[2]);
         let min = c[0].min(c[1]).min(c[2]);
-        if max <= f32::EPSILON { 0.0 } else { (max - min) / max }
+        if max <= f32::EPSILON {
+            0.0
+        } else {
+            (max - min) / max
+        }
     }
 
     /// Route line vs. ground: WCAG-ish luma-contrast floor.
@@ -837,9 +862,21 @@ mod tests {
                 assert_premultiplied(&format!("{} {label}", theme.id), color);
             }
             assert_eq!(r.line[3], 1.0, "{}: route line is opaque", theme.id);
-            assert_eq!(r.line_conflict[3], 1.0, "{}: conflict tint is opaque", theme.id);
-            assert!(r.handle_fill[3] >= 0.9, "{}: handle fill near-opaque", theme.id);
-            assert!(r.handle_outline[3] >= 0.9, "{}: handle outline near-opaque", theme.id);
+            assert_eq!(
+                r.line_conflict[3], 1.0,
+                "{}: conflict tint is opaque",
+                theme.id
+            );
+            assert!(
+                r.handle_fill[3] >= 0.9,
+                "{}: handle fill near-opaque",
+                theme.id
+            );
+            assert!(
+                r.handle_outline[3] >= 0.9,
+                "{}: handle outline near-opaque",
+                theme.id
+            );
             assert!(
                 r.corridor[3] > 0.0 && r.corridor[3] <= 0.3,
                 "{}: corridor must be a translucent stroke, got alpha {}",
@@ -858,10 +895,7 @@ mod tests {
             let id = theme.id;
             let line = linear_premul_to_display(theme.route.line);
             let line_y = linear_rel_luminance(theme.route.line);
-            for (label, ground) in [
-                ("land", theme.basemap.land),
-                ("water", theme.basemap.water),
-            ] {
+            for (label, ground) in [("land", theme.basemap.land), ("water", theme.basemap.water)] {
                 let ratio = contrast_ratio(line_y, display_rel_luminance(ground));
                 assert!(
                     ratio >= ROUTE_GROUND_CONTRAST_FLOOR,
@@ -931,7 +965,12 @@ mod tests {
     fn flight_category_hues_stay_pairwise_separated() {
         for theme in all_built_in() {
             let w = theme.weather;
-            let labeled = [("vfr", w.vfr), ("mvfr", w.mvfr), ("ifr", w.ifr), ("lifr", w.lifr)];
+            let labeled = [
+                ("vfr", w.vfr),
+                ("mvfr", w.mvfr),
+                ("ifr", w.ifr),
+                ("lifr", w.lifr),
+            ];
             for (i, (name_a, a)) in labeled.iter().enumerate() {
                 for (name_b, b) in &labeled[i + 1..] {
                     let d = hue_distance(hue_degrees(*a), hue_degrees(*b));
@@ -976,11 +1015,20 @@ mod tests {
             let w = theme.weather;
             let id = theme.id;
             // VFR: green dominates.
-            assert!(w.vfr[1] > w.vfr[0] && w.vfr[1] > w.vfr[2], "{id}: VFR not greenish");
+            assert!(
+                w.vfr[1] > w.vfr[0] && w.vfr[1] > w.vfr[2],
+                "{id}: VFR not greenish"
+            );
             // MVFR: blue dominates.
-            assert!(w.mvfr[2] > w.mvfr[0] && w.mvfr[2] > w.mvfr[1], "{id}: MVFR not blueish");
+            assert!(
+                w.mvfr[2] > w.mvfr[0] && w.mvfr[2] > w.mvfr[1],
+                "{id}: MVFR not blueish"
+            );
             // IFR: red dominates.
-            assert!(w.ifr[0] > w.ifr[1] && w.ifr[0] > w.ifr[2], "{id}: IFR not reddish");
+            assert!(
+                w.ifr[0] > w.ifr[1] && w.ifr[0] > w.ifr[2],
+                "{id}: IFR not reddish"
+            );
             // LIFR: red and blue together dominate green (magenta).
             assert!(
                 w.lifr[0] > w.lifr[1] && w.lifr[2] > w.lifr[1],
@@ -1033,8 +1081,7 @@ mod tests {
             // Field-specific breakpoints shared by all themes.
             assert_eq!(w.cloud_cover.stops()[0].value, 10.0, "{}", theme.id);
             assert!(w.cloud_cover.max_alpha() <= 0.55, "{}", theme.id);
-            let precip_values: Vec<f32> =
-                w.precip_rate.stops().iter().map(|s| s.value).collect();
+            let precip_values: Vec<f32> = w.precip_rate.stops().iter().map(|s| s.value).collect();
             assert_eq!(precip_values, [0.1, 1.0, 5.0, 20.0, 50.0], "{}", theme.id);
             assert_eq!(w.thunderstorm.stops()[0].value, 1.0, "{}", theme.id);
         }
@@ -1066,16 +1113,26 @@ mod tests {
             );
 
             // Precipitation: classic radar hue ramp.
-            assert_eq!(w.precip_rate.sample(0.05)[3], 0.0, "{id}: drizzle below 0.1");
+            assert_eq!(
+                w.precip_rate.sample(0.05)[3],
+                0.0,
+                "{id}: drizzle below 0.1"
+            );
             let light = w.precip_rate.sample(1.0);
-            assert!(light[2] > light[0] && light[2] > light[1], "{id}: 1 mm/h blueish");
+            assert!(
+                light[2] > light[0] && light[2] > light[1],
+                "{id}: 1 mm/h blueish"
+            );
             let moderate = w.precip_rate.sample(5.0);
             assert!(
                 moderate[1] > moderate[0] && moderate[2] > moderate[0],
                 "{id}: 5 mm/h cyanish"
             );
             let heavy = w.precip_rate.sample(20.0);
-            assert!(heavy[0] > heavy[2] && heavy[1] > heavy[2], "{id}: 20 mm/h yellowish");
+            assert!(
+                heavy[0] > heavy[2] && heavy[1] > heavy[2],
+                "{id}: 20 mm/h yellowish"
+            );
             let extreme = w.precip_rate.sample(50.0);
             assert!(
                 extreme[0] > extreme[1] && extreme[0] > extreme[2],
@@ -1102,7 +1159,10 @@ mod tests {
 
         // Theme intent: High Contrast stronger, Oldworld/Pastel muted.
         let hc = MapTheme::high_contrast().weather;
-        for muted in [MapTheme::oldworld().weather, MapTheme::pastel_light().weather] {
+        for muted in [
+            MapTheme::oldworld().weather,
+            MapTheme::pastel_light().weather,
+        ] {
             assert!(hc.cloud_cover.max_alpha() > muted.cloud_cover.max_alpha());
             assert!(hc.precip_rate.max_alpha() > muted.precip_rate.max_alpha());
             assert!(hc.thunderstorm.max_alpha() > muted.thunderstorm.max_alpha());
@@ -1137,14 +1197,19 @@ mod tests {
         assert_eq!(theme.basemap.waterway, srgb8(0x3f, 0x56, 0x80));
         assert_eq!(theme.basemap.road_highway, srgb8(0x6b, 0x5a, 0x45));
         assert_eq!(theme.basemap.rail, srgb8_a(0x38, 0x38, 0x3f, 0.9));
-        assert_eq!(theme.basemap.boundary_country, srgb8_a(0x7d, 0x78, 0x86, 0.7));
+        assert_eq!(
+            theme.basemap.boundary_country,
+            srgb8_a(0x7d, 0x78, 0x86, 0.7)
+        );
         assert_eq!(theme.basemap.place_label, srgb8(0x5f, 0x5b, 0x68));
         assert_eq!(theme.clear_color, srgb8(0x21, 0x21, 0x24));
         // Airspace (premultiplied linear; original base hues).
         let ctr = theme.airspace.colors(AirspaceStyleKey::Ctr);
         assert_eq!(ctr.fill, srgb(214, 48, 58, 0.1));
         assert_eq!(ctr.border, srgb(214, 48, 58, 0.9));
-        let c = theme.airspace.colors(AirspaceStyleKey::IcaoClass(IcaoClass::C));
+        let c = theme
+            .airspace
+            .colors(AirspaceStyleKey::IcaoClass(IcaoClass::C));
         assert_eq!(c.fill, srgb(64, 110, 205, 0.08));
         assert_eq!(c.border, srgb(64, 110, 205, 0.9));
         let glider = theme.airspace.colors(AirspaceStyleKey::GliderSector);
@@ -1187,7 +1252,10 @@ mod tests {
         assert_eq!(theme.basemap.waterway, srgb8(0x1e, 0x21, 0x26));
         assert_eq!(theme.basemap.road_highway, srgb8(0x22, 0x22, 0x23));
         assert_eq!(theme.basemap.rail, srgb8_a(0x1c, 0x1c, 0x1f, 0.85));
-        assert_eq!(theme.basemap.boundary_country, srgb8_a(0x5f, 0x5f, 0x64, 0.55));
+        assert_eq!(
+            theme.basemap.boundary_country,
+            srgb8_a(0x5f, 0x5f, 0x64, 0.55)
+        );
         assert_eq!(theme.basemap.place_label, srgb8(0x56, 0x56, 0x5a));
         assert_eq!(theme.clear_color, srgb8(0x14, 0x14, 0x15));
         // Airspace (premultiplied linear; pastel base hues — dusty rose CTR,
@@ -1195,7 +1263,9 @@ mod tests {
         let ctr = theme.airspace.colors(AirspaceStyleKey::Ctr);
         assert_eq!(ctr.fill, srgb(198, 116, 120, 0.09));
         assert_eq!(ctr.border, srgb(198, 116, 120, 0.8));
-        let c = theme.airspace.colors(AirspaceStyleKey::IcaoClass(IcaoClass::C));
+        let c = theme
+            .airspace
+            .colors(AirspaceStyleKey::IcaoClass(IcaoClass::C));
         assert_eq!(c.fill, srgb(122, 144, 178, 0.07));
         assert_eq!(c.border, srgb(122, 144, 178, 0.78));
         let danger = theme.airspace.colors(AirspaceStyleKey::Danger);

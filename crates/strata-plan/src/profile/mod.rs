@@ -38,9 +38,7 @@
 #[cfg(test)]
 mod tests;
 
-use strata_data::domain::{
-    Meters, MetersAgl, MetersAmsl, VerticalLimit, VerticalReference,
-};
+use strata_data::domain::{Meters, MetersAgl, MetersAmsl, VerticalLimit, VerticalReference};
 
 use crate::corridor::{AirspaceCrossing, Corridor, CorridorSample};
 use crate::flight::{PlannedAltitude, RouteWaypoint};

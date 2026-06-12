@@ -27,12 +27,13 @@ pub(super) fn destination_point(origin: LatLon, bearing: DegreesTrue, distance: 
     let sin_lat2 =
         (lat1.sin() * delta.cos() + lat1.cos() * delta.sin() * theta.cos()).clamp(-1.0, 1.0);
     let lat2 = sin_lat2.asin();
-    let lon2 = lon1
-        + (theta.sin() * delta.sin() * lat1.cos()).atan2(delta.cos() - lat1.sin() * sin_lat2);
+    let lon2 =
+        lon1 + (theta.sin() * delta.sin() * lat1.cos()).atan2(delta.cos() - lat1.sin() * sin_lat2);
     // asin keeps lat in [-90, 90]; lon1 + atan2 stays within (-540, 540),
     // so one wrap normalizes into [-180, 180).
     let lon = (lon2.to_degrees() + 540.0).rem_euclid(360.0) - 180.0;
-    LatLon::new(lat2.to_degrees(), lon).expect("spherical destination point yields valid coordinates")
+    LatLon::new(lat2.to_degrees(), lon)
+        .expect("spherical destination point yields valid coordinates")
 }
 
 /// Projection of a point onto the great circle through one leg.

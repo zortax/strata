@@ -251,7 +251,9 @@ pub(super) fn render_fuel_tab(
         }
     }
 
-    content.child(policy_card(panel, &flight.doc.fuel_policy, cx)).into_any_element()
+    content
+        .child(policy_card(panel, &flight.doc.fuel_policy, cx))
+        .into_any_element()
 }
 
 /// The visual ladder: stacked bar + loaded/usable markers + per-rung rows.
@@ -409,8 +411,7 @@ fn readouts_card(
     let power_setting = doc.power_setting.as_deref();
     let endurance = fuel::endurance(aircraft, power_setting, ladder.loaded).ok();
     let at_destination = ladder.loaded.0 - ladder.taxi.0 - ladder.trip.0;
-    let at_alternate =
-        (ladder.alternate.0 > 0.0).then_some(at_destination - ladder.alternate.0);
+    let at_alternate = (ladder.alternate.0 > 0.0).then_some(at_destination - ladder.alternate.0);
 
     let mut el = card(cx).child(section("Endurance", cx));
     if let Some(endurance) = endurance {
@@ -509,9 +510,7 @@ fn policy_card(
                         .label("%")
                         .selected(percent_mode)
                         .on_click(cx.listener(|this, _, _, cx| {
-                            this.commit_doc_edit(cx, |doc| {
-                                switch_contingency_mode(doc, true)
-                            });
+                            this.commit_doc_edit(cx, |doc| switch_contingency_mode(doc, true));
                         })),
                 )
                 .child(
@@ -521,9 +520,7 @@ fn policy_card(
                         .label("L")
                         .selected(!percent_mode)
                         .on_click(cx.listener(|this, _, _, cx| {
-                            this.commit_doc_edit(cx, |doc| {
-                                switch_contingency_mode(doc, false)
-                            });
+                            this.commit_doc_edit(cx, |doc| switch_contingency_mode(doc, false));
                         })),
                 ),
         )
@@ -736,7 +733,11 @@ mod tests {
         // Scale = max(min required 70, loaded 100, usable 120).
         assert_eq!(layout.scale, 120.0);
         let rungs: Vec<FuelRung> = layout.segments.iter().map(|s| s.rung).collect();
-        assert_eq!(rungs, FuelRung::ALL.to_vec(), "all rungs non-zero, in order");
+        assert_eq!(
+            rungs,
+            FuelRung::ALL.to_vec(),
+            "all rungs non-zero, in order"
+        );
         let total: f64 = layout.segments.iter().map(|s| s.fraction).sum();
         assert!((total - 70.0 / 120.0).abs() < 1e-12, "sum = {total}");
         assert!((layout.loaded_fraction - 100.0 / 120.0).abs() < 1e-12);
@@ -799,7 +800,10 @@ mod tests {
     fn contingency_value_keeps_its_mode_and_mode_switches_carry_defaults() {
         let mut doc = FlightDoc::new("t"); // PercentOfTrip(5.0)
         assert!(set_contingency_value(&mut doc, 10.0));
-        assert_eq!(doc.fuel_policy.contingency, Contingency::PercentOfTrip(10.0));
+        assert_eq!(
+            doc.fuel_policy.contingency,
+            Contingency::PercentOfTrip(10.0)
+        );
 
         // Same-mode switch is a no-op.
         assert!(!switch_contingency_mode(&mut doc, true));

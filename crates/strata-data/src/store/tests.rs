@@ -155,7 +155,12 @@ fn airspace_round_trip() {
         AirspaceKind::Ctr,
         square(49.9, 8.4, 50.15, 8.75),
     );
-    assert_eq!(store.insert_airspaces(Country::DE, std::slice::from_ref(&ctr)).unwrap(), 1);
+    assert_eq!(
+        store
+            .insert_airspaces(Country::DE, std::slice::from_ref(&ctr))
+            .unwrap(),
+        1
+    );
     let got = store.airspaces_in_bbox(germany()).unwrap();
     assert_eq!(got, vec![ctr]);
 }
@@ -182,7 +187,9 @@ fn airport_round_trip_survives_reopen() {
 fn navaid_round_trip() {
     let (_dir, mut store) = open_store();
     let navaid = ffm_navaid();
-    store.insert_navaids(Country::DE, std::slice::from_ref(&navaid)).unwrap();
+    store
+        .insert_navaids(Country::DE, std::slice::from_ref(&navaid))
+        .unwrap();
     assert_eq!(store.navaids_in_bbox(germany()).unwrap(), vec![navaid]);
 }
 
@@ -214,7 +221,9 @@ fn obstacle_round_trip() {
 #[test]
 fn bbox_query_filters_by_position() {
     let (_dir, mut store) = open_store();
-    store.insert_airports(Country::DE, &[eddf(), eddb()]).unwrap();
+    store
+        .insert_airports(Country::DE, &[eddf(), eddb()])
+        .unwrap();
 
     let around_frankfurt = BoundingBox::new(8.0, 49.5, 9.0, 50.5).unwrap();
     let got = store.airports_in_bbox(around_frankfurt).unwrap();
@@ -250,20 +259,23 @@ fn bbox_query_returns_partially_overlapping_airspace() {
 fn airspace_count_matches_bbox_query() {
     let (_dir, mut store) = open_store();
     store
-        .insert_airspaces(Country::DE, &[
-            airspace(
-                "FRANKFURT CTR",
-                AirspaceClass::D,
-                AirspaceKind::Ctr,
-                square(49.9, 8.4, 50.15, 8.75),
-            ),
-            airspace(
-                "BERLIN CTR",
-                AirspaceClass::D,
-                AirspaceKind::Ctr,
-                square(52.3, 13.3, 52.5, 13.7),
-            ),
-        ])
+        .insert_airspaces(
+            Country::DE,
+            &[
+                airspace(
+                    "FRANKFURT CTR",
+                    AirspaceClass::D,
+                    AirspaceKind::Ctr,
+                    square(49.9, 8.4, 50.15, 8.75),
+                ),
+                airspace(
+                    "BERLIN CTR",
+                    AirspaceClass::D,
+                    AirspaceKind::Ctr,
+                    square(52.3, 13.3, 52.5, 13.7),
+                ),
+            ],
+        )
         .unwrap();
 
     assert_eq!(store.airspace_count_in_bbox(germany()).unwrap(), 2);
@@ -278,7 +290,9 @@ fn airspace_count_matches_bbox_query() {
 #[test]
 fn insert_replaces_dataset_atomically() {
     let (_dir, mut store) = open_store();
-    store.insert_airports(Country::DE, &[eddf(), eddb()]).unwrap();
+    store
+        .insert_airports(Country::DE, &[eddf(), eddb()])
+        .unwrap();
     assert_eq!(store.airports_in_bbox(germany()).unwrap().len(), 2);
 
     let edhl = Airport {
@@ -291,7 +305,9 @@ fn insert_replaces_dataset_atomically() {
         frequencies: vec![],
     };
     assert_eq!(
-        store.insert_airports(Country::DE, std::slice::from_ref(&edhl)).unwrap(),
+        store
+            .insert_airports(Country::DE, std::slice::from_ref(&edhl))
+            .unwrap(),
         1
     );
 
@@ -310,36 +326,40 @@ fn feature_at_returns_stacked_airspaces_and_nearby_points_by_distance() {
     let click = ll(50.0, 8.6);
 
     store
-        .insert_airspaces(Country::DE, &[
-            airspace(
-                "FRANKFURT CTR",
-                AirspaceClass::D,
-                AirspaceKind::Ctr,
-                square(49.9, 8.4, 50.15, 8.75),
-            ),
-            // Stacked C over E, both containing the click point.
-            airspace(
-                "FRANKFURT C",
-                AirspaceClass::C,
-                AirspaceKind::Other(7),
-                square(49.5, 8.0, 50.5, 9.2),
-            ),
-            airspace(
-                "LANGEN E",
-                AirspaceClass::E,
-                AirspaceKind::Other(7),
-                square(49.0, 7.5, 51.0, 10.0),
-            ),
-            // Its bbox (49..53, 8..12) contains the click point, the
-            // triangle itself (lat+lon >= 61 half-plane) does not —
-            // verifies the exact polygon test after the R*Tree prefilter.
-            airspace(
-                "TRIANGLE D",
-                AirspaceClass::D,
-                AirspaceKind::Danger,
-                Polygon::new(vec![ll(53.0, 12.0), ll(53.0, 8.0), ll(49.0, 12.0)], vec![]).unwrap(),
-            ),
-        ])
+        .insert_airspaces(
+            Country::DE,
+            &[
+                airspace(
+                    "FRANKFURT CTR",
+                    AirspaceClass::D,
+                    AirspaceKind::Ctr,
+                    square(49.9, 8.4, 50.15, 8.75),
+                ),
+                // Stacked C over E, both containing the click point.
+                airspace(
+                    "FRANKFURT C",
+                    AirspaceClass::C,
+                    AirspaceKind::Other(7),
+                    square(49.5, 8.0, 50.5, 9.2),
+                ),
+                airspace(
+                    "LANGEN E",
+                    AirspaceClass::E,
+                    AirspaceKind::Other(7),
+                    square(49.0, 7.5, 51.0, 10.0),
+                ),
+                // Its bbox (49..53, 8..12) contains the click point, the
+                // triangle itself (lat+lon >= 61 half-plane) does not —
+                // verifies the exact polygon test after the R*Tree prefilter.
+                airspace(
+                    "TRIANGLE D",
+                    AirspaceClass::D,
+                    AirspaceKind::Danger,
+                    Polygon::new(vec![ll(53.0, 12.0), ll(53.0, 8.0), ll(49.0, 12.0)], vec![])
+                        .unwrap(),
+                ),
+            ],
+        )
         .unwrap();
     store.insert_airports(Country::DE, &[eddf()]).unwrap(); // distance ~0.054°
     store
@@ -348,7 +368,9 @@ fn feature_at_returns_stacked_airspaces_and_nearby_points_by_distance() {
     store
         .insert_reporting_points(Country::DE, &[reporting_point_november()]) // ~0.141°, outside tolerance
         .unwrap();
-    store.insert_obstacles(Country::DE, &[wind_turbine()]).unwrap(); // ~0.014°
+    store
+        .insert_obstacles(Country::DE, &[wind_turbine()])
+        .unwrap(); // ~0.014°
 
     let hits = store.feature_at(click, 0.08).unwrap();
 
@@ -366,7 +388,10 @@ fn feature_at_returns_stacked_airspaces_and_nearby_points_by_distance() {
         .iter()
         .map(Feature::name)
         .collect();
-    assert_eq!(point_names, ["Windpark Hofgut", "Frankfurt/Main", "Frankfurt"]);
+    assert_eq!(
+        point_names,
+        ["Windpark Hofgut", "Frankfurt/Main", "Frankfurt"]
+    );
 }
 
 #[test]
@@ -381,37 +406,45 @@ fn feature_at_misses_outside_everything() {
 #[test]
 fn search_ranks_exact_ident_then_prefix_then_name() {
     let (_dir, mut store) = open_store();
-    store.insert_airports(Country::DE, &[eddb(), eddf()]).unwrap();
     store
-        .insert_navaids(Country::DE, &[
-            // Synthetic longer ident so "EDDF" is a proper prefix.
-            Navaid {
-                ident: "EDDFN".to_owned(),
-                name: "Frankfurt Practice".to_owned(),
-                kind: NavaidKind::Ndb,
-                frequency: Some(RadioFrequency::from_khz(341.0)),
-                channel: None,
-                position: ll(50.2, 8.4),
-                elevation: MetersAmsl(120.0),
-            },
-            Navaid {
-                ident: "MUN".to_owned(),
-                name: "München".to_owned(),
-                kind: NavaidKind::VorDme,
-                frequency: Some(RadioFrequency::from_mhz(112.3)),
-                channel: Some("70X".to_owned()),
-                position: ll(48.18, 11.82),
-                elevation: MetersAmsl(450.0),
-            },
-        ])
+        .insert_airports(Country::DE, &[eddb(), eddf()])
         .unwrap();
     store
-        .insert_airspaces(Country::DE, &[airspace(
-            "EDDF CTR",
-            AirspaceClass::D,
-            AirspaceKind::Ctr,
-            square(49.9, 8.4, 50.15, 8.75),
-        )])
+        .insert_navaids(
+            Country::DE,
+            &[
+                // Synthetic longer ident so "EDDF" is a proper prefix.
+                Navaid {
+                    ident: "EDDFN".to_owned(),
+                    name: "Frankfurt Practice".to_owned(),
+                    kind: NavaidKind::Ndb,
+                    frequency: Some(RadioFrequency::from_khz(341.0)),
+                    channel: None,
+                    position: ll(50.2, 8.4),
+                    elevation: MetersAmsl(120.0),
+                },
+                Navaid {
+                    ident: "MUN".to_owned(),
+                    name: "München".to_owned(),
+                    kind: NavaidKind::VorDme,
+                    frequency: Some(RadioFrequency::from_mhz(112.3)),
+                    channel: Some("70X".to_owned()),
+                    position: ll(48.18, 11.82),
+                    elevation: MetersAmsl(450.0),
+                },
+            ],
+        )
+        .unwrap();
+    store
+        .insert_airspaces(
+            Country::DE,
+            &[airspace(
+                "EDDF CTR",
+                AirspaceClass::D,
+                AirspaceKind::Ctr,
+                square(49.9, 8.4, 50.15, 8.75),
+            )],
+        )
         .unwrap();
 
     let hits = store.search("eddf", 10).unwrap();
@@ -419,7 +452,7 @@ fn search_ranks_exact_ident_then_prefix_then_name() {
     assert_eq!(
         labels,
         [
-            "EDDF — Frankfurt/Main",     // exact ident
+            "EDDF — Frankfurt/Main",      // exact ident
             "EDDFN — Frankfurt Practice", // ident prefix
             "EDDF CTR",                   // name substring
         ]
@@ -453,7 +486,9 @@ fn search_ranks_exact_ident_then_prefix_then_name() {
 #[test]
 fn search_respects_limit_and_empty_query() {
     let (_dir, mut store) = open_store();
-    store.insert_airports(Country::DE, &[eddf(), eddb()]).unwrap();
+    store
+        .insert_airports(Country::DE, &[eddf(), eddb()])
+        .unwrap();
     assert_eq!(store.search("EDD", 1).unwrap().len(), 1);
     assert!(store.search("   ", 10).unwrap().is_empty());
     assert!(store.search("EDD", 0).unwrap().is_empty());
@@ -517,13 +552,20 @@ fn elevation_tiles_in_bbox_returns_only_intersecting_tiles() {
     let (_dir, mut store) = open_store();
     let near = ElevationTileId::containing(50.5, 10.5);
     let far = ElevationTileId::containing(48.0, 13.0);
-    store.put_elevation_tile(&uniform_elevation(near, 1)).unwrap();
-    store.put_elevation_tile(&uniform_elevation(far, 2)).unwrap();
+    store
+        .put_elevation_tile(&uniform_elevation(near, 1))
+        .unwrap();
+    store
+        .put_elevation_tile(&uniform_elevation(far, 2))
+        .unwrap();
 
     let hits = store
         .elevation_tiles_in_bbox(BoundingBox::new(10.4, 50.4, 10.6, 50.6).unwrap())
         .unwrap();
-    assert_eq!(hits.iter().map(ElevationTile::id).collect::<Vec<_>>(), vec![near]);
+    assert_eq!(
+        hits.iter().map(ElevationTile::id).collect::<Vec<_>>(),
+        vec![near]
+    );
 
     let all = store.elevation_tiles_in_bbox(germany()).unwrap();
     assert_eq!(all.len(), 2);
@@ -533,7 +575,9 @@ fn elevation_tiles_in_bbox_returns_only_intersecting_tiles() {
 fn max_elevation_at_reads_data_and_reports_none_for_sentinel_or_missing() {
     let (_dir, mut store) = open_store();
     let id = ElevationTileId::containing(50.5, 10.5);
-    store.put_elevation_tile(&uniform_elevation(id, 873)).unwrap();
+    store
+        .put_elevation_tile(&uniform_elevation(id, 873))
+        .unwrap();
 
     assert_eq!(
         store.max_elevation_at(50.5, 10.5).unwrap(),
@@ -554,7 +598,9 @@ fn max_elevation_at_reads_data_and_reports_none_for_sentinel_or_missing() {
 fn elevation_tile_set_loads_from_store() {
     let (_dir, mut store) = open_store();
     let id = ElevationTileId::containing(50.5, 10.5);
-    store.put_elevation_tile(&uniform_elevation(id, 421)).unwrap();
+    store
+        .put_elevation_tile(&uniform_elevation(id, 421))
+        .unwrap();
 
     let set = ElevationTileSet::from_store(&store, germany()).unwrap();
     assert_eq!(set.tile_count(), 1);
@@ -571,14 +617,18 @@ fn v1_store_migrates_to_v2_on_open() {
     {
         let conn = rusqlite::Connection::open(&path).unwrap();
         schema::apply_v1(&conn).unwrap();
-        let version: i64 = conn.query_row("PRAGMA user_version", [], |r| r.get(0)).unwrap();
+        let version: i64 = conn
+            .query_row("PRAGMA user_version", [], |r| r.get(0))
+            .unwrap();
         assert_eq!(version, 1);
     }
 
     let mut store = Store::open(&path).unwrap();
     let id = ElevationTileId::containing(50.5, 10.5);
     assert_eq!(store.elevation_tile(id).unwrap(), None);
-    store.put_elevation_tile(&uniform_elevation(id, 99)).unwrap();
+    store
+        .put_elevation_tile(&uniform_elevation(id, 99))
+        .unwrap();
     assert_eq!(
         store.max_elevation_at(50.5, 10.5).unwrap(),
         Some(MetersAmsl(99.0))
@@ -673,7 +723,9 @@ fn europe() -> BoundingBox {
 #[test]
 fn replace_all_is_isolated_per_country() {
     let (_dir, mut store) = open_store();
-    store.insert_airports(Country::DE, &[eddf(), eddb()]).unwrap();
+    store
+        .insert_airports(Country::DE, &[eddf(), eddb()])
+        .unwrap();
     store.insert_airports(Country::AT, &[lowi()]).unwrap();
     assert_eq!(store.airports_in_bbox(europe()).unwrap().len(), 3);
 
@@ -712,8 +764,12 @@ fn airspace_replace_is_isolated_per_country() {
         AirspaceKind::Ctr,
         square(47.2, 11.2, 47.4, 11.5),
     );
-    store.insert_airspaces(Country::DE, std::slice::from_ref(&de)).unwrap();
-    store.insert_airspaces(Country::AT, std::slice::from_ref(&at)).unwrap();
+    store
+        .insert_airspaces(Country::DE, std::slice::from_ref(&de))
+        .unwrap();
+    store
+        .insert_airspaces(Country::AT, std::slice::from_ref(&at))
+        .unwrap();
 
     // Deleting/replacing DE airspaces must not touch AT rows.
     store.insert_airspaces(Country::DE, &[]).unwrap();
@@ -729,7 +785,9 @@ fn build_synthetic_v2_store(path: &std::path::Path) {
     let conn = rusqlite::Connection::open(path).unwrap();
     schema::apply_v1(&conn).unwrap();
     schema::apply_v2(&conn).unwrap();
-    let version: i64 = conn.query_row("PRAGMA user_version", [], |r| r.get(0)).unwrap();
+    let version: i64 = conn
+        .query_row("PRAGMA user_version", [], |r| r.get(0))
+        .unwrap();
     assert_eq!(version, 2);
 
     let airport = eddf();
@@ -809,7 +867,9 @@ fn v2_store_migrates_to_v3_with_de_backfill() {
     // Version landed at the current schema.
     drop(store);
     let conn = rusqlite::Connection::open(&path).unwrap();
-    let version: i64 = conn.query_row("PRAGMA user_version", [], |r| r.get(0)).unwrap();
+    let version: i64 = conn
+        .query_row("PRAGMA user_version", [], |r| r.get(0))
+        .unwrap();
     assert_eq!(version, 3);
 }
 

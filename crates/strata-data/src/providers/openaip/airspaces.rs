@@ -283,7 +283,10 @@ mod tests {
         assert_eq!(airspace_kind(28, Some(1)), AirspaceKind::ParachuteJumpArea);
         assert_eq!(airspace_kind(0, Some(1)), AirspaceKind::ParachuteJumpArea);
         // Other activities keep the type's own kind.
-        assert_eq!(airspace_kind(28, Some(2)), AirspaceKind::RecreationalActivity);
+        assert_eq!(
+            airspace_kind(28, Some(2)),
+            AirspaceKind::RecreationalActivity
+        );
         assert_eq!(airspace_kind(0, Some(2)), AirspaceKind::Area);
         // Parachuting inside a specific kind does not demote it.
         assert_eq!(airspace_kind(2, Some(1)), AirspaceKind::Danger);

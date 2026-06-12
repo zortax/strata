@@ -133,9 +133,36 @@ fn fixture() -> Fixture {
     };
     let phases = PhasePlan {
         segments: vec![
-            segment(PhaseKind::Climb, 0.0, toc_along, 0.0, 1371.6, 75.0, 10.0, 5.0),
-            segment(PhaseKind::Cruise, toc_along, tod_along, 1371.6, 1371.6, 110.0, 20.0, 8.0),
-            segment(PhaseKind::Descent, tod_along, total, 1371.6, 0.0, 100.0, 6.0, 1.5),
+            segment(
+                PhaseKind::Climb,
+                0.0,
+                toc_along,
+                0.0,
+                1371.6,
+                75.0,
+                10.0,
+                5.0,
+            ),
+            segment(
+                PhaseKind::Cruise,
+                toc_along,
+                tod_along,
+                1371.6,
+                1371.6,
+                110.0,
+                20.0,
+                8.0,
+            ),
+            segment(
+                PhaseKind::Descent,
+                tod_along,
+                total,
+                1371.6,
+                0.0,
+                100.0,
+                6.0,
+                1.5,
+            ),
         ],
         toc: Some(ProfileMarker {
             along_track: Meters(toc_along),
@@ -152,8 +179,7 @@ fn fixture() -> Fixture {
     };
 
     let leg0_track = crate::route::initial_true_track(a, LatLon::new(50.0, 8.5).expect("valid"));
-    let leg1_track =
-        crate::route::initial_true_track(LatLon::new(50.0, 8.5).expect("valid"), c);
+    let leg1_track = crate::route::initial_true_track(LatLon::new(50.0, 8.5).expect("valid"), c);
     let winds = vec![
         LegWind {
             leg_index: 0,
@@ -293,9 +319,7 @@ fn worked_example_headings_and_speeds() {
     // Leg 1: zero WCA ⇒ MH = MT.
     let row3 = &log.rows[3];
     assert_eq!(row3.wind_correction_angle_deg, Some(0.0));
-    assert!(
-        (row3.magnetic_heading.unwrap().0 - row3.magnetic_track.unwrap().0).abs() < 1e-9
-    );
+    assert!((row3.magnetic_heading.unwrap().0 - row3.magnetic_track.unwrap().0).abs() < 1e-9);
     assert_eq!(row3.ground_speed, Some(Knots(125.0)));
     // The wind itself is carried for the PLOG wind column.
     assert_eq!(log.rows[2].wind.unwrap().speed, Knots(20.0));
@@ -404,7 +428,11 @@ fn missing_leg_wind_falls_back_to_phase_time() {
     assert!(row3.ground_speed.is_none());
     // Phase time share over (35737.1, 62214.3]: cruise minutes
     // 20 × 26477.2/43694.3 = 12.119 min.
-    assert!((row3.ete.unwrap().0 - 12.119).abs() < 0.005, "got {}", row3.ete.unwrap().0);
+    assert!(
+        (row3.ete.unwrap().0 - 12.119).abs() < 0.005,
+        "got {}",
+        row3.ete.unwrap().0
+    );
     // Track/variation are pure geometry and survive without wind.
     assert!(row3.magnetic_track.is_some());
 }

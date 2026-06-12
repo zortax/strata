@@ -25,8 +25,8 @@ use crate::sources::{
     AirspaceSource, MagvarSource, ObstacleSource, Provenance, WindsAloft, WindsAloftSampler,
 };
 use crate::units::{
-    Celsius, FeetPerMinute, Kilograms, Knots, Liters, LitersPerHour, MagneticVariation,
-    METERS_PER_NAUTICAL_MILE,
+    Celsius, FeetPerMinute, Kilograms, Knots, Liters, LitersPerHour, METERS_PER_NAUTICAL_MILE,
+    MagneticVariation,
 };
 use crate::wb::WbStateKind;
 use crate::wind::LegWindOrigin;
@@ -411,7 +411,10 @@ fn empty_cruise_table_is_no_cruise_setting() {
     let doc = flight(e2e_route());
 
     let err = compute(&doc, &aircraft, &sources, &ComputeParams::default()).unwrap_err();
-    assert!(matches!(err, ComputeError::Perf(PerfError::NoCruiseSetting)));
+    assert!(matches!(
+        err,
+        ComputeError::Perf(PerfError::NoCruiseSetting)
+    ));
 }
 
 #[test]
@@ -543,7 +546,10 @@ fn end_to_end_corridor_and_phases_shape() {
     let toc = phases.toc.expect("reaches cruise");
     let tod = phases.tod.expect("leaves cruise");
     assert!((toc.along_track.0 - 12_289.0).abs() < 10.0, "{toc:?}");
-    assert!((tod.along_track.0 - (total - 15_802.0)).abs() < 10.0, "{tod:?}");
+    assert!(
+        (tod.along_track.0 - (total - 15_802.0)).abs() < 10.0,
+        "{tod:?}"
+    );
     assert_eq!(toc.altitude, MetersAmsl(1066.8));
     // Segments span 0..total gap-free.
     assert!(phases.segments[0].start_along_track.0.abs() < 1e-6);
@@ -590,7 +596,11 @@ fn end_to_end_conflicts_contain_the_planted_hazards() {
         .find(|c| c.kind == ConflictKind::Airspace)
         .expect("ED-R produces an airspace conflict");
     assert_eq!(airspace.severity, ConflictSeverity::Warning);
-    assert!(airspace.message.contains("ED-R 137"), "{}", airspace.message);
+    assert!(
+        airspace.message.contains("ED-R 137"),
+        "{}",
+        airspace.message
+    );
 
     // Nothing else: W&B is inside the envelope and fuel margin positive.
     assert!(conflicts.iter().all(|c| matches!(
@@ -614,7 +624,11 @@ fn end_to_end_fuel_ladder_and_wb_are_consistent() {
     // above (apex 6 215 m / +438.4 m): climb 438.4/2.54/60 = 2.876 min →
     // 40 L/h × 0.04794 h = 1.918 L, descent 20 L/h × 0.04794 h = 0.959 L,
     // total ≈ 2.876 L.
-    assert!((fuel.alternate.0 - 2.876).abs() < 0.01, "{}", fuel.alternate.0);
+    assert!(
+        (fuel.alternate.0 - 2.876).abs() < 0.01,
+        "{}",
+        fuel.alternate.0
+    );
     // Final reserve: 30 min at the planned 35 L/h cruise flow = 17.5 L.
     assert!((fuel.final_reserve.0 - 17.5).abs() < 1e-9);
     assert_eq!(fuel.extra, Liters(0.0));
@@ -687,7 +701,12 @@ fn end_to_end_navlog_rows_and_totals() {
     let etas: Vec<_> = navlog.rows.iter().filter_map(|r| r.eta).collect();
     assert_eq!(etas.len(), navlog.rows.len() - 1);
     assert!(etas.windows(2).all(|p| p[0] < p[1]));
-    let distance_sum: f64 = navlog.rows.iter().filter_map(|r| r.distance).map(|d| d.0).sum();
+    let distance_sum: f64 = navlog
+        .rows
+        .iter()
+        .filter_map(|r| r.distance)
+        .map(|d| d.0)
+        .sum();
     assert!((distance_sum - nm(total)).abs() < 1e-6);
     assert!((navlog.totals.distance.0 - nm(total)).abs() < 1e-9);
     assert_eq!(navlog.totals.fuel, computed.phases.total_fuel);
@@ -818,7 +837,11 @@ fn free_point_departure_over_flat_terrain_is_clean() {
     let computed = compute_over_terrain(&northbound_free_route(), &terrain);
 
     let start = computed.phases.segments[0].start_altitude;
-    assert_eq!(start, MetersAmsl(200.0), "climb starts on the corridor ground");
+    assert_eq!(
+        start,
+        MetersAmsl(200.0),
+        "climb starts on the corridor ground"
+    );
     assert!(
         computed.conflicts.is_empty(),
         "flat free-point departure must not conflict: {:?}",

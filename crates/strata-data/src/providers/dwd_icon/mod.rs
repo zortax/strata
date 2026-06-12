@@ -91,7 +91,9 @@ pub struct DwdIconD2 {
     base_url: String,
     /// Memoized [`Self::latest_run`] probe per field (never held across an
     /// await).
-    run_cache: std::sync::Mutex<std::collections::HashMap<WeatherField, (std::time::Instant, DateTime<Utc>)>>,
+    run_cache: std::sync::Mutex<
+        std::collections::HashMap<WeatherField, (std::time::Instant, DateTime<Utc>)>,
+    >,
 }
 
 impl DwdIconD2 {
@@ -225,7 +227,10 @@ fn timeline_for_run(field: WeatherField, run: DateTime<Utc>) -> GriddedTimeline 
             kind: StepKind::Forecast,
         })
         .collect();
-    GriddedTimeline { run_time: run, steps }
+    GriddedTimeline {
+        run_time: run,
+        steps,
+    }
 }
 
 #[async_trait]
@@ -317,7 +322,11 @@ mod tests {
             let tl = timeline_for_run(field, t(12));
             assert_eq!(tl.steps.len(), 49, "{field}");
             assert_eq!(tl.steps[0].valid_time, t(12), "{field}");
-            assert_eq!(tl.steps[48].valid_time, t(12) + Duration::hours(48), "{field}");
+            assert_eq!(
+                tl.steps[48].valid_time,
+                t(12) + Duration::hours(48),
+                "{field}"
+            );
         }
     }
 }

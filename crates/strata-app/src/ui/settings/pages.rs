@@ -23,7 +23,9 @@ use crate::assets::IconName;
 use crate::config::{DEFAULT_UI_THEME_DARK, DEFAULT_UI_THEME_LIGHT};
 use crate::state::{AppState, IngestDataset};
 
-use super::format::{format_bias, map_theme_options, map_theme_value, mask_api_key, maxzoom_options};
+use super::format::{
+    format_bias, map_theme_options, map_theme_value, mask_api_key, maxzoom_options,
+};
 use super::{SettingsView, apply_map_theme, apply_mode, apply_ui_theme, countries, persist_config};
 
 /// Build the pages from the live view (`this` — leased, so only its
@@ -246,7 +248,9 @@ fn autorouter_group(this: &SettingsView, view: &Entity<SettingsView>) -> Setting
             SettingItem::new(
                 "Password",
                 SettingField::render(move |options, _window, _cx: &mut App| {
-                    Input::new(&password_input).mask_toggle().with_size(options.size)
+                    Input::new(&password_input)
+                        .mask_toggle()
+                        .with_size(options.size)
                 }),
             )
             .layout(Axis::Vertical)
@@ -574,9 +578,21 @@ fn render_download_buttons(
             h_flex()
                 .gap_2()
                 .flex_wrap()
-                .child(dataset_button("ingest-aero", "Aero data", IngestDataset::Aero))
-                .child(dataset_button("ingest-basemap", "Basemap", IngestDataset::Basemap))
-                .child(dataset_button("ingest-terrain", "Terrain", IngestDataset::Terrain))
+                .child(dataset_button(
+                    "ingest-aero",
+                    "Aero data",
+                    IngestDataset::Aero,
+                ))
+                .child(dataset_button(
+                    "ingest-basemap",
+                    "Basemap",
+                    IngestDataset::Basemap,
+                ))
+                .child(dataset_button(
+                    "ingest-terrain",
+                    "Terrain",
+                    IngestDataset::Terrain,
+                ))
                 .child({
                     let app_state = app_state.clone();
                     Button::new("ingest-full")
@@ -639,7 +655,9 @@ fn weather_group(this: &SettingsView) -> SettingGroup {
                     .w_32()
             }),
         )
-        .description("How often live METAR/TAF/SIGMET data refreshes; applies from the next cycle."),
+        .description(
+            "How often live METAR/TAF/SIGMET data refreshes; applies from the next cycle.",
+        ),
     )
 }
 
@@ -687,8 +705,9 @@ fn sources() -> SettingPage {
                 )),
         )
         .group(
-            SettingGroup::new().title("Disclaimer").item(SettingItem::render(
-                |_options, _window, cx: &mut App| {
+            SettingGroup::new()
+                .title("Disclaimer")
+                .item(SettingItem::render(|_options, _window, cx: &mut App| {
                     h_flex()
                         .w_full()
                         .gap_2()
@@ -707,8 +726,7 @@ fn sources() -> SettingPage {
                                 .text_sm(),
                             ),
                         )
-                },
-            )),
+                })),
         )
 }
 

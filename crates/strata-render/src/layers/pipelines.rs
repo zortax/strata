@@ -19,12 +19,15 @@ pub const FILL_AIRSPACE_SHADER: (&str, &str) = (
 );
 pub const LINE_DASH_SHADER: (&str, &str) =
     ("line_dash.wgsl", include_str!("../shaders/line_dash.wgsl"));
-pub const ROUTE_LINE_SHADER: (&str, &str) =
-    ("route_line.wgsl", include_str!("../shaders/route_line.wgsl"));
-pub const ROUTE_RING_SHADER: (&str, &str) =
-    ("route_ring.wgsl", include_str!("../shaders/route_ring.wgsl"));
-pub const WEATHER_SHADER: (&str, &str) =
-    ("weather.wgsl", include_str!("../shaders/weather.wgsl"));
+pub const ROUTE_LINE_SHADER: (&str, &str) = (
+    "route_line.wgsl",
+    include_str!("../shaders/route_line.wgsl"),
+);
+pub const ROUTE_RING_SHADER: (&str, &str) = (
+    "route_ring.wgsl",
+    include_str!("../shaders/route_ring.wgsl"),
+);
+pub const WEATHER_SHADER: (&str, &str) = ("weather.wgsl", include_str!("../shaders/weather.wgsl"));
 
 /// CPU mirror of the `*Locals` uniform at group 1, binding 0: the dataset
 /// origin in camera-relative world units, recomputed in f64 every frame.

@@ -27,8 +27,8 @@ pub use density::{density_altitude, pressure_altitude};
 pub use isa::{
     ISA_LAPSE_CELSIUS_PER_METER, ISA_SEA_LEVEL_CELSIUS, isa_temperature, planned_altitude_amsl,
 };
-pub use phases::plan_phases;
 pub(crate) use phases::resolve_cruise;
+pub use phases::{plan_phases, wind_adjusted_phases};
 pub use runway::{
     RunwayMargin, WindComponents, landing_distance, runway_margin, takeoff_distance,
     wind_components,

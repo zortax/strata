@@ -109,7 +109,9 @@ mod tests {
         assert!((first.position.lon() - 12.063_344_5).abs() < 1e-9);
 
         assert!(
-            obstacles.iter().any(|o| o.kind == ObstacleKind::WindTurbine),
+            obstacles
+                .iter()
+                .any(|o| o.kind == ObstacleKind::WindTurbine),
             "fixture contains type-3 wind turbines"
         );
     }

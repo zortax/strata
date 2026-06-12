@@ -10,8 +10,10 @@
 //! the signature teal/cyan primary `#3AA99F` tints the wide class E/F band
 //! so the map reads unmistakably Flexoki next to the UI chrome.
 
-use super::{AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme,
-            MapTheme, MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a};
+use super::{
+    AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme, MapTheme,
+    MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a,
+};
 use crate::layers::style::srgb;
 use crate::terrain::{TerrainStyle, tint_from_srgb8};
 
@@ -111,10 +113,10 @@ pub(super) fn theme() -> MapTheme {
         },
         weather: WeatherTheme {
             // Flexoki light accents, semantically intact.
-            vfr: srgb(130, 175, 90, 1.0),   // green #879A39
-            mvfr: srgb(95, 140, 215, 1.0),  // blue #4385BE
-            ifr: srgb(215, 95, 85, 1.0),    // red #D14D41
-            lifr: srgb(200, 90, 165, 1.0),  // magenta #CE5D97
+            vfr: srgb(130, 175, 90, 1.0),     // green #879A39
+            mvfr: srgb(95, 140, 215, 1.0),    // blue #4385BE
+            ifr: srgb(215, 95, 85, 1.0),      // red #D14D41
+            lifr: srgb(200, 90, 165, 1.0),    // magenta #CE5D97
             sigmet: srgb(215, 130, 70, 0.45), // orange #DA702C
             // Gridded overlays: muted, warm-leaning neutrals.
             cloud_cover: Colormap::new(&[

@@ -10,10 +10,10 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
-use strata_data::store::Store;
-use strata_render::{TileId, TileSource};
 use parking_lot::{Mutex, MutexGuard};
 use rusqlite::OpenFlags;
+use strata_data::store::Store;
+use strata_render::{TileId, TileSource};
 
 /// Read-only connections per MBTiles archive — sized for the render worker
 /// pool (2–8 threads) without keeping an excess of open file handles.

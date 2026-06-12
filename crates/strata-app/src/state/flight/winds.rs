@@ -35,13 +35,11 @@ use std::time::{Duration, Instant};
 use chrono::{DateTime, Utc};
 use gpui::{Context, Task};
 use gpui_tokio::Tokio;
-use strata_data::domain::{
-    BoundingBox, GriddedTimeline, PressureLevel, WeatherField, WeatherGrid,
-};
+use strata_data::domain::{BoundingBox, GriddedTimeline, PressureLevel, WeatherField, WeatherGrid};
 use strata_data::providers::GriddedWeatherProvider;
 use strata_data::providers::dwd_icon::DwdIconD2;
-use strata_plan::FlightDoc;
 use strata_plan::route::total_distance;
+use strata_plan::{AircraftProfile, FlightDoc};
 
 use crate::sources::{LevelWinds, WindsAloftFrames, WindsTimeStep, points_prefetch_bbox};
 use crate::state::AppState;
@@ -272,7 +270,7 @@ impl Default for FlightWinds {
 }
 
 /// The flight's time window: departure → departure + estimated duration
-/// (total route distance at the profile's first cruise TAS, else
+/// (total route distance at the selected cruise TAS, else
 /// [`DEFAULT_PLANNING_TAS_KT`]; clamped to 15 min … 12 h). `None` without a
 /// departure time or with fewer than two waypoints — there is nothing to
 /// sample then (strata-plan's sampler contract needs a time).
@@ -291,6 +289,18 @@ pub fn flight_time_window(
     let minutes = (distance_nm / tas * 60.0).clamp(MIN_WINDOW_MINUTES, MAX_WINDOW_MINUTES);
     let end = departure + chrono::Duration::milliseconds((minutes * 60_000.0) as i64);
     Some((departure, end))
+}
+
+fn selected_cruise_tas_kt(aircraft: &AircraftProfile, doc: &FlightDoc) -> Option<f64> {
+    let settings = &aircraft.performance.cruise_settings;
+    match doc.power_setting.as_deref() {
+        Some(name) => settings
+            .iter()
+            .find(|setting| setting.name == name)
+            .or_else(|| settings.first()),
+        None => settings.first(),
+    }
+    .map(|setting| setting.tas.0)
 }
 
 /// The valid times to prefetch for `window`: the timeline steps bracketing
@@ -367,8 +377,7 @@ impl AppState {
         };
         let tas = self
             .flight_aircraft()
-            .and_then(|a| a.performance.cruise_settings.first())
-            .map(|s| s.tas.0);
+            .and_then(|aircraft| selected_cruise_tas_kt(aircraft, &flight.doc));
         let Some(window) = flight_time_window(&flight.doc, tas) else {
             return;
         };
@@ -503,7 +512,9 @@ impl AppState {
 mod tests {
     use chrono::TimeZone as _;
     use strata_data::domain::{LatLon, RegularLatLonGrid, StepKind, TimelineStep};
+    use strata_plan::aircraft::{AircraftId, PowerSetting};
     use strata_plan::flight::{FreePoint, RoutePoint, RouteWaypoint};
+    use strata_plan::units::{Knots, LitersPerHour};
 
     use super::*;
 
@@ -563,6 +574,30 @@ mod tests {
         // Degenerate short hops clamp to the minimum window.
         let (_, end) = flight_time_window(&doc_with_route(Some(t(9, 0)), 1.0), None).unwrap();
         assert_eq!((end - t(9, 0)).num_minutes(), 15);
+    }
+
+    #[test]
+    fn selected_cruise_tas_follows_the_document_power_setting() {
+        let mut aircraft = AircraftProfile::new(AircraftId::new("test").unwrap());
+        aircraft.performance.cruise_settings = vec![
+            PowerSetting {
+                name: "fast".to_owned(),
+                tas: Knots(120.0),
+                fuel_flow: LitersPerHour(34.0),
+            },
+            PowerSetting {
+                name: "economy".to_owned(),
+                tas: Knots(95.0),
+                fuel_flow: LitersPerHour(24.0),
+            },
+        ];
+
+        let mut doc = doc_with_route(Some(t(9, 0)), 90.0);
+        assert_eq!(selected_cruise_tas_kt(&aircraft, &doc), Some(120.0));
+        doc.power_setting = Some("economy".to_owned());
+        assert_eq!(selected_cruise_tas_kt(&aircraft, &doc), Some(95.0));
+        doc.power_setting = Some("stale".to_owned());
+        assert_eq!(selected_cruise_tas_kt(&aircraft, &doc), Some(120.0));
     }
 
     #[test]

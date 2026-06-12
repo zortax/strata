@@ -86,7 +86,11 @@ impl DemGrid {
                         }
                     }
                     // Blocks with no data at all stay no-data.
-                    out.push(if count == 0 { f32::NAN } else { (sum / count as f64) as f32 });
+                    out.push(if count == 0 {
+                        f32::NAN
+                    } else {
+                        (sum / count as f64) as f32
+                    });
                 }
             }
             (gw, gh, out)
@@ -237,7 +241,10 @@ pub struct DemCache {
 
 impl DemCache {
     pub fn new(budget_bytes: usize) -> Self {
-        Self { budget_bytes, inner: Mutex::new(CacheInner::default()) }
+        Self {
+            budget_bytes,
+            inner: Mutex::new(CacheInner::default()),
+        }
     }
 
     /// Makes every `(id, factor)` grid resident, fetching missing tiles
@@ -323,7 +330,10 @@ mod tests {
     }
 
     fn ramp_tile() -> DemTile {
-        SyntheticDem::new(ramp, 120, 100).make_tile(DemTileId { lat_sw: 50, lon_sw: 10 })
+        SyntheticDem::new(ramp, 120, 100).make_tile(DemTileId {
+            lat_sw: 50,
+            lon_sw: 10,
+        })
     }
 
     #[test]
@@ -357,18 +367,27 @@ mod tests {
     }
 
     fn holed_tile() -> DemTile {
-        SyntheticDem::new(holed_plateau, 120, 100).make_tile(DemTileId { lat_sw: 50, lon_sw: 10 })
+        SyntheticDem::new(holed_plateau, 120, 100).make_tile(DemTileId {
+            lat_sw: 50,
+            lon_sw: 10,
+        })
     }
 
     #[test]
     fn no_data_holes_sample_as_nan_but_edges_keep_real_values() {
         let grid = DemGrid::from_tile(holed_tile(), 1);
-        assert!(grid.sample_deg(50.5, 10.5).is_nan(), "hole center must be no-data");
+        assert!(
+            grid.sample_deg(50.5, 10.5).is_nan(),
+            "hole center must be no-data"
+        );
         assert_eq!(grid.sample_deg(50.8, 10.8), 800.0);
         // Right at the data/no-data boundary the renormalized weights pick
         // up the real samples instead of bleeding NaN outward.
         let edge = grid.sample_deg(50.5, 10.602);
-        assert!((edge - 800.0).abs() < 1e-6, "edge sample {edge} should be real data");
+        assert!(
+            (edge - 800.0).abs() < 1e-6,
+            "edge sample {edge} should be real data"
+        );
     }
 
     #[test]
@@ -378,14 +397,20 @@ mod tests {
         assert!(grid.sample_deg(50.5, 10.5).is_nan());
         // Mixed blocks at the hole edge average only the real samples.
         let near_edge = grid.sample_deg(50.5, 10.62);
-        assert!((near_edge - 800.0).abs() < 1e-6, "mixed block {near_edge} should stay 800");
+        assert!(
+            (near_edge - 800.0).abs() < 1e-6,
+            "mixed block {near_edge} should stay 800"
+        );
     }
 
     #[tokio::test]
     async fn elevation_at_reports_none_inside_no_data_holes() {
         let provider = SyntheticDem::new(holed_plateau, 60, 60);
         let cache = DemCache::new(64 * 1024 * 1024);
-        let ids = [DemTileId { lat_sw: 50, lon_sw: 10 }];
+        let ids = [DemTileId {
+            lat_sw: 50,
+            lon_sw: 10,
+        }];
         cache.ensure_loaded(&provider, &ids, 1).await.expect("load");
 
         let hole = LatLon::new(50.5, 10.5).expect("valid");
@@ -395,7 +420,11 @@ mod tests {
 
         let sampler = cache.sampler(&ids, 1);
         assert!(sampler.elevation_or_nan_deg(50.5, 10.5).is_nan());
-        assert_eq!(sampler.elevation_deg(50.5, 10.5), 0.0, "plain accessor falls back to 0 m");
+        assert_eq!(
+            sampler.elevation_deg(50.5, 10.5),
+            0.0,
+            "plain accessor falls back to 0 m"
+        );
         // Outside every grid: no data.
         assert!(sampler.elevation_or_nan_deg(51.5, 10.5).is_nan());
     }
@@ -413,10 +442,16 @@ mod tests {
     async fn cache_loads_once_and_samples() {
         let provider = SyntheticDem::new(ramp, 60, 60);
         let cache = DemCache::new(64 * 1024 * 1024);
-        let ids = [DemTileId { lat_sw: 50, lon_sw: 10 }];
+        let ids = [DemTileId {
+            lat_sw: 50,
+            lon_sw: 10,
+        }];
 
         cache.ensure_loaded(&provider, &ids, 1).await.expect("load");
-        cache.ensure_loaded(&provider, &ids, 1).await.expect("reload");
+        cache
+            .ensure_loaded(&provider, &ids, 1)
+            .await
+            .expect("reload");
         assert_eq!(provider.fetches.load(Ordering::SeqCst), 1);
 
         let sampler = cache.sampler(&ids, 1);
@@ -432,11 +467,23 @@ mod tests {
     async fn tiny_budget_evicts_older_tiles() {
         let provider = SyntheticDem::new(ramp, 60, 60);
         let cache = DemCache::new(1); // every entry exceeds the budget
-        let a = DemTileId { lat_sw: 50, lon_sw: 10 };
-        let b = DemTileId { lat_sw: 50, lon_sw: 11 };
+        let a = DemTileId {
+            lat_sw: 50,
+            lon_sw: 10,
+        };
+        let b = DemTileId {
+            lat_sw: 50,
+            lon_sw: 11,
+        };
 
-        cache.ensure_loaded(&provider, &[a], 1).await.expect("load a");
-        cache.ensure_loaded(&provider, &[b], 1).await.expect("load b");
+        cache
+            .ensure_loaded(&provider, &[a], 1)
+            .await
+            .expect("load a");
+        cache
+            .ensure_loaded(&provider, &[b], 1)
+            .await
+            .expect("load b");
 
         // `b` was kept (it was the requested set), `a` was evicted.
         let in_a = LatLon::new(50.5, 10.5).expect("valid");
@@ -445,7 +492,10 @@ mod tests {
         assert!(cache.elevation_at(in_b).is_some());
 
         // Re-requesting `a` refetches.
-        cache.ensure_loaded(&provider, &[a], 1).await.expect("reload a");
+        cache
+            .ensure_loaded(&provider, &[a], 1)
+            .await
+            .expect("reload a");
         assert_eq!(provider.fetches.load(Ordering::SeqCst), 3);
     }
 }

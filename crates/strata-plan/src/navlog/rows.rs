@@ -296,14 +296,8 @@ fn row_altitude(
     route: &[crate::flight::RouteWaypoint],
 ) -> Option<PlannedAltitude> {
     match checkpoint.kind {
-        NavLogRowKind::TopOfClimb => inputs
-            .phases
-            .toc
-            .map(|m| PlannedAltitude::Amsl(m.altitude)),
-        NavLogRowKind::TopOfDescent => inputs
-            .phases
-            .tod
-            .map(|m| PlannedAltitude::Amsl(m.altitude)),
+        NavLogRowKind::TopOfClimb => inputs.phases.toc.map(|m| PlannedAltitude::Amsl(m.altitude)),
+        NavLogRowKind::TopOfDescent => inputs.phases.tod.map(|m| PlannedAltitude::Amsl(m.altitude)),
         NavLogRowKind::Waypoint => {
             if checkpoint.is_destination
                 && let Some(last) = inputs.phases.segments.last()
@@ -354,9 +348,7 @@ fn share_over(
 
 fn airport_ident(point: &RoutePoint) -> Option<String> {
     match point {
-        RoutePoint::Named(named)
-            if named.kind == crate::flight::NamedPointKind::Airport =>
-        {
+        RoutePoint::Named(named) if named.kind == crate::flight::NamedPointKind::Airport => {
             Some(named.id.clone())
         }
         _ => None,

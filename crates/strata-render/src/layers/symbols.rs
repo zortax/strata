@@ -448,13 +448,7 @@ pub(crate) fn filled_regular(
     for k in 0..corners {
         let a0 = rotation_deg + 360.0 * k as f32 / corners as f32;
         let a1 = rotation_deg + 360.0 * (k + 1) as f32 / corners as f32;
-        push_triangle(
-            m,
-            center,
-            polar(center, r, a0),
-            polar(center, r, a1),
-            color,
-        );
+        push_triangle(m, center, polar(center, r, a0), polar(center, r, a1), color);
     }
 }
 
@@ -519,10 +513,8 @@ mod tests {
             assert!(!mesh.indices.is_empty(), "{key:?}: no indices");
             assert_eq!(mesh.indices.len() % 3, 0, "{key:?}: broken triangle list");
             for tri in mesh.indices.chunks_exact(3) {
-                let [a, b, c] =
-                    [tri[0], tri[1], tri[2]].map(|i| mesh.vertices[i as usize].pos);
-                let area =
-                    (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+                let [a, b, c] = [tri[0], tri[1], tri[2]].map(|i| mesh.vertices[i as usize].pos);
+                let area = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
                 assert!(
                     area > 1e-6,
                     "{key:?}: degenerate or miswound triangle (area {area})"
@@ -652,8 +644,7 @@ mod tests {
         }
         // Weather dots draw above airports.
         assert!(
-            SymbolMeshKey::WeatherStation.draw_order()
-                > SymbolMeshKey::AirportIntl.draw_order()
+            SymbolMeshKey::WeatherStation.draw_order() > SymbolMeshKey::AirportIntl.draw_order()
         );
     }
 }

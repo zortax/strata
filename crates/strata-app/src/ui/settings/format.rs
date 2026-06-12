@@ -28,7 +28,12 @@ pub(crate) fn format_bias(bias: f64) -> String {
 /// Dropdown options for the basemap max zoom (the documented 8..=14 range).
 pub(crate) fn maxzoom_options() -> Vec<(SharedString, SharedString)> {
     BASEMAP_MAXZOOM_RANGE
-        .map(|z| (SharedString::from(z.to_string()), SharedString::from(format!("z{z}"))))
+        .map(|z| {
+            (
+                SharedString::from(z.to_string()),
+                SharedString::from(format!("z{z}")),
+            )
+        })
         .collect()
 }
 

@@ -290,7 +290,9 @@ pub(super) fn render_weather_tab(
         freezing_level_readout(&state.flight_winds_frames(), &flight.doc, computed)
     });
 
-    let mut content = v_flex().gap_3().child(snapshot_row(fetched_ago, fetching, fetch_error, cx));
+    let mut content = v_flex()
+        .gap_3()
+        .child(snapshot_row(fetched_ago, fetching, fetch_error, cx));
 
     if station_wx.is_empty() {
         content = content.child(
@@ -303,7 +305,14 @@ pub(super) fn render_weather_tab(
         );
     }
     for (station, metar, taf) in &station_wx {
-        content = content.child(station_card(panel, station, metar.as_ref(), taf.as_ref(), &map_theme, cx));
+        content = content.child(station_card(
+            panel,
+            station,
+            metar.as_ref(),
+            taf.as_ref(),
+            &map_theme,
+            cx,
+        ));
     }
 
     content = content.child(winds_aloft_card(flight, freezing, cx));
@@ -456,10 +465,9 @@ fn winds_aloft_card(
                     .text_sm()
                     .text_color(cx.theme().muted_foreground)
                     .child(
-                        flight
-                            .compute_hint
-                            .clone()
-                            .unwrap_or_else(|| "Per-leg winds appear once the route computes.".into()),
+                        flight.compute_hint.clone().unwrap_or_else(|| {
+                            "Per-leg winds appear once the route computes.".into()
+                        }),
                     ),
             )
             .into_any_element();
@@ -491,16 +499,20 @@ fn winds_aloft_card(
                         .text_color(cx.theme().muted_foreground)
                         .child(altitude),
                 )
-                .child(div().flex_shrink_0().font_family("monospace").child(format!(
-                    "{:03.0}°/{:.0} kt {:+.0} °C",
-                    wind.wind.direction.0, wind.wind.speed.0, wind.wind.temperature.0
-                )))
+                .child(
+                    div()
+                        .flex_shrink_0()
+                        .font_family("monospace")
+                        .child(format!(
+                            "{:03.0}°/{:.0} kt {:+.0} °C",
+                            wind.wind.direction.0, wind.wind.speed.0, wind.wind.temperature.0
+                        )),
+                )
                 .children(matches!(wind.origin, LegWindOrigin::Manual).then(|| badge("manual", cx)))
                 // The calm-ISA fallback is a labelled assumption, never
                 // passed off as a sampled wind.
                 .children(
-                    matches!(wind.origin, LegWindOrigin::IsaFallback)
-                        .then(|| badge("ISA", cx)),
+                    matches!(wind.origin, LegWindOrigin::IsaFallback).then(|| badge("ISA", cx)),
                 ),
         );
     }
@@ -610,7 +622,12 @@ mod tests {
 
         // A single airport waypoint is the departure, never also the
         // destination.
-        doc.route = vec![RouteWaypoint::new(airport("EDFE", "Egelsbach", 49.96, 8.64))];
+        doc.route = vec![RouteWaypoint::new(airport(
+            "EDFE",
+            "Egelsbach",
+            49.96,
+            8.64,
+        ))];
         let stations = route_weather_stations(&doc);
         assert_eq!(stations.len(), 1);
         assert_eq!(stations[0].role, StationRole::Departure);
@@ -828,8 +845,7 @@ mod tests {
         ];
         doc.cruise_altitude = Some(PlannedAltitude::Amsl(MetersAmsl(1000.0)));
         doc.departure_time = Some(valid);
-        let computed =
-            minimal_computed(&doc, vec![leg_wind_with(0, 5.0, Provenance::Isa)]);
+        let computed = minimal_computed(&doc, vec![leg_wind_with(0, 5.0, Provenance::Isa)]);
 
         // Rung 1: the hzerocl grid wins outright.
         let readout = freezing_level_readout(&frames(valid, Some(2800.0), true), &doc, &computed)
@@ -924,6 +940,9 @@ mod tests {
         assert_eq!(age_label(Duration::from_secs(12)), "just now");
         assert_eq!(age_label(Duration::from_secs(60)), "1 min ago");
         assert_eq!(age_label(Duration::from_secs(59 * 60)), "59 min ago");
-        assert_eq!(age_label(Duration::from_secs(2 * 3600 + 5 * 60)), "2 h 5 min ago");
+        assert_eq!(
+            age_label(Duration::from_secs(2 * 3600 + 5 * 60)),
+            "2 h 5 min ago"
+        );
     }
 }

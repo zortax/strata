@@ -16,13 +16,13 @@
 use std::rc::Rc;
 use std::time::Duration;
 
+use gpui::{AppContext as _, Context, SharedString, Task};
+use gpui_tokio::Tokio;
 use strata_data::domain::Country;
 use strata_ingest::{
     AeroNeed, AllOptions, BasemapNeed, CancellationToken, ElevationNeed, EventSink, IngestEvent,
     IngestJob, IngestNeeds, Ingestion, TerrainNeed, error_chain,
 };
-use gpui::{AppContext as _, Context, SharedString, Task};
-use gpui_tokio::Tokio;
 
 use super::ingest_progress::IngestProgressVm;
 use super::{AppState, AppStateEvent};
@@ -37,14 +37,12 @@ const FINISHED_LINGER: Duration = Duration::from_millis(1500);
 
 /// Notice shown when aero data is needed but no openAIP key is available.
 /// NEVER log or echo the key itself.
-const MISSING_KEY_NOTICE: &str =
-    "No openAIP API key configured — airspace data cannot be downloaded. \
+const MISSING_KEY_NOTICE: &str = "No openAIP API key configured — airspace data cannot be downloaded. \
      Set the key in Settings (or OPENAIP_API_KEY in .env).";
 
 /// Notice shown when a manual download is requested with the
 /// enabled-country set empty (a legal state — nothing is kept current).
-const NO_COUNTRIES_NOTICE: &str =
-    "No countries enabled — enable at least one in Settings → Countries \
+const NO_COUNTRIES_NOTICE: &str = "No countries enabled — enable at least one in Settings → Countries \
      to download data.";
 
 /// One of the three independently runnable dataset families.
@@ -583,8 +581,10 @@ impl AppState {
 
         // The run executes over the enabled-country set (the runner loops
         // countries internally and writes per-country completion meta).
-        let mut config =
-            strata_ingest::IngestConfig::new(self.data_dir.clone(), self.config.enabled_countries());
+        let mut config = strata_ingest::IngestConfig::new(
+            self.data_dir.clone(),
+            self.config.enabled_countries(),
+        );
         config.openaip_api_key = api_key;
         let basemap_maxzoom = self.config.ingest.basemap_maxzoom;
 
@@ -697,7 +697,11 @@ mod tests {
 
     #[test]
     fn plan_covers_missing_and_stale_aero_but_not_current() {
-        let all_missing = needs(AeroNeed::Missing, BasemapNeed::Missing, TerrainNeed::Missing);
+        let all_missing = needs(
+            AeroNeed::Missing,
+            BasemapNeed::Missing,
+            TerrainNeed::Missing,
+        );
         assert_eq!(plan_from_needs(&all_missing), IngestPlan::FULL);
 
         let stale = needs(
@@ -909,7 +913,11 @@ mod tests {
     /// The startup decision matrix: needs × auto × key.
     #[test]
     fn auto_ingest_decision_matrix() {
-        let all_missing = needs(AeroNeed::Missing, BasemapNeed::Missing, TerrainNeed::Missing);
+        let all_missing = needs(
+            AeroNeed::Missing,
+            BasemapNeed::Missing,
+            TerrainNeed::Missing,
+        );
         let aero_only = needs(
             AeroNeed::Missing,
             BasemapNeed::Present { maxzoom: Some(13) },
@@ -1100,17 +1108,26 @@ mod tests {
         );
         assert_eq!(row_label(IngestJob::Terrain, "terrain AT"), "terrain (AT)");
         assert_eq!(row_label(IngestJob::Basemap, "basemap CH"), "basemap (CH)");
-        assert_eq!(row_label(IngestJob::Elevation, "elevation DE"), "elevation (DE)");
+        assert_eq!(
+            row_label(IngestJob::Elevation, "elevation DE"),
+            "elevation (DE)"
+        );
 
         // Country-less labels (bbox-override passes, older runners).
-        assert_eq!(row_label(IngestJob::AeroAirspaces, "airspaces"), "openAIP airspaces");
+        assert_eq!(
+            row_label(IngestJob::AeroAirspaces, "airspaces"),
+            "openAIP airspaces"
+        );
         assert_eq!(row_label(IngestJob::Basemap, "basemap"), "basemap");
 
         // Only an exact uppercase supported alpha-2 code counts as a
         // country suffix.
         assert_eq!(split_country_suffix("airspaces XX"), ("airspaces XX", None));
         assert_eq!(split_country_suffix("airspaces de"), ("airspaces de", None));
-        assert_eq!(split_country_suffix("airspaces DE"), ("airspaces", Some("DE")));
+        assert_eq!(
+            split_country_suffix("airspaces DE"),
+            ("airspaces", Some("DE"))
+        );
     }
 
     /// A multi-country run starts the same [`IngestJob`] once per country

@@ -146,7 +146,11 @@ pub(crate) fn nice_ticks(min: f64, max: f64, target: usize) -> Vec<f64> {
     let mut value = (min / step).ceil() * step;
     while value <= max + step * 1e-9 {
         // Normalize "-0.0" and float drift on the zero tick.
-        ticks.push(if value.abs() < step * 1e-9 { 0.0 } else { value });
+        ticks.push(if value.abs() < step * 1e-9 {
+            0.0
+        } else {
+            value
+        });
         value += step;
     }
     ticks
@@ -243,8 +247,7 @@ mod tests {
         // 0.005 → ×20.
         assert!((mapping().exaggeration() - 20.0).abs() < 1e-9);
         // A mapping drawn to true scale reads ×1.
-        let true_scale =
-            ChartMapping::new((0.0, 0.0), (1000.0, 100.0), 10_000.0, 0.0, 1000.0);
+        let true_scale = ChartMapping::new((0.0, 0.0), (1000.0, 100.0), 10_000.0, 0.0, 1000.0);
         assert!((true_scale.exaggeration() - 1.0).abs() < 1e-9);
     }
 
@@ -262,7 +265,10 @@ mod tests {
     #[test]
     fn nice_ticks_use_the_1_2_5_ladder() {
         // 0–54 NM, ~6 ticks → step 10.
-        assert_eq!(nice_ticks(0.0, 54.0, 6), vec![0.0, 10.0, 20.0, 30.0, 40.0, 50.0]);
+        assert_eq!(
+            nice_ticks(0.0, 54.0, 6),
+            vec![0.0, 10.0, 20.0, 30.0, 40.0, 50.0]
+        );
         // 0–4500 ft, ~5 ticks → step 1000.
         assert_eq!(
             nice_ticks(0.0, 4500.0, 5),

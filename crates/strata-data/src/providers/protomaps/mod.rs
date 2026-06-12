@@ -93,7 +93,10 @@ impl ProtomapsExtractor {
     /// `{builds_url}/{key}`.
     pub fn with_builds_url(builds_url: impl Into<String>) -> Self {
         let builds_url = builds_url.into().trim_end_matches('/').to_string();
-        Self { http: http_client(), builds_url }
+        Self {
+            http: http_client(),
+            builds_url,
+        }
     }
 
     /// URL of the most recent daily planet build (`….pmtiles`).
@@ -108,7 +111,10 @@ impl ProtomapsExtractor {
             .json()
             .await?;
         let latest = builds::latest(&entries).ok_or_else(|| {
-            Error::provider(PROVIDER, format!("no .pmtiles builds listed at {index_url}"))
+            Error::provider(
+                PROVIDER,
+                format!("no .pmtiles builds listed at {index_url}"),
+            )
         })?;
         tracing::info!(key = %latest.key, uploaded = ?latest.uploaded, "latest protomaps build");
         Ok(format!("{}/{}", self.builds_url, latest.key))
@@ -326,8 +332,7 @@ where
     B: AsyncBackend + Sync + Send,
     C: DirectoryCache + Sync + Send,
 {
-    let coord =
-        TileCoord::new(tile.z, tile.x, tile.y).map_err(|e| Error::provider(PROVIDER, e))?;
+    let coord = TileCoord::new(tile.z, tile.x, tile.y).map_err(|e| Error::provider(PROVIDER, e))?;
     let mut attempt = 1u32;
     loop {
         match reader.get_tile(coord).await {
@@ -424,9 +429,18 @@ fn metadata_entries(
         ("description", format!("Bbox extract of {source}")),
         (
             "bounds",
-            format!("{},{},{},{}", bbox.west(), bbox.south(), bbox.east(), bbox.north()),
+            format!(
+                "{},{},{},{}",
+                bbox.west(),
+                bbox.south(),
+                bbox.east(),
+                bbox.north()
+            ),
         ),
-        ("center", format!("{},{},{}", center.lon(), center.lat(), max_zoom.min(6))),
+        (
+            "center",
+            format!("{},{},{}", center.lon(), center.lat(), max_zoom.min(6)),
+        ),
         ("minzoom", "0".to_string()),
         ("maxzoom", max_zoom.to_string()),
         ("attribution", attribution),
@@ -460,7 +474,10 @@ mod tests {
         );
 
         let custom = ProtomapsExtractor::with_builds_url("http://localhost:9999/");
-        assert_eq!(custom.builds_index_url(), "http://localhost:9999/builds.json");
+        assert_eq!(
+            custom.builds_index_url(),
+            "http://localhost:9999/builds.json"
+        );
         assert_eq!(custom.builds_url, "http://localhost:9999");
     }
 
@@ -557,10 +574,11 @@ mod tests {
 
         let bbox = BoundingBox::new(-179.9, -80.0, 179.9, 80.0).expect("bbox");
         let mut reports = Vec::new();
-        let summary =
-            extract_with_reader(&reader, "test://fixture", bbox, 2, &dest, |p| reports.push(p))
-                .await
-                .expect("extract");
+        let summary = extract_with_reader(&reader, "test://fixture", bbox, 2, &dest, |p| {
+            reports.push(p)
+        })
+        .await
+        .expect("extract");
 
         // 1 + 4 + 16 tiles; the seeded one counted as done from the start.
         assert_eq!(summary.tiles_total, Some(21));
@@ -582,7 +600,10 @@ mod tests {
             Some(b"tile 2/3/1".to_vec())
         );
         assert_eq!(mb.metadata("format").expect("meta"), Some("pbf".into()));
-        assert_eq!(mb.metadata("compression").expect("meta"), Some("none".into()));
+        assert_eq!(
+            mb.metadata("compression").expect("meta"),
+            Some("none".into())
+        );
         assert_eq!(mb.metadata("minzoom").expect("meta"), Some("0".into()));
         assert_eq!(mb.metadata("maxzoom").expect("meta"), Some("2".into()));
         assert_eq!(

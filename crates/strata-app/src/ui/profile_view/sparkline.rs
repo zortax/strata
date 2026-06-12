@@ -10,8 +10,9 @@
 
 use std::rc::Rc;
 
-use gpui::{AnyElement, Bounds, Hsla, IntoElement as _, PathBuilder, Pixels, Styled as _, canvas,
-    point, px};
+use gpui::{
+    AnyElement, Bounds, Hsla, IntoElement as _, PathBuilder, Pixels, Styled as _, canvas, point, px,
+};
 use strata_render::MapTheme;
 
 use super::scene::linear_to_rgba;
@@ -121,7 +122,16 @@ pub fn sparkline(
     let geometry = SparklineGeometry::build(series);
     canvas(
         |_, _, _| (),
-        move |bounds, (), window, _cx| paint(&geometry, bounds, terrain_fill, terrain_stroke, planned, window),
+        move |bounds, (), window, _cx| {
+            paint(
+                &geometry,
+                bounds,
+                terrain_fill,
+                terrain_stroke,
+                planned,
+                window,
+            )
+        },
     )
     .size_full()
     .into_any_element()
@@ -141,7 +151,12 @@ fn paint(
     let origin = (f32::from(bounds.origin.x), f32::from(bounds.origin.y));
     let width = f32::from(bounds.size.width).max(1.0);
     let height = (f32::from(bounds.size.height) - 2.0 * PAD_Y_PX).max(1.0);
-    let at = |&(x, y): &(f32, f32)| point(px(origin.0 + x * width), px(origin.1 + PAD_Y_PX + y * height));
+    let at = |&(x, y): &(f32, f32)| {
+        point(
+            px(origin.0 + x * width),
+            px(origin.1 + PAD_Y_PX + y * height),
+        )
+    };
     let bottom = origin.1 + PAD_Y_PX + height;
 
     for run in &geometry.terrain_runs {

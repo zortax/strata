@@ -12,8 +12,10 @@
 //! `#2AA198` tinting the wide class E/F band. Labels are base2/base3
 //! cream; boundaries sit on the base01/base00 grey-cyan scale.
 
-use super::{AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme,
-            MapTheme, MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a};
+use super::{
+    AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme, MapTheme,
+    MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a,
+};
 use crate::layers::style::srgb;
 use crate::terrain::{TerrainStyle, tint_from_srgb8};
 
@@ -113,10 +115,10 @@ pub(super) fn theme() -> MapTheme {
         },
         weather: WeatherTheme {
             // Classic Solarized accents, pastelized; semantics intact.
-            vfr: srgb(110, 175, 95, 1.0),   // green #859900
-            mvfr: srgb(85, 135, 215, 1.0),  // blue #268BD2
-            ifr: srgb(215, 95, 90, 1.0),    // red #DC322F
-            lifr: srgb(200, 90, 170, 1.0),  // magenta #D33682
+            vfr: srgb(110, 175, 95, 1.0),     // green #859900
+            mvfr: srgb(85, 135, 215, 1.0),    // blue #268BD2
+            ifr: srgb(215, 95, 90, 1.0),      // red #DC322F
+            lifr: srgb(200, 90, 170, 1.0),    // magenta #D33682
             sigmet: srgb(210, 125, 70, 0.45), // orange #CB4B16
             // Gridded overlays: muted, faintly cool neutrals.
             cloud_cover: Colormap::new(&[

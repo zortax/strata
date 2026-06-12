@@ -303,7 +303,11 @@ impl MapRenderer {
         self.terrain.set_style(theme.terrain);
         self.text.set_halo_color(theme.labels.halo);
         self.dirty = true;
-        tracing::info!(theme = theme.id, generation = self.style_generation, "map theme switched");
+        tracing::info!(
+            theme = theme.id,
+            generation = self.style_generation,
+            "map theme switched"
+        );
     }
 
     /// The active map color theme.

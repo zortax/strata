@@ -225,11 +225,7 @@ fn build_export_submenu(menu: PopupMenu, root: &Entity<RootView>) -> PopupMenu {
     }))
 }
 
-fn build_recent_submenu(
-    menu: PopupMenu,
-    root: &Entity<RootView>,
-    recent: &[PathBuf],
-) -> PopupMenu {
+fn build_recent_submenu(menu: PopupMenu, root: &Entity<RootView>, recent: &[PathBuf]) -> PopupMenu {
     if recent.is_empty() {
         return menu.item(PopupMenuItem::new("No recent flights").disabled(true));
     }
@@ -255,7 +251,9 @@ pub(crate) fn new_flight(this: &mut RootView, window: &mut Window, cx: &mut Cont
             let aircraft = state.aircraft_library.first().map(|p| p.id.clone());
             let now = chrono::Utc::now();
             state.new_flight("", cx);
-            state.edit_flight_doc(cx, |doc| model::apply_new_flight_defaults(doc, now, aircraft));
+            state.edit_flight_doc(cx, |doc| {
+                model::apply_new_flight_defaults(doc, now, aircraft)
+            });
             // The seeded defaults are part of "fresh document", not user
             // edits: an untouched new flight must not wear the unsaved
             // dot or trip the discard guard on the next menu action.
@@ -348,7 +346,8 @@ fn duplicate_flight(this: &mut RootView, cx: &mut Context<RootView>) {
 /// Close Flight — back to the clean explorer; unsaved changes prompt first.
 fn close_flight(this: &mut RootView, window: &mut Window, cx: &mut Context<RootView>) {
     confirm_discard_if_dirty(this, window, cx, |this, _, cx| {
-        this.app_state.update(cx, |state, cx| state.close_flight(cx));
+        this.app_state
+            .update(cx, |state, cx| state.close_flight(cx));
     });
 }
 

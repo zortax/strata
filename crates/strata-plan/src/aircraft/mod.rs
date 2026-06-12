@@ -48,7 +48,8 @@ pub struct AircraftId(String);
 impl AircraftId {
     pub fn new(id: &str) -> Result<Self, AircraftIdError> {
         let normalized = id.to_ascii_lowercase();
-        let valid_char = |c: char| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_';
+        let valid_char =
+            |c: char| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_';
         if normalized.is_empty() || normalized.len() > 64 || !normalized.chars().all(valid_char) {
             return Err(AircraftIdError::Invalid(id.to_owned()));
         }

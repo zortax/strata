@@ -19,11 +19,11 @@ const SLOPE_DARKEN_FULL_AT_RAD: f64 = std::f64::consts::FRAC_PI_4;
 /// are the ground distances between adjacent samples.
 pub(crate) fn horn_gradient(window: &[[f64; 3]; 3], dx_m: f64, dy_m: f64) -> (f64, f64) {
     let w = window;
-    let dzdx = ((w[0][2] + 2.0 * w[1][2] + w[2][2]) - (w[0][0] + 2.0 * w[1][0] + w[2][0]))
-        / (8.0 * dx_m);
+    let dzdx =
+        ((w[0][2] + 2.0 * w[1][2] + w[2][2]) - (w[0][0] + 2.0 * w[1][0] + w[2][0])) / (8.0 * dx_m);
     // North is row 0, so the northward derivative is (north row − south row).
-    let dzdy = ((w[0][0] + 2.0 * w[0][1] + w[0][2]) - (w[2][0] + 2.0 * w[2][1] + w[2][2]))
-        / (8.0 * dy_m);
+    let dzdy =
+        ((w[0][0] + 2.0 * w[0][1] + w[0][2]) - (w[2][0] + 2.0 * w[2][1] + w[2][2])) / (8.0 * dy_m);
     (dzdx, dzdy)
 }
 

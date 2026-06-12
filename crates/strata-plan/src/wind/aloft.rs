@@ -117,10 +117,8 @@ pub fn interpolate_levels(
             let u = lower.wind_u + t * (upper.wind_u - lower.wind_u);
             let v = lower.wind_v + t * (upper.wind_v - lower.wind_v);
             let temperature = lower.temperature.0 + t * (upper.temperature.0 - lower.temperature.0);
-            let provenance = combined_provenance(
-                lower.temperature_provenance,
-                upper.temperature_provenance,
-            );
+            let provenance =
+                combined_provenance(lower.temperature_provenance, upper.temperature_provenance);
             return Some(to_winds_aloft(u, v, temperature, provenance));
         }
     }

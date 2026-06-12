@@ -48,9 +48,7 @@ use std::collections::HashSet;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use strata_data::domain::{
-    IcaoCode, MetersAmsl, Notam, NotamId, NotamKind, QCondition, QSubject,
-};
+use strata_data::domain::{IcaoCode, MetersAmsl, Notam, NotamId, NotamKind, QCondition, QSubject};
 
 use crate::conflict::{Bound, limit_to_amsl};
 use crate::corridor::Corridor;

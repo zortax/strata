@@ -31,6 +31,7 @@ use crate::route;
 use crate::units::{
     FeetPerMinute, Knots, Liters, LitersPerHour, METERS_PER_NAUTICAL_MILE, Minutes,
 };
+use crate::wind::LegWind;
 
 use super::isa::planned_altitude_amsl;
 use super::{PerfError, PhaseKind, PhasePlan, PhaseSegment, ProfileMarker};
@@ -223,6 +224,71 @@ pub fn plan_phases(
     };
 
     Ok(assemble(segments, toc, tod))
+}
+
+/// Returns a copy of `phases` whose segment durations and fuel burns follow
+/// the solved per-leg ground speeds, while keeping the vertical geometry
+/// (TOC/TOD positions and altitudes) unchanged.
+///
+/// The profile geometry is still the deterministic no-wind climb/descent
+/// model; this pass only makes the temporal/fuel totals agree with the
+/// wind-corrected PLOG timing. Missing leg winds fall back to the original
+/// phase time share for that overlap.
+pub fn wind_adjusted_phases(
+    route: &[RouteWaypoint],
+    phases: &PhasePlan,
+    winds: &[LegWind],
+) -> PhasePlan {
+    if phases.segments.is_empty() || route.len() < 2 {
+        return phases.clone();
+    }
+
+    let mut boundaries = Vec::with_capacity(route.len());
+    boundaries.push(0.0_f64);
+    let mut accumulated = 0.0_f64;
+    for leg in route::legs(route) {
+        accumulated += leg.geometry().distance.0;
+        boundaries.push(accumulated);
+    }
+
+    let mut adjusted = phases.clone();
+    for segment in &mut adjusted.segments {
+        let original_minutes = segment.duration.0.max(0.0);
+        let original_flow = if original_minutes > 0.0 {
+            segment.fuel.0 / Minutes(original_minutes).as_hours()
+        } else {
+            0.0
+        };
+        let span = segment.end_along_track.0 - segment.start_along_track.0;
+        if span <= DIST_EPS {
+            continue;
+        }
+
+        let mut minutes = 0.0_f64;
+        for leg in route::legs(route) {
+            let leg_start = boundaries[leg.index];
+            let leg_end = boundaries[leg.index + 1];
+            let overlap = (segment.end_along_track.0.min(leg_end)
+                - segment.start_along_track.0.max(leg_start))
+            .max(0.0);
+            if overlap <= DIST_EPS {
+                continue;
+            }
+            let wind = winds.iter().find(|wind| wind.leg_index == leg.index);
+            if let Some(wind) = wind
+                && wind.triangle.ground_speed.0 > 0.0
+            {
+                minutes += overlap / METERS_PER_NAUTICAL_MILE / wind.triangle.ground_speed.0 * 60.0;
+            } else {
+                minutes += original_minutes * overlap / span;
+            }
+        }
+
+        segment.duration = Minutes(minutes);
+        segment.fuel = Liters(original_flow * segment.duration.as_hours());
+    }
+
+    assemble(adjusted.segments, adjusted.toc, adjusted.tod)
 }
 
 /// One cruise/climb/descent model resolved and validated.

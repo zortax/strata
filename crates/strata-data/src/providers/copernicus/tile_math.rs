@@ -87,8 +87,7 @@ impl TileRange {
     /// Row-major iteration (north to south, west to east) — keeps the DEM
     /// working set local while sweeping.
     pub(crate) fn iter(&self) -> impl Iterator<Item = (u32, u32)> + '_ {
-        (self.y_min..=self.y_max)
-            .flat_map(move |y| (self.x_min..=self.x_max).map(move |x| (x, y)))
+        (self.y_min..=self.y_max).flat_map(move |y| (self.x_min..=self.x_max).map(move |x| (x, y)))
     }
 }
 
@@ -119,7 +118,13 @@ mod tests {
         let r = TileRange::covering(5, &bbox(5.5, 47.0, 15.5, 55.2));
         assert_eq!(
             r,
-            TileRange { z: 5, x_min: 16, x_max: 17, y_min: 10, y_max: 11 }
+            TileRange {
+                z: 5,
+                x_min: 16,
+                x_max: 17,
+                y_min: 10,
+                y_max: 11
+            }
         );
         assert_eq!(r.count(), 4);
     }
@@ -161,7 +166,13 @@ mod tests {
 
     #[test]
     fn iteration_is_row_major_and_complete() {
-        let r = TileRange { z: 3, x_min: 2, x_max: 4, y_min: 1, y_max: 2 };
+        let r = TileRange {
+            z: 3,
+            x_min: 2,
+            x_max: 4,
+            y_min: 1,
+            y_max: 2,
+        };
         let tiles: Vec<_> = r.iter().collect();
         assert_eq!(tiles.len(), r.count());
         assert_eq!(tiles[0], (2, 1));

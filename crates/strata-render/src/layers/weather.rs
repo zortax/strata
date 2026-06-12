@@ -5,9 +5,7 @@
 
 use crate::features::RenderSigmet;
 use crate::layer::{DrawCtx, MapLayer, PrepareCtx};
-use crate::layers::pipelines::{
-    self, GpuMesh, LINE_DASH_SHADER, OriginBinding, WEATHER_SHADER,
-};
+use crate::layers::pipelines::{self, GpuMesh, LINE_DASH_SHADER, OriginBinding, WEATHER_SHADER};
 use crate::layers::polylabel::pole_of_inaccessibility;
 use crate::layers::style::{label_color_from_border, priority};
 use crate::layers::tess::{

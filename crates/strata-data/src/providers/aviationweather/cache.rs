@@ -300,11 +300,8 @@ mod tests {
         Sigmet {
             fir: "EDGG".to_owned(),
             hazard: SigmetHazard::Thunderstorm,
-            geometry: Polygon::new(
-                vec![p(48.0, 8.0), p(49.0, 8.0), p(49.0, 9.0)],
-                Vec::new(),
-            )
-            .expect("valid test polygon"),
+            geometry: Polygon::new(vec![p(48.0, 8.0), p(49.0, 8.0), p(49.0, 9.0)], Vec::new())
+                .expect("valid test polygon"),
             valid_from: at,
             valid_to: at + chrono::Duration::hours(4),
             raw: "WSDL31 EDGG ...".to_owned(),
@@ -365,9 +362,15 @@ mod tests {
             .with_clock(clock);
 
         cached.metars(bbox_query()).await.expect("fetch succeeds");
-        cached.metars(stations_query()).await.expect("fetch succeeds");
+        cached
+            .metars(stations_query())
+            .await
+            .expect("fetch succeeds");
         cached.metars(bbox_query()).await.expect("served cached");
-        cached.metars(stations_query()).await.expect("served cached");
+        cached
+            .metars(stations_query())
+            .await
+            .expect("served cached");
         assert_eq!(cached.inner.metar_calls.load(Ordering::SeqCst), 2);
     }
 
@@ -394,8 +397,8 @@ mod tests {
     #[tokio::test]
     async fn invalidate_drops_all_entries() {
         let (_offset, clock) = test_clock();
-        let cached = CachedWeatherProvider::with_default_ttls(FakeProvider::default())
-            .with_clock(clock);
+        let cached =
+            CachedWeatherProvider::with_default_ttls(FakeProvider::default()).with_clock(clock);
 
         cached.metars(bbox_query()).await.expect("fetch succeeds");
         cached.sigmets(de_bbox()).await.expect("fetch succeeds");
@@ -427,8 +430,7 @@ mod tests {
         let (_offset, clock) = test_clock();
         let provider = FakeProvider::default();
         provider.fail.store(true, Ordering::SeqCst);
-        let cached =
-            CachedWeatherProvider::new(provider, DEFAULT_METAR_TTL).with_clock(clock);
+        let cached = CachedWeatherProvider::new(provider, DEFAULT_METAR_TTL).with_clock(clock);
 
         let result = cached.metars(bbox_query()).await;
         assert!(matches!(result, Err(Error::Provider { .. })));
@@ -437,8 +439,8 @@ mod tests {
     #[tokio::test]
     async fn entry_count_per_kind_is_bounded() {
         let (_offset, clock) = test_clock();
-        let cached = CachedWeatherProvider::with_default_ttls(FakeProvider::default())
-            .with_clock(clock);
+        let cached =
+            CachedWeatherProvider::with_default_ttls(FakeProvider::default()).with_clock(clock);
 
         for i in 0..(MAX_ENTRIES_PER_KIND + 4) {
             let query = WeatherQuery::Stations(vec![icao(&format!("ED{i:02}"))]);

@@ -161,7 +161,9 @@ mod tests {
 
     #[test]
     fn report_params_for_bbox_query() {
-        let params = report_params(&WeatherQuery::Bbox(crate::domain::Country::DE.bounding_box()));
+        let params = report_params(&WeatherQuery::Bbox(
+            crate::domain::Country::DE.bounding_box(),
+        ));
         assert_eq!(
             params,
             vec![

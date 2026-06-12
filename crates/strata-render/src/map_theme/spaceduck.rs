@@ -15,8 +15,10 @@
 //! magenta cut of the rose. Symbols and labels lean the duck-cream
 //! `#ecf0c1`; terrain relief is tinted cool blue-violet.
 
-use super::{AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme,
-            MapTheme, MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a};
+use super::{
+    AirspaceColors, AirspaceTheme, BasemapTheme, ColorStop, Colormap, LabelTheme, MapTheme,
+    MapThemeMode, RouteTheme, SymbolTheme, WeatherTheme, srgb8, srgb8_a,
+};
 use crate::layers::style::srgb;
 use crate::terrain::{TerrainStyle, tint_from_srgb8};
 
@@ -114,9 +116,9 @@ pub(super) fn theme() -> MapTheme {
         },
         weather: WeatherTheme {
             // Semantic categories from the Spaceduck accents.
-            vfr: srgb(92, 204, 150, 1.0), // green #5ccc96
+            vfr: srgb(92, 204, 150, 1.0),  // green #5ccc96
             mvfr: srgb(80, 140, 210, 1.0), // blue #00a3cc pushed past cyan
-            ifr: srgb(218, 80, 60, 1.0),  // orange-red #e33400
+            ifr: srgb(218, 80, 60, 1.0),   // orange-red #e33400
             lifr: srgb(192, 90, 184, 1.0), // rose #C86D8C pushed to magenta
             sigmet: srgb(216, 120, 60, 0.45),
             // Gridded overlays: muted, a hair cool.

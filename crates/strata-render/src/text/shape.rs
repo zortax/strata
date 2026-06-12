@@ -132,11 +132,8 @@ impl Shaper {
         if let Some(hit) = self.cache.get(&key) {
             return Arc::clone(hit);
         }
-        let shaped = Arc::new(self.shape_uncached(
-            text,
-            size_q as f32 * SIZE_QUANTUM,
-            scale_factor,
-        ));
+        let shaped =
+            Arc::new(self.shape_uncached(text, size_q as f32 * SIZE_QUANTUM, scale_factor));
         self.cache.put(key, Arc::clone(&shaped));
         shaped
     }
@@ -210,7 +207,12 @@ impl Shaper {
                     tracing::warn!(?key, "swash rgba shorter than placement, skipping glyph");
                     return None;
                 }
-                image.data.chunks_exact(4).take(pixels).map(|px| px[3]).collect()
+                image
+                    .data
+                    .chunks_exact(4)
+                    .take(pixels)
+                    .map(|px| px[3])
+                    .collect()
             }
         };
         Some(RasterGlyph {

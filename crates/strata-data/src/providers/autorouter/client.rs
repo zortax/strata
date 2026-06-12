@@ -122,7 +122,10 @@ impl AutorouterClient {
             let body = response.text().await.unwrap_or_default();
             return Err(Error::provider(
                 PROVIDER,
-                format!("authentication failed: {}", oauth_error_detail(status, &body)),
+                format!(
+                    "authentication failed: {}",
+                    oauth_error_detail(status, &body)
+                ),
             ));
         }
         let token: TokenResponse = response.json().await?;
@@ -498,11 +501,10 @@ mod lifecycle_tests {
             authorization,
             body: String::from_utf8_lossy(&body).into_owned(),
         });
-        let (status, payload) = queue
-            .lock()
-            .expect("queue lock")
-            .pop_front()
-            .unwrap_or((500, r#"{"error":"mock response queue exhausted"}"#.to_owned()));
+        let (status, payload) = queue.lock().expect("queue lock").pop_front().unwrap_or((
+            500,
+            r#"{"error":"mock response queue exhausted"}"#.to_owned(),
+        ));
         let response = format!(
             "HTTP/1.1 {status} Mock\r\ncontent-type: application/json\r\n\
              content-length: {}\r\nconnection: close\r\n\r\n{payload}",
@@ -522,12 +524,8 @@ mod lifecycle_tests {
     /// cached token then serves every request until expiry.
     #[tokio::test]
     async fn token_is_fetched_on_first_use_and_cached() {
-        let server = MockServer::start(vec![
-            (200, TOKEN_1),
-            (200, EMPTY_PAGE),
-            (200, EMPTY_PAGE),
-        ])
-        .await;
+        let server =
+            MockServer::start(vec![(200, TOKEN_1), (200, EMPTY_PAGE), (200, EMPTY_PAGE)]).await;
         let client = server.client();
         for _ in 0..2 {
             client
@@ -538,7 +536,11 @@ mod lifecycle_tests {
 
         let requests = server.requests();
         assert_eq!(
-            requests.iter().map(|r| r.target.as_str()).filter(|t| *t == "/oauth2/token").count(),
+            requests
+                .iter()
+                .map(|r| r.target.as_str())
+                .filter(|t| *t == "/oauth2/token")
+                .count(),
             1,
             "one token request serves both fetches: {requests:#?}"
         );
@@ -546,9 +548,21 @@ mod lifecycle_tests {
         // grant with the account email/password as id/secret.
         let token = &requests[0];
         assert_eq!(token.method, "POST");
-        assert!(token.body.contains("grant_type=client_credentials"), "{}", token.body);
-        assert!(token.body.contains("client_id=pilot%40example.com"), "{}", token.body);
-        assert!(token.body.contains("client_secret=hunter2-super-secret"), "{}", token.body);
+        assert!(
+            token.body.contains("grant_type=client_credentials"),
+            "{}",
+            token.body
+        );
+        assert!(
+            token.body.contains("client_id=pilot%40example.com"),
+            "{}",
+            token.body
+        );
+        assert!(
+            token.body.contains("client_secret=hunter2-super-secret"),
+            "{}",
+            token.body
+        );
         // The documented usage: Authorization: Bearer <token> on each call.
         for notam in requests.iter().filter(|r| r.target.starts_with("/notam")) {
             assert_eq!(notam.method, "GET");
@@ -602,7 +616,11 @@ mod lifecycle_tests {
                 .expect("retry with a fresh token succeeds");
 
             let requests = server.requests();
-            assert_eq!(server.token_requests().len(), 2, "{rejection}: re-authenticated");
+            assert_eq!(
+                server.token_requests().len(),
+                2,
+                "{rejection}: re-authenticated"
+            );
             assert_eq!(
                 requests.last().expect("requests").authorization.as_deref(),
                 Some("Bearer tok-two"),
@@ -646,7 +664,10 @@ mod lifecycle_tests {
             .await
             .expect_err("authentication fails");
         let message = error.to_string();
-        assert!(message.contains("The client credentials are invalid"), "{message}");
+        assert!(
+            message.contains("The client credentials are invalid"),
+            "{message}"
+        );
         assert!(!message.contains(PASSWORD), "{message}");
         assert!(!message.contains(EMAIL), "{message}");
     }
@@ -655,7 +676,11 @@ mod lifecycle_tests {
     #[tokio::test]
     async fn test_connection_authenticates_and_calls_aircraft_templates() {
         let server = MockServer::start(vec![(200, TOKEN_1), (200, "[]")]).await;
-        server.client().test_connection().await.expect("connection ok");
+        server
+            .client()
+            .test_connection()
+            .await
+            .expect("connection ok");
         let requests = server.requests();
         assert_eq!(requests[0].target, "/oauth2/token");
         assert_eq!(requests[1].target, "/aircraft/templates");

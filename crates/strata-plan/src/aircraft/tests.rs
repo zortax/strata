@@ -75,11 +75,26 @@ fn full_profile() -> AircraftProfile {
             max_zero_fuel: None,
             max_ramp: Some(Kilograms(1160.0)),
             envelope: vec![
-                EnvelopePoint { arm: Meters(0.89), mass: Kilograms(767.0) },
-                EnvelopePoint { arm: Meters(0.89), mass: Kilograms(885.0) },
-                EnvelopePoint { arm: Meters(1.00), mass: Kilograms(1157.0) },
-                EnvelopePoint { arm: Meters(1.20), mass: Kilograms(1157.0) },
-                EnvelopePoint { arm: Meters(1.20), mass: Kilograms(767.0) },
+                EnvelopePoint {
+                    arm: Meters(0.89),
+                    mass: Kilograms(767.0),
+                },
+                EnvelopePoint {
+                    arm: Meters(0.89),
+                    mass: Kilograms(885.0),
+                },
+                EnvelopePoint {
+                    arm: Meters(1.00),
+                    mass: Kilograms(1157.0),
+                },
+                EnvelopePoint {
+                    arm: Meters(1.20),
+                    mass: Kilograms(1157.0),
+                },
+                EnvelopePoint {
+                    arm: Meters(1.20),
+                    mass: Kilograms(767.0),
+                },
             ],
         },
         distances: Distances {
@@ -105,7 +120,10 @@ fn aircraft_id_validation() {
     assert!(AircraftId::new("has space").is_err());
     assert!(AircraftId::new("dot.dot").is_err());
     assert!(AircraftId::new(&"x".repeat(65)).is_err());
-    assert_eq!(AircraftId::new(&"x".repeat(64)).unwrap().as_str(), "x".repeat(64));
+    assert_eq!(
+        AircraftId::new(&"x".repeat(64)).unwrap().as_str(),
+        "x".repeat(64)
+    );
 }
 
 #[test]
@@ -158,7 +176,10 @@ fn newer_format_version_is_refused() {
     let result = AircraftProfile::from_json_str(r#"{"format_version": 7, "id": "x"}"#);
     assert!(matches!(
         result,
-        Err(AircraftError::Version(VersionError::TooNew { found: 7, supported: 1 }))
+        Err(AircraftError::Version(VersionError::TooNew {
+            found: 7,
+            supported: 1
+        }))
     ));
 }
 

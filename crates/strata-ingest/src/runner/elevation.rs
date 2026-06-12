@@ -199,7 +199,12 @@ mod tests {
                     elevations_m.push((self.elevation)(lat, lon) as f32);
                 }
             }
-            Ok(DemTile { id, width: self.size, height: self.size, elevations_m })
+            Ok(DemTile {
+                id,
+                width: self.size,
+                height: self.size,
+                elevations_m,
+            })
         }
     }
 
@@ -228,12 +233,19 @@ mod tests {
     async fn pools_a_synthetic_dem_into_the_store() {
         let dir = tempfile::tempdir().unwrap();
         let (runner, mut rx) = runner(dir.path());
-        let provider = SyntheticDem { elevation: ramp, size: 60 };
+        let provider = SyntheticDem {
+            elevation: ramp,
+            size: 60,
+        };
 
         let summary = run_with_provider(&runner, &provider).await.expect("run");
 
         assert_eq!(summary.dem_tiles, 1);
-        assert!(summary.tiles_written > 0, "tiles written: {}", summary.tiles_written);
+        assert!(
+            summary.tiles_written > 0,
+            "tiles written: {}",
+            summary.tiles_written
+        );
 
         let store = Store::open(&summary.store_path).expect("open store");
         // Completion is recorded for inspect() — for the configured
@@ -262,9 +274,13 @@ mod tests {
             e,
             IngestEvent::JobStarted { job: IngestJob::Elevation, label } if label == "elevation"
         )));
-        assert!(events
-            .iter()
-            .any(|e| matches!(e, IngestEvent::JobFinished { job: IngestJob::Elevation, .. })));
+        assert!(events.iter().any(|e| matches!(
+            e,
+            IngestEvent::JobFinished {
+                job: IngestJob::Elevation,
+                ..
+            }
+        )));
     }
 
     /// Two runs over adjacent DEM squares share the elevation tile that
@@ -273,7 +289,10 @@ mod tests {
     #[tokio::test]
     async fn rerun_over_the_adjacent_dem_square_merges_at_the_seam() {
         let dir = tempfile::tempdir().unwrap();
-        let provider = SyntheticDem { elevation: |_, _| 500.0, size: 60 };
+        let provider = SyntheticDem {
+            elevation: |_, _| 500.0,
+            size: 60,
+        };
 
         let run_bbox = |bbox: BoundingBox| {
             let (sink, _rx) = EventSink::channel();
@@ -286,9 +305,13 @@ mod tests {
 
         // First run only sees DEM square E010, second only E011.
         let first = run_bbox(BoundingBox::new(10.2, 50.2, 10.9, 50.8).unwrap());
-        run_with_provider(&first, &provider).await.expect("first run");
+        run_with_provider(&first, &provider)
+            .await
+            .expect("first run");
         let second = run_bbox(BoundingBox::new(11.1, 50.2, 11.9, 50.8).unwrap());
-        run_with_provider(&second, &provider).await.expect("second run");
+        run_with_provider(&second, &provider)
+            .await
+            .expect("second run");
 
         let store = Store::open(&dir.path().join("store.sqlite")).expect("open store");
         // Both sides of the seam tile carry data (DEM sample positions).
@@ -296,11 +319,17 @@ mod tests {
         let west = 10.0 + 48.0 / 60.0; // pooled by the first run only
         let east = 11.0 + 3.0 / 60.0; // pooled by the second run only
         assert!(
-            store.max_elevation_at(lat, west).expect("query ok").is_some(),
+            store
+                .max_elevation_at(lat, west)
+                .expect("query ok")
+                .is_some(),
             "first run's data west of the seam survived the second run"
         );
         assert!(
-            store.max_elevation_at(lat, east).expect("query ok").is_some(),
+            store
+                .max_elevation_at(lat, east)
+                .expect("query ok")
+                .is_some(),
             "second run's data east of the seam was written"
         );
     }
@@ -315,7 +344,10 @@ mod tests {
         // grid small while exercising two distinct, disjoint passes.
         let config = IngestConfig::new(dir.path(), vec![Country::LU, Country::MT]);
         let runner = Ingestion::new(config, sink, CancellationToken::new());
-        let provider = SyntheticDem { elevation: |_, _| 321.0, size: 30 };
+        let provider = SyntheticDem {
+            elevation: |_, _| 321.0,
+            size: 30,
+        };
 
         let summary = run_with_provider(&runner, &provider).await.expect("run");
         assert!(summary.tiles_written > 0);
@@ -352,7 +384,10 @@ mod tests {
     async fn all_sea_dem_writes_no_tiles_but_completes() {
         let dir = tempfile::tempdir().unwrap();
         let (runner, _rx) = runner(dir.path());
-        let provider = SyntheticDem { elevation: |_, _| f64::NAN, size: 30 };
+        let provider = SyntheticDem {
+            elevation: |_, _| f64::NAN,
+            size: 30,
+        };
 
         let summary = run_with_provider(&runner, &provider).await.expect("run");
 

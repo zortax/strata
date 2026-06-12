@@ -87,6 +87,9 @@ mod tests {
         assert_eq!(set.max_elevation_at(50.5, 10.5), None, "sentinel cell");
         assert_eq!(set.max_elevation_at(0.0, 0.0), None, "tile not in set");
         assert!(ElevationTileSet::default().is_empty());
-        assert_eq!(ElevationTileSet::default().max_elevation_at(50.5, 10.5), None);
+        assert_eq!(
+            ElevationTileSet::default().max_elevation_at(50.5, 10.5),
+            None
+        );
     }
 }

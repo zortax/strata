@@ -548,14 +548,22 @@ mod tests {
             return;
         };
         let camera = test_camera();
-        let centered = place_labels(&mut shaper, &camera, vec![label("EDDF", 400.0, 300.0, 1, 1)]);
+        let centered = place_labels(
+            &mut shaper,
+            &camera,
+            vec![label("EDDF", 400.0, 300.0, 1, 1)],
+        );
         let mut offset = label("EDDF", 400.0, 300.0, 1, 1);
         offset.offset_px = Vec2::new(10.0, 13.0);
         let shifted = place_labels(&mut shaper, &camera, vec![offset]);
         assert_eq!(centered.len(), 1);
         assert_eq!(shifted.len(), 1);
         let delta = shifted[0].origin - centered[0].origin;
-        assert_eq!(delta, Vec2::new(10.0, 13.0), "origin must move by offset_px");
+        assert_eq!(
+            delta,
+            Vec2::new(10.0, 13.0),
+            "origin must move by offset_px"
+        );
     }
 
     #[test]
@@ -590,13 +598,21 @@ mod tests {
         let mut pushed = label("high priority", 400.0, 300.0, 9, 1);
         pushed.offset_px = Vec2::new(0.0, 120.0);
         let at_anchor = label("low priority", 400.0, 300.0, 1, 2);
-        let placed = place_labels(&mut shaper, &camera, vec![pushed.clone(), at_anchor.clone()]);
+        let placed = place_labels(
+            &mut shaper,
+            &camera,
+            vec![pushed.clone(), at_anchor.clone()],
+        );
         assert_eq!(placed.len(), 2, "offset label must vacate the raw anchor");
 
         let mut clashing = at_anchor;
         clashing.offset_px = Vec2::new(0.0, 120.0);
         let placed = place_labels(&mut shaper, &camera, vec![pushed, clashing]);
-        assert_eq!(placed.len(), 1, "boxes at the same offset spot must collide");
+        assert_eq!(
+            placed.len(),
+            1,
+            "boxes at the same offset spot must collide"
+        );
     }
 
     #[test]

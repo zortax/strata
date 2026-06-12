@@ -51,10 +51,7 @@ fn is_duration(s: &str) -> bool {
 /// Item 7 — aircraft identification: 1–7 uppercase alphanumerics with at
 /// least one letter, no hyphen.
 fn item7(value: &str) -> Result<(), FplError> {
-    if value.len() <= 7
-        && is_upper_alnum(value)
-        && value.chars().any(|c| c.is_ascii_uppercase())
-    {
+    if value.len() <= 7 && is_upper_alnum(value) && value.chars().any(|c| c.is_ascii_uppercase()) {
         Ok(())
     } else {
         Err(invalid(
@@ -92,7 +89,11 @@ fn item9(value: &str) -> Result<(), FplError> {
         && is_upper_alnum(designator)
         && designator.chars().any(|c| c.is_ascii_uppercase());
     let wake_ok = wake.len() == 1 && "LMHJ".contains(wake);
-    if designator_ok && wake_ok { Ok(()) } else { Err(err()) }
+    if designator_ok && wake_ok {
+        Ok(())
+    } else {
+        Err(err())
+    }
 }
 
 /// Item 10 — `COM-NAV/SUR`: both sides non-empty uppercase alphanumerics
@@ -149,11 +150,7 @@ fn is_coords(token: &str) -> bool {
         }
         match digits.len() {
             n if n == ns => Some((digits.parse().ok()?, 0, h)),
-            n if n == ns + 2 => Some((
-                digits[..ns].parse().ok()?,
-                digits[ns..].parse().ok()?,
-                h,
-            )),
+            n if n == ns + 2 => Some((digits[..ns].parse().ok()?, digits[ns..].parse().ok()?, h)),
             _ => None,
         }
     };
@@ -202,7 +199,9 @@ fn item15(value: &str) -> Result<(), FplError> {
     if !(speed_ok && level_ok) {
         return Err(invalid(
             15,
-            format!("{first:?} is not speed (N####/K####/M###) + level (F###/A###/S####/M####/VFR)"),
+            format!(
+                "{first:?} is not speed (N####/K####/M###) + level (F###/A###/S####/M####/VFR)"
+            ),
         ));
     }
     for token in tokens {

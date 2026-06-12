@@ -502,7 +502,10 @@ mod tests {
             parse_visibility("9999NDV"),
             Some(VisGroup::Prevailing(Visibility::Meters(9999)))
         );
-        assert_eq!(parse_visibility("4000NE"), Some(VisGroup::Directional(4000)));
+        assert_eq!(
+            parse_visibility("4000NE"),
+            Some(VisGroup::Directional(4000))
+        );
         assert_eq!(parse_visibility("////"), Some(VisGroup::Unavailable));
         assert_eq!(parse_visibility("10/09"), None);
         assert_eq!(parse_visibility("092320Z"), None);
@@ -626,7 +629,10 @@ mod tests {
             parse_cloud("VV003"),
             Some(CloudGroup::VerticalVisibility(Some(300)))
         );
-        assert_eq!(parse_cloud("VV///"), Some(CloudGroup::VerticalVisibility(None)));
+        assert_eq!(
+            parse_cloud("VV///"),
+            Some(CloudGroup::VerticalVisibility(None))
+        );
         assert_eq!(parse_cloud("VVABC"), None);
     }
 

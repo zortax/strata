@@ -180,8 +180,7 @@ pub fn sample_corridor(
         airspaces::crossings(&tracked, &lateral, params.half_width, query_bbox, airspaces)?;
 
     let mut samples = Vec::with_capacity(tracked.len());
-    for (station, (samples_at, tallest_obstacle)) in
-        tracked.iter().zip(lateral.iter().zip(tallest))
+    for (station, (samples_at, tallest_obstacle)) in tracked.iter().zip(lateral.iter().zip(tallest))
     {
         let terrain = terrain::terrain_extrema(samples_at, elevation)?;
         samples.push(CorridorSample {

@@ -4,8 +4,8 @@
 
 use std::fs;
 
-use strata_ingest::{AeroSummary, BasemapSummary, ElevationSummary, TerrainSummary};
 use indicatif::HumanBytes;
+use strata_ingest::{AeroSummary, BasemapSummary, ElevationSummary, TerrainSummary};
 
 pub fn aero(summary: &AeroSummary) {
     println!();

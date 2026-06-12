@@ -265,7 +265,13 @@ impl Store {
         terrain::get(&self.conn.lock(), z, x, y)
     }
 
-    pub fn put_terrain_tile(&mut self, z: u8, x: u32, y: u32, png: &[u8]) -> Result<(), StoreError> {
+    pub fn put_terrain_tile(
+        &mut self,
+        z: u8,
+        x: u32,
+        y: u32,
+        png: &[u8],
+    ) -> Result<(), StoreError> {
         terrain::put(&self.conn.lock(), z, x, y, png)
     }
 
@@ -273,10 +279,7 @@ impl Store {
     //     module docs for the exact tile/blob format) ---
 
     /// One decoded elevation tile, if stored.
-    pub fn elevation_tile(
-        &self,
-        id: ElevationTileId,
-    ) -> Result<Option<ElevationTile>, StoreError> {
+    pub fn elevation_tile(&self, id: ElevationTileId) -> Result<Option<ElevationTile>, StoreError> {
         elevation::get(&self.conn.lock(), id)
     }
 
@@ -311,11 +314,7 @@ impl Store {
     /// Cost: one tile fetch + zlib decode per call. Fine for point
     /// lookups; bulk samplers (corridor profiles) should read once via
     /// [`Store::elevation_tiles_in_bbox`] / [`ElevationTileSet`] instead.
-    pub fn max_elevation_at(
-        &self,
-        lat: f64,
-        lon: f64,
-    ) -> Result<Option<MetersAmsl>, StoreError> {
+    pub fn max_elevation_at(&self, lat: f64, lon: f64) -> Result<Option<MetersAmsl>, StoreError> {
         elevation::max_at(&self.conn.lock(), lat, lon)
     }
 

@@ -16,7 +16,9 @@ use std::time::{Duration, Instant};
 
 use gpui::{AppContext as _, Context};
 use strata_data::domain::BoundingBox;
-use strata_data::store::{ELEVATION_CELLS_PER_DEGREE, ELEVATION_TILE_SIDE, ElevationTileSet, Store};
+use strata_data::store::{
+    ELEVATION_CELLS_PER_DEGREE, ELEVATION_TILE_SIDE, ElevationTileSet, Store,
+};
 use strata_plan::compute::{
     ComputeOutcome as PlanOutcome, ComputeParams, ComputedFlight, NotComputable,
 };
@@ -45,8 +47,7 @@ pub type ElevationCache = (BoundingBox, Arc<ElevationTileSet>);
 /// One full elevation tile (256 cells of 1/600°) beyond the required bbox
 /// on each side of a fresh prefetch: small route edits (drags, appends)
 /// stay inside the cached coverage instead of re-prefetching per edit.
-const ELEVATION_CACHE_PAD_DEG: f64 =
-    ELEVATION_TILE_SIDE as f64 / ELEVATION_CELLS_PER_DEGREE as f64;
+const ELEVATION_CACHE_PAD_DEG: f64 = ELEVATION_TILE_SIDE as f64 / ELEVATION_CELLS_PER_DEGREE as f64;
 
 /// Generation bookkeeping for debounced background compute (pure).
 ///
@@ -153,7 +154,14 @@ impl AppState {
             let started = Instant::now();
             let (outcome, elevation) = cx
                 .background_spawn(async move {
-                    run_compute(&doc, aircraft.as_ref(), store, winds, &params, elevation_cache)
+                    run_compute(
+                        &doc,
+                        aircraft.as_ref(),
+                        store,
+                        winds,
+                        &params,
+                        elevation_cache,
+                    )
                 })
                 .await;
             this.update(cx, |this, cx| {
@@ -456,17 +464,32 @@ mod tests {
         // No aircraft selected.
         let mut doc = two_leg_doc();
         doc.aircraft_id = None;
-        let (outcome, _) =
-            run_compute(&doc, None, Some(Arc::clone(&store)), winds.clone(), &params, None);
+        let (outcome, _) = run_compute(
+            &doc,
+            None,
+            Some(Arc::clone(&store)),
+            winds.clone(),
+            &params,
+            None,
+        );
         assert!(
-            matches!(&outcome, ComputeOutcome::NotComputable(NotComputable::NoAircraft)),
+            matches!(
+                &outcome,
+                ComputeOutcome::NotComputable(NotComputable::NoAircraft)
+            ),
             "{outcome:?}"
         );
 
         // Aircraft referenced but not in the library.
         let doc = two_leg_doc();
-        let (outcome, _) =
-            run_compute(&doc, None, Some(Arc::clone(&store)), winds.clone(), &params, None);
+        let (outcome, _) = run_compute(
+            &doc,
+            None,
+            Some(Arc::clone(&store)),
+            winds.clone(),
+            &params,
+            None,
+        );
         assert!(
             matches!(
                 &outcome,
@@ -509,7 +532,10 @@ mod tests {
             None,
         );
         assert!(
-            matches!(&outcome, ComputeOutcome::NotComputable(NotComputable::NoRoute)),
+            matches!(
+                &outcome,
+                ComputeOutcome::NotComputable(NotComputable::NoRoute)
+            ),
             "{outcome:?}"
         );
 
@@ -573,10 +599,12 @@ mod tests {
         // Extending the route far beyond the coverage forces a fresh
         // prefetch over a larger envelope (stale coverage must not serve).
         let mut extended = two_leg_doc();
-        extended.route.push(RouteWaypoint::new(RoutePoint::Free(FreePoint {
-            name: Some("C".to_owned()),
-            position: LatLon::new(52.5, 12.0).unwrap(),
-        })));
+        extended
+            .route
+            .push(RouteWaypoint::new(RoutePoint::Free(FreePoint {
+                name: Some("C".to_owned()),
+                position: LatLon::new(52.5, 12.0).unwrap(),
+            })));
         let (_, third) = run_compute(
             &extended,
             Some(&aircraft),
@@ -588,8 +616,7 @@ mod tests {
         let (third_coverage, third_tiles) = third.expect("fresh cache after the miss");
         assert!(!Arc::ptr_eq(&tiles, &third_tiles), "stale set replaced");
         assert!(
-            third_coverage
-                .contains_bbox(&elevation_prefetch_bbox(&extended, &params).unwrap()),
+            third_coverage.contains_bbox(&elevation_prefetch_bbox(&extended, &params).unwrap()),
             "new coverage spans the extended route"
         );
     }
@@ -650,6 +677,9 @@ mod tests {
             matches!(&outcome, ComputeOutcome::Failed(e) if e.contains("store")),
             "{outcome:?}"
         );
-        assert!(elevation.is_none(), "no cache from a run that never read tiles");
+        assert!(
+            elevation.is_none(),
+            "no cache from a run that never read tiles"
+        );
     }
 }

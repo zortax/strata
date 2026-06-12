@@ -22,7 +22,12 @@ pub(crate) struct SyntheticDem {
 
 impl SyntheticDem {
     pub(crate) fn new(elevation: fn(f64, f64) -> f64, width: u32, height: u32) -> Self {
-        Self { elevation, width, height, fetches: AtomicUsize::new(0) }
+        Self {
+            elevation,
+            width,
+            height,
+            fetches: AtomicUsize::new(0),
+        }
     }
 
     pub(crate) fn make_tile(&self, id: DemTileId) -> DemTile {
@@ -35,7 +40,12 @@ impl SyntheticDem {
                 elevations_m.push((self.elevation)(lat, lon) as f32);
             }
         }
-        DemTile { id, width: self.width, height: self.height, elevations_m }
+        DemTile {
+            id,
+            width: self.width,
+            height: self.height,
+            elevations_m,
+        }
     }
 }
 

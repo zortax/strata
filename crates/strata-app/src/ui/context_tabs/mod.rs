@@ -36,8 +36,7 @@ use strata_plan::{AircraftProfile, FlightDoc};
 use strata_render::MapTheme;
 
 use crate::app::panel_animation::{
-    PANEL_ENTER_DURATION, PANEL_EXIT_DURATION, PANEL_UNMOUNT_DELAY, PanelAnimation,
-    PanelVisibility,
+    PANEL_ENTER_DURATION, PANEL_EXIT_DURATION, PANEL_UNMOUNT_DELAY, PanelAnimation, PanelVisibility,
 };
 use crate::state::flight::PlanningFocus;
 use crate::state::{AppState, AppStateEvent, ComputeState};
@@ -321,9 +320,7 @@ impl Render for ContextPanel {
             (ContextTab::Weather, Some(flight)) => weather::render_weather_tab(self, flight, cx),
             (ContextTab::Loading, Some(flight)) => loading::render_loading_tab(self, flight, cx),
             (ContextTab::Fuel, Some(flight)) => fuel::render_fuel_tab(self, flight, cx),
-            (ContextTab::Briefing, Some(flight)) => {
-                briefing::render_briefing_tab(self, flight, cx)
-            }
+            (ContextTab::Briefing, Some(flight)) => briefing::render_briefing_tab(self, flight, cx),
         };
 
         let tab_bar = TabBar::new("context-tabs")
@@ -385,22 +382,14 @@ impl Render for ContextPanel {
                 .with_animation(
                     ("context-panel-enter", self.anim.open_generation()),
                     Animation::new(PANEL_ENTER_DURATION).with_easing(ease_out_quint()),
-                    |panel, delta| {
-                        panel
-                            .left(px(PANEL_SLIDE_PX * (1. - delta)))
-                            .opacity(delta)
-                    },
+                    |panel, delta| panel.left(px(PANEL_SLIDE_PX * (1. - delta))).opacity(delta),
                 )
                 .into_any_element(),
             PanelVisibility::Closing => panel
                 .with_animation(
                     ("context-panel-exit", self.anim.close_epoch()),
                     Animation::new(PANEL_EXIT_DURATION).with_easing(quadratic),
-                    |panel, delta| {
-                        panel
-                            .left(px(PANEL_SLIDE_PX * delta))
-                            .opacity(1. - delta)
-                    },
+                    |panel, delta| panel.left(px(PANEL_SLIDE_PX * delta)).opacity(1. - delta),
                 )
                 .into_any_element(),
         };
@@ -417,11 +406,7 @@ impl Render for ContextPanel {
 
 /// Shared "this tab has nothing to show yet" card: a primary line plus the
 /// compute-state hint when there is one.
-fn not_computable_hint(
-    primary: &str,
-    hint: Option<String>,
-    cx: &gpui::App,
-) -> AnyElement {
+fn not_computable_hint(primary: &str, hint: Option<String>, cx: &gpui::App) -> AnyElement {
     card(cx)
         .child(
             div()

@@ -312,7 +312,12 @@ impl MapLayer for BasemapLayer {
             let wanted_tiles = Arc::clone(&self.wanted);
             let theme = Arc::clone(&self.theme);
             self.jobs.submit(ctx.workers, move || {
-                decode_if_wanted(wanted, &wanted_tiles, || source.tile(wanted), &theme.basemap)
+                decode_if_wanted(
+                    wanted,
+                    &wanted_tiles,
+                    || source.tile(wanted),
+                    &theme.basemap,
+                )
             });
         }
 

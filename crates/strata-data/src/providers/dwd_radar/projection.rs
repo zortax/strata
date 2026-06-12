@@ -188,8 +188,7 @@ mod tests {
         let d_rho_d_phi = (rho2 - rho1) / (2.0 * h);
         let e2 = eccentricity_sq();
         let sin60 = 60.0_f64.to_radians().sin();
-        let meridian_radius =
-            SEMI_MAJOR_M * (1.0 - e2) / (1.0 - e2 * sin60 * sin60).powf(1.5);
+        let meridian_radius = SEMI_MAJOR_M * (1.0 - e2) / (1.0 - e2 * sin60 * sin60).powf(1.5);
         let scale = -d_rho_d_phi / meridian_radius;
         assert!(
             (scale - 1.0).abs() < 1e-6,

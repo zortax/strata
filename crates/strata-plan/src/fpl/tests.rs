@@ -134,7 +134,7 @@ fn golden_reference_message() {
          -N0107A045 DCT 4945N00930E DCT\n\
          -EDQN0119 EDQC\n\
          -DOF/260614\n\
-         -E/0400 P/2 A/WHITE BLUE C/LEO SEIBOLD)"
+         -E/0400 P/2 A/WHITE BLUE C/PETER SCHMIDT)"
     );
 }
 
@@ -153,7 +153,7 @@ fn golden_zzzz_destination_goes_to_item18() {
          -N0107A045 DCT 4945N00930E DCT\n\
          -ZZZZ0119\n\
          -DOF/260614 DEST/5006N00954E\n\
-         -E/0400 P/2 A/WHITE BLUE C/LEO SEIBOLD)"
+         -E/0400 P/2 A/WHITE BLUE C/PETER SCHMIDT)"
     );
 }
 
@@ -200,7 +200,7 @@ fn persons_unknown_files_as_tbn() {
     pilot.aircraft_color = None;
     let message = generate(&doc(), &aircraft(), &computed(79.0), &pilot).expect("generates");
     assert!(
-        message.ends_with("-E/0400 P/TBN C/LEO SEIBOLD)"),
+        message.ends_with("-E/0400 P/TBN C/PETER SCHMIDT)"),
         "got: {message}"
     );
 }

@@ -674,7 +674,9 @@ fn interpolated_temperature_provenance_is_real_only_when_both_levels_are() {
     let h700 = PressureLevel::P700.isa_altitude().0;
     let mid = MetersAmsl((h850 + h700) / 2.0);
     assert_eq!(
-        interpolate_levels(&real, mid).unwrap().temperature_provenance,
+        interpolate_levels(&real, mid)
+            .unwrap()
+            .temperature_provenance,
         Provenance::Real
     );
     assert_eq!(
@@ -691,7 +693,9 @@ fn interpolated_temperature_provenance_is_real_only_when_both_levels_are() {
     let mut mixed = four_levels();
     mixed[2].temperature_provenance = Provenance::Isa;
     assert_eq!(
-        interpolate_levels(&mixed, mid).unwrap().temperature_provenance,
+        interpolate_levels(&mixed, mid)
+            .unwrap()
+            .temperature_provenance,
         Provenance::Isa,
         "a value mixed from real and ISA levels is not Real"
     );

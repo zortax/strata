@@ -312,7 +312,13 @@ mod tests {
     #[test]
     fn degenerate_rings_are_skipped() {
         let mut fill = FillMesh::default();
-        tessellate_fill(&[DVec2::ZERO, DVec2::ONE], &[], DVec2::ZERO, [1.0; 4], &mut fill);
+        tessellate_fill(
+            &[DVec2::ZERO, DVec2::ONE],
+            &[],
+            DVec2::ZERO,
+            [1.0; 4],
+            &mut fill,
+        );
         assert!(fill.vertices.is_empty());
         let mut line = LineMesh::default();
         let style = StrokeStyleSpec {

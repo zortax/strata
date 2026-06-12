@@ -127,8 +127,7 @@ pub fn build_navlog(
         ),
         None => aircraft.performance.cruise_settings.first(),
     };
-    let taxi_fuel =
-        doc.fuel_policy.taxi.as_hours() * aircraft.performance.taxi_fuel_flow.0;
+    let taxi_fuel = doc.fuel_policy.taxi.as_hours() * aircraft.performance.taxi_fuel_flow.0;
     rows::assemble(&rows::Inputs {
         doc,
         winds,

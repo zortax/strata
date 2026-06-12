@@ -663,7 +663,10 @@ mod tests {
         }
         assert!(!layer.wants_redraw(), "layer failed to settle");
         assert_eq!(layer.cache.pending_count(), 0);
-        assert!(layer.cache.ready_count() > 0, "tiles must be cached as ready");
+        assert!(
+            layer.cache.ready_count() > 0,
+            "tiles must be cached as ready"
+        );
         assert!(
             layer.draws.is_empty(),
             "fully transparent tiles must not record draws"

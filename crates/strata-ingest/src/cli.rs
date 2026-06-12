@@ -142,7 +142,11 @@ mod tests {
     fn aero_parses_with_defaults() {
         let cli = parse(&["aero"]).unwrap();
         assert!(matches!(cli.command, Command::Aero));
-        assert_eq!(cli.global.countries, vec![Country::DE], "default is Germany");
+        assert_eq!(
+            cli.global.countries,
+            vec![Country::DE],
+            "default is Germany"
+        );
         assert_eq!(cli.global.data_dir, None);
         assert_eq!(cli.global.bbox, None);
     }
@@ -177,7 +181,10 @@ mod tests {
     #[test]
     fn global_flags_work_after_the_subcommand() {
         let cli = parse(&["aero", "--countries", "DE", "--data-dir", "/tmp/x"]).unwrap();
-        assert_eq!(cli.global.data_dir.as_deref(), Some(std::path::Path::new("/tmp/x")));
+        assert_eq!(
+            cli.global.data_dir.as_deref(),
+            Some(std::path::Path::new("/tmp/x"))
+        );
     }
 
     #[test]
@@ -199,7 +206,10 @@ mod tests {
     #[test]
     fn bbox_rejects_non_numeric() {
         let err = parse(&["--bbox", "a,49.0,10.5,50.0", "terrain"]).unwrap_err();
-        assert!(err.to_string().contains("west 'a' is not a number"), "got: {err}");
+        assert!(
+            err.to_string().contains("west 'a' is not a number"),
+            "got: {err}"
+        );
     }
 
     #[test]
@@ -219,9 +229,21 @@ mod tests {
     #[test]
     fn terrain_zooms_default_to_5_and_11() {
         let cli = parse(&["terrain"]).unwrap();
-        assert!(matches!(cli.command, Command::Terrain { minzoom: 5, maxzoom: 11 }));
+        assert!(matches!(
+            cli.command,
+            Command::Terrain {
+                minzoom: 5,
+                maxzoom: 11
+            }
+        ));
         let cli = parse(&["terrain", "--minzoom", "6", "--maxzoom", "8"]).unwrap();
-        assert!(matches!(cli.command, Command::Terrain { minzoom: 6, maxzoom: 8 }));
+        assert!(matches!(
+            cli.command,
+            Command::Terrain {
+                minzoom: 6,
+                maxzoom: 8
+            }
+        ));
     }
 
     #[test]
@@ -229,12 +251,20 @@ mod tests {
         let cli = parse(&["all"]).unwrap();
         assert!(matches!(
             cli.command,
-            Command::All { basemap_maxzoom: 13, terrain_minzoom: 5, terrain_maxzoom: 11 }
+            Command::All {
+                basemap_maxzoom: 13,
+                terrain_minzoom: 5,
+                terrain_maxzoom: 11
+            }
         ));
         let cli = parse(&["all", "--basemap-maxzoom", "10", "--terrain-maxzoom", "9"]).unwrap();
         assert!(matches!(
             cli.command,
-            Command::All { basemap_maxzoom: 10, terrain_minzoom: 5, terrain_maxzoom: 9 }
+            Command::All {
+                basemap_maxzoom: 10,
+                terrain_minzoom: 5,
+                terrain_maxzoom: 9
+            }
         ));
     }
 

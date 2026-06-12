@@ -17,28 +17,27 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use gpui::{AppContext as _, Context, EventEmitter, Task};
+use gpui_tokio::Tokio;
 use strata_data::domain::{
-    AiracCycle, BoundingBox, Country, IcaoCode, LatLon, Metar, Meters, Sigmet, Taf,
-    weather_bboxes,
+    AiracCycle, BoundingBox, Country, IcaoCode, LatLon, Metar, Meters, Sigmet, Taf, weather_bboxes,
 };
 use strata_data::providers::aviationweather::{AviationWeatherClient, CachedWeatherProvider};
 use strata_data::providers::{WeatherProvider as _, WeatherQuery};
 use strata_data::store::{Dataset, DatasetMeta, Feature, Store};
-use gpui::{AppContext as _, Context, EventEmitter, Task};
-use gpui_tokio::Tokio;
 
 use crate::config::Config;
 use crate::tile_sources::MbTilesSource;
 // `OpenFlight`/`ComputeState` are what the planning panels read off
 // `AppState::flight`; re-exported alongside the mutation API in `flight`.
+use flight::winds::FlightWinds;
 #[allow(unused_imports)]
 pub use flight::{ComputeState, OpenFlight};
-use flight::winds::FlightWinds;
 // `IngestDataset`/`IngestRunResult` are re-exported for the settings modal
 // (next phase) — the manual run/cancel/last-result API on `AppState`.
+use ingest::IngestManager;
 #[allow(unused_imports)]
 pub use ingest::{IngestDataset, IngestNotice, IngestRunResult, NoticeLevel};
-use ingest::IngestManager;
 use ingest_progress::IngestProgressVm;
 use weather_time::WeatherTime;
 
@@ -280,12 +279,12 @@ impl AppState {
                 (None, Some(err.to_string()))
             }
         };
-        let terrain_store = store
-            .as_ref()
-            .map(|shared| open_extra_store_connection(&data_dir.join(STORE_FILE), shared, "terrain"));
-        let compute_store = store
-            .as_ref()
-            .map(|shared| open_extra_store_connection(&data_dir.join(STORE_FILE), shared, "compute"));
+        let terrain_store = store.as_ref().map(|shared| {
+            open_extra_store_connection(&data_dir.join(STORE_FILE), shared, "terrain")
+        });
+        let compute_store = store.as_ref().map(|shared| {
+            open_extra_store_connection(&data_dir.join(STORE_FILE), shared, "compute")
+        });
 
         // One-shot rename of a pre-multi-country archive
         // (basemap-de.mbtiles → basemap.mbtiles) before opening it.
@@ -413,7 +412,11 @@ impl AppState {
     /// it, they run the enabled set too). An empty set is legal: nothing
     /// gets auto-ingested, existing data stays on disk untouched. Returns
     /// whether the set changed.
-    pub fn set_enabled_countries(&mut self, countries: Vec<Country>, cx: &mut Context<Self>) -> bool {
+    pub fn set_enabled_countries(
+        &mut self,
+        countries: Vec<Country>,
+        cx: &mut Context<Self>,
+    ) -> bool {
         let next = crate::config::normalize_countries(countries);
         if next == self.config.enabled_countries() {
             return false;
@@ -720,12 +723,16 @@ impl AppState {
             let mut metars: Vec<Metar> = Vec::new();
             let mut tafs: Vec<Taf> = Vec::new();
             for bbox in &boxes {
-                merge_by_key(&mut metars, provider.metars(WeatherQuery::Bbox(*bbox)).await?, |m| {
-                    &m.station
-                });
-                merge_by_key(&mut tafs, provider.tafs(WeatherQuery::Bbox(*bbox)).await?, |t| {
-                    &t.station
-                });
+                merge_by_key(
+                    &mut metars,
+                    provider.metars(WeatherQuery::Bbox(*bbox)).await?,
+                    |m| &m.station,
+                );
+                merge_by_key(
+                    &mut tafs,
+                    provider.tafs(WeatherQuery::Bbox(*bbox)).await?,
+                    |t| &t.station,
+                );
             }
             // SIGMETs ride one union box: the upstream feed is global and
             // only client-filtered, so box size costs nothing.
@@ -1181,7 +1188,11 @@ mod tests {
         fn key(t: &(String, u32)) -> &String {
             &t.0
         }
-        merge_by_key(&mut merged, vec![("EDDF".into(), 1), ("EDDM".into(), 1)], key);
+        merge_by_key(
+            &mut merged,
+            vec![("EDDF".into(), 1), ("EDDM".into(), 1)],
+            key,
+        );
         merge_by_key(
             &mut merged,
             vec![
@@ -1216,7 +1227,11 @@ mod tests {
         let mut slot = None;
 
         // Explorer mode: a scrub makes no sense and never lands.
-        assert!(!update_profile_scrub(&mut slot, Some(Meters(1000.0)), false));
+        assert!(!update_profile_scrub(
+            &mut slot,
+            Some(Meters(1000.0)),
+            false
+        ));
         assert_eq!(slot, None);
 
         // Planning mode: set / no-op / move / clear.
@@ -1227,7 +1242,10 @@ mod tests {
             "identical value is a no-op (mouse-move chatter)"
         );
         assert!(update_profile_scrub(&mut slot, Some(Meters(2000.0)), true));
-        assert!(update_profile_scrub(&mut slot, None, true), "clearing is a change");
+        assert!(
+            update_profile_scrub(&mut slot, None, true),
+            "clearing is a change"
+        );
         assert!(!update_profile_scrub(&mut slot, None, true));
 
         // Leaving planning mode collapses a live scrub to None once.
@@ -1252,7 +1270,10 @@ mod tests {
             "identical id is a no-op (hover chatter)"
         );
         assert!(update_route_highlight(&mut slot, Some(2), true));
-        assert!(update_route_highlight(&mut slot, None, true), "clearing is a change");
+        assert!(
+            update_route_highlight(&mut slot, None, true),
+            "clearing is a change"
+        );
         assert!(!update_route_highlight(&mut slot, None, true));
 
         // Leaving planning mode collapses a live highlight to None once.

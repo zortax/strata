@@ -57,8 +57,8 @@ pub fn decode_taf(raw: &str, anchor: DateTime<Utc>) -> Result<Taf, DecodeError> 
     let &validity_token = tokens
         .get(i)
         .ok_or(DecodeError::Missing("validity period"))?;
-    let (valid_from, valid_to) = parse_validity(validity_token, issued_at)
-        .ok_or(DecodeError::Missing("validity period"))?;
+    let (valid_from, valid_to) =
+        parse_validity(validity_token, issued_at).ok_or(DecodeError::Missing("validity period"))?;
     i += 1;
 
     // Split the remainder into the base group and change groups at the
@@ -80,7 +80,8 @@ pub fn decode_taf(raw: &str, anchor: DateTime<Utc>) -> Result<Taf, DecodeError> 
             } else {
                 TafChangeKind::Tempo
             };
-            let (from, to) = take_window(&tokens, &mut i, issued_at).unwrap_or((valid_from, valid_to));
+            let (from, to) =
+                take_window(&tokens, &mut i, issued_at).unwrap_or((valid_from, valid_to));
             changes.push(RawChange {
                 kind,
                 from,
@@ -95,7 +96,8 @@ pub fn decode_taf(raw: &str, anchor: DateTime<Utc>) -> Result<Taf, DecodeError> 
             } else {
                 TafChangeKind::Prob(probability)
             };
-            let (from, to) = take_window(&tokens, &mut i, issued_at).unwrap_or((valid_from, valid_to));
+            let (from, to) =
+                take_window(&tokens, &mut i, issued_at).unwrap_or((valid_from, valid_to));
             changes.push(RawChange {
                 kind,
                 from,
@@ -347,7 +349,10 @@ mod tests {
         assert_eq!(tempo.kind, TafChangeKind::Tempo);
         assert_eq!(tempo.valid_from, utc(2026, 6, 10, 11, 0));
         assert_eq!(tempo.valid_to, utc(2026, 6, 10, 19, 0));
-        assert_eq!(tempo.group.weather[0].descriptor, Some(WxDescriptor::Showers));
+        assert_eq!(
+            tempo.group.weather[0].descriptor,
+            Some(WxDescriptor::Showers)
+        );
         assert_eq!(tempo.group.weather[0].kind, Some(WxKind::Rain));
         assert_eq!(tempo.group.clouds[0].amount, CloudAmount::Scattered);
         assert_eq!(tempo.group.clouds[0].kind, Some(CloudKind::Cumulonimbus));
@@ -373,15 +378,23 @@ mod tests {
         assert_eq!(taf.changes[0].kind, TafChangeKind::Becmg);
         let wind = taf.changes[1].group.wind.expect("wind");
         assert_eq!(wind.gust_kt, Some(30));
-        assert_eq!(taf.changes[1].group.visibility, Some(Visibility::Meters(4500)));
+        assert_eq!(
+            taf.changes[1].group.visibility,
+            Some(Visibility::Meters(4500))
+        );
     }
 
     #[test]
     fn prob_without_tempo() {
-        let taf = decode("TAF EDDH 092300Z 1000/1024 20005KT 9999 SCT030 PROB30 1002/1005 0500 FG BKN001");
+        let taf = decode(
+            "TAF EDDH 092300Z 1000/1024 20005KT 9999 SCT030 PROB30 1002/1005 0500 FG BKN001",
+        );
         assert_eq!(taf.changes.len(), 1);
         assert_eq!(taf.changes[0].kind, TafChangeKind::Prob(30));
-        assert_eq!(taf.changes[0].group.visibility, Some(Visibility::Meters(500)));
+        assert_eq!(
+            taf.changes[0].group.visibility,
+            Some(Visibility::Meters(500))
+        );
         assert_eq!(taf.changes[0].group.weather[0].kind, Some(WxKind::Fog));
     }
 

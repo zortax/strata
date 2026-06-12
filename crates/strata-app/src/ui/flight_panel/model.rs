@@ -4,15 +4,13 @@
 //! icon enum — everything is unit-testable.
 
 use chrono::{DateTime, NaiveDate, NaiveTime, Timelike as _, Utc};
+use strata_data::domain::MetersAmsl;
 use strata_plan::AircraftProfile;
 use strata_plan::compute::ComputedLeg;
 use strata_plan::conflict::{Conflict, ConflictKind, ConflictSeverity};
-use strata_plan::flight::{
-    FreePoint, NamedPointKind, PlannedAltitude, RoutePoint, RouteWaypoint,
-};
+use strata_plan::flight::{FreePoint, NamedPointKind, PlannedAltitude, RoutePoint, RouteWaypoint};
 use strata_plan::navlog::{NavLogRow, NavLogRowKind};
 use strata_plan::units::{DegreesMagnetic, Knots, Liters, Minutes, NauticalMiles};
-use strata_data::domain::MetersAmsl;
 
 use crate::assets::IconName;
 use crate::state::briefing::{BriefingRelevance, NotamBadge};
@@ -593,9 +591,27 @@ mod tests {
         // Leg 0 splits at TOC: 5 NM climb + 30 NM cruise; leg 1 is one row.
         let rows = vec![
             row(NavLogRowKind::Waypoint, None, None, None, None), // departure
-            row(NavLogRowKind::TopOfClimb, Some(5.0), Some(4.0), Some(82.0), Some(70.0)),
-            row(NavLogRowKind::Waypoint, Some(30.0), Some(18.0), Some(78.0), Some(100.0)),
-            row(NavLogRowKind::Waypoint, Some(20.0), Some(12.0), Some(120.0), Some(100.0)),
+            row(
+                NavLogRowKind::TopOfClimb,
+                Some(5.0),
+                Some(4.0),
+                Some(82.0),
+                Some(70.0),
+            ),
+            row(
+                NavLogRowKind::Waypoint,
+                Some(30.0),
+                Some(18.0),
+                Some(78.0),
+                Some(100.0),
+            ),
+            row(
+                NavLogRowKind::Waypoint,
+                Some(20.0),
+                Some(12.0),
+                Some(120.0),
+                Some(100.0),
+            ),
         ];
         let legs = [leg(0, 35.0 * 1852.0), leg(1, 20.0 * 1852.0)];
         let readouts = leg_readouts(&legs, &rows);
@@ -604,11 +620,17 @@ mod tests {
         assert!((readouts[0].distance.0 - 35.0).abs() < 1e-9);
         assert_eq!(readouts[0].ete, Some(Minutes(22.0)));
         // Cruise interval (30 NM) dominates the climb (5 NM).
-        assert_eq!(readouts[0].magnetic_heading, Some(DegreesMagnetic::new(78.0)));
+        assert_eq!(
+            readouts[0].magnetic_heading,
+            Some(DegreesMagnetic::new(78.0))
+        );
         assert_eq!(readouts[0].ground_speed, Some(Knots(100.0)));
 
         assert_eq!(readouts[1].ete, Some(Minutes(12.0)));
-        assert_eq!(readouts[1].magnetic_heading, Some(DegreesMagnetic::new(120.0)));
+        assert_eq!(
+            readouts[1].magnetic_heading,
+            Some(DegreesMagnetic::new(120.0))
+        );
     }
 
     #[test]
@@ -624,8 +646,20 @@ mod tests {
         // More waypoint rows than legs: the extras are ignored.
         let rows = vec![
             row(NavLogRowKind::Waypoint, None, None, None, None),
-            row(NavLogRowKind::Waypoint, Some(1.0), Some(1.0), Some(90.0), Some(60.0)),
-            row(NavLogRowKind::Waypoint, Some(9.0), Some(9.0), Some(90.0), Some(60.0)),
+            row(
+                NavLogRowKind::Waypoint,
+                Some(1.0),
+                Some(1.0),
+                Some(90.0),
+                Some(60.0),
+            ),
+            row(
+                NavLogRowKind::Waypoint,
+                Some(9.0),
+                Some(9.0),
+                Some(90.0),
+                Some(60.0),
+            ),
         ];
         let readouts = leg_readouts(&legs, &rows);
         assert_eq!(readouts.len(), 1);
@@ -651,7 +685,10 @@ mod tests {
             ete: None,
             ..readout
         };
-        assert_eq!(leg_readout_text(Some(&readout)), "38.6 NM · MH — · — kt · —");
+        assert_eq!(
+            leg_readout_text(Some(&readout)),
+            "38.6 NM · MH — · — kt · —"
+        );
     }
 
     #[test]
@@ -707,10 +744,26 @@ mod tests {
     #[test]
     fn badge_severity_takes_the_worst_conflict_and_tooltips_the_first() {
         let conflicts = [
-            conflict(ConflictKind::Airspace, ConflictSeverity::Caution, "TMZ ahead"),
-            conflict(ConflictKind::Airspace, ConflictSeverity::Warning, "ED-R crossing"),
-            conflict(ConflictKind::Obstacle, ConflictSeverity::Caution, "mast near WP2"),
-            conflict(ConflictKind::Fuel, ConflictSeverity::Info, "tabs fueling note"),
+            conflict(
+                ConflictKind::Airspace,
+                ConflictSeverity::Caution,
+                "TMZ ahead",
+            ),
+            conflict(
+                ConflictKind::Airspace,
+                ConflictSeverity::Warning,
+                "ED-R crossing",
+            ),
+            conflict(
+                ConflictKind::Obstacle,
+                ConflictSeverity::Caution,
+                "mast near WP2",
+            ),
+            conflict(
+                ConflictKind::Fuel,
+                ConflictSeverity::Info,
+                "tabs fueling note",
+            ),
         ];
         let badges = badge_row(
             Some(&conflicts),
@@ -720,7 +773,11 @@ mod tests {
 
         let airspace = by_label("Airspace");
         assert_eq!(airspace.tone, BadgeTone::Alert, "warning escalates to red");
-        assert_eq!(airspace.tooltip.as_deref(), Some("TMZ ahead"), "first message");
+        assert_eq!(
+            airspace.tooltip.as_deref(),
+            Some("TMZ ahead"),
+            "first message"
+        );
 
         // Obstacles report under the Terrain badge.
         let terrain = by_label("Terrain");

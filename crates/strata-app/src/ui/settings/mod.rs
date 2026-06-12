@@ -372,11 +372,9 @@ impl SettingsView {
         cx: &mut Context<Self>,
     ) {
         let NumberInputEvent::Step(action) = event;
-        let current = input
-            .read(cx)
-            .value()
-            .parse::<i64>()
-            .unwrap_or(i64::from(self.app_state.read(cx).config.weather.refresh_minutes));
+        let current = input.read(cx).value().parse::<i64>().unwrap_or(i64::from(
+            self.app_state.read(cx).config.weather.refresh_minutes,
+        ));
         let stepped = match action {
             StepAction::Increment => current + 1,
             StepAction::Decrement => current - 1,

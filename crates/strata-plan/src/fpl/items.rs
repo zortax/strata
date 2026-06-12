@@ -141,7 +141,11 @@ pub(crate) fn item15(doc: &FlightDoc, aircraft: &AircraftProfile) -> Result<Stri
             what: "a positive cruise TAS",
         });
     }
-    let mut item = format!("{}{}", speed_block(setting.tas), level_block(doc.cruise_altitude));
+    let mut item = format!(
+        "{}{}",
+        speed_block(setting.tas),
+        level_block(doc.cruise_altitude)
+    );
     let intermediates = if doc.route.len() > 2 {
         &doc.route[1..doc.route.len() - 1]
     } else {

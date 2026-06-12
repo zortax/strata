@@ -136,9 +136,16 @@ impl ProfileEditor {
             text_field(window, cx, &mut subs, &p.type_designator, "C172", |p, v| {
                 p.type_designator = v.to_owned();
             });
-        let callsign = text_field(window, cx, &mut subs, &p.callsign, "Registration", |p, v| {
-            p.callsign = v.to_owned();
-        });
+        let callsign = text_field(
+            window,
+            cx,
+            &mut subs,
+            &p.callsign,
+            "Registration",
+            |p, v| {
+                p.callsign = v.to_owned();
+            },
+        );
 
         // -- performance ------------------------------------------------------
         let cruise_rows = p
@@ -182,64 +189,94 @@ impl ProfileEditor {
             .collect();
 
         let climb_ias = num_field(
-            window, cx, &mut subs,
-            p, SPEED_KT,
+            window,
+            cx,
+            &mut subs,
+            p,
+            SPEED_KT,
             |p| Some(p.performance.climb.ias.0),
             |p, v| p.performance.climb.ias = Knots(v.unwrap_or(0.0)),
         );
         let climb_rate = num_field(
-            window, cx, &mut subs,
-            p, RATE_FT_MIN,
+            window,
+            cx,
+            &mut subs,
+            p,
+            RATE_FT_MIN,
             |p| Some(p.performance.climb.rate.0),
             |p, v| p.performance.climb.rate = FeetPerMinute(v.unwrap_or(0.0)),
         );
         let climb_flow = num_field(
-            window, cx, &mut subs,
-            p, FLOW_L_H,
+            window,
+            cx,
+            &mut subs,
+            p,
+            FLOW_L_H,
             |p| Some(p.performance.climb.fuel_flow.0),
             |p, v| p.performance.climb.fuel_flow = LitersPerHour(v.unwrap_or(0.0)),
         );
         let descent_ias = num_field(
-            window, cx, &mut subs,
-            p, SPEED_KT,
+            window,
+            cx,
+            &mut subs,
+            p,
+            SPEED_KT,
             |p| Some(p.performance.descent.ias.0),
             |p, v| p.performance.descent.ias = Knots(v.unwrap_or(0.0)),
         );
         let descent_rate = num_field(
-            window, cx, &mut subs,
-            p, RATE_FT_MIN,
+            window,
+            cx,
+            &mut subs,
+            p,
+            RATE_FT_MIN,
             |p| Some(p.performance.descent.rate.0),
             |p, v| p.performance.descent.rate = FeetPerMinute(v.unwrap_or(0.0)),
         );
         let descent_flow = num_field(
-            window, cx, &mut subs,
-            p, FLOW_L_H,
+            window,
+            cx,
+            &mut subs,
+            p,
+            FLOW_L_H,
             |p| Some(p.performance.descent.fuel_flow.0),
             |p, v| p.performance.descent.fuel_flow = LitersPerHour(v.unwrap_or(0.0)),
         );
         let taxi_flow = num_field(
-            window, cx, &mut subs,
-            p, FLOW_L_H,
+            window,
+            cx,
+            &mut subs,
+            p,
+            FLOW_L_H,
             |p| Some(p.performance.taxi_fuel_flow.0),
             |p, v| p.performance.taxi_fuel_flow = LitersPerHour(v.unwrap_or(0.0)),
         );
 
         // -- fuel --------------------------------------------------------------
         let fuel_usable = num_field(
-            window, cx, &mut subs,
-            p, VOLUME_L,
+            window,
+            cx,
+            &mut subs,
+            p,
+            VOLUME_L,
             |p| Some(p.fuel.usable.0),
             |p, v| p.fuel.usable = Liters(v.unwrap_or(0.0)),
         );
         let fuel_tabs = num_field(
-            window, cx, &mut subs,
-            p, VOLUME_L.optional(),
+            window,
+            cx,
+            &mut subs,
+            p,
+            VOLUME_L.optional(),
             |p| p.fuel.tabs.map(|t| t.0),
             |p, v| p.fuel.tabs = v.map(Liters),
         );
         let fuel_density = num_field(
-            window, cx, &mut subs,
-            p, DENSITY_KG_L,
+            window,
+            cx,
+            &mut subs,
+            p,
+            DENSITY_KG_L,
             |p| Some(p.fuel.density.0),
             |p, v| p.fuel.density = KilogramsPerLiter(v.unwrap_or(0.0)),
         );
@@ -247,38 +284,56 @@ impl ProfileEditor {
         // -- weight & balance ----------------------------------------------------
         let wb = &p.weight_balance;
         let empty_mass = num_field(
-            window, cx, &mut subs,
-            p, MASS_KG,
+            window,
+            cx,
+            &mut subs,
+            p,
+            MASS_KG,
             |p| Some(p.weight_balance.empty_mass.0),
             |p, v| p.weight_balance.empty_mass = Kilograms(v.unwrap_or(0.0)),
         );
         let empty_arm = num_field(
-            window, cx, &mut subs,
-            p, ARM_M,
+            window,
+            cx,
+            &mut subs,
+            p,
+            ARM_M,
             |p| Some(p.weight_balance.empty_arm.0),
             |p, v| p.weight_balance.empty_arm = Meters(v.unwrap_or(0.0)),
         );
         let max_takeoff = num_field(
-            window, cx, &mut subs,
-            p, MASS_KG,
+            window,
+            cx,
+            &mut subs,
+            p,
+            MASS_KG,
             |p| Some(p.weight_balance.max_takeoff.0),
             |p, v| p.weight_balance.max_takeoff = Kilograms(v.unwrap_or(0.0)),
         );
         let max_landing = num_field(
-            window, cx, &mut subs,
-            p, MASS_KG.optional(),
+            window,
+            cx,
+            &mut subs,
+            p,
+            MASS_KG.optional(),
             |p| p.weight_balance.max_landing.map(|m| m.0),
             |p, v| p.weight_balance.max_landing = v.map(Kilograms),
         );
         let max_zero_fuel = num_field(
-            window, cx, &mut subs,
-            p, MASS_KG.optional(),
+            window,
+            cx,
+            &mut subs,
+            p,
+            MASS_KG.optional(),
             |p| p.weight_balance.max_zero_fuel.map(|m| m.0),
             |p, v| p.weight_balance.max_zero_fuel = v.map(Kilograms),
         );
         let max_ramp = num_field(
-            window, cx, &mut subs,
-            p, MASS_KG.optional(),
+            window,
+            cx,
+            &mut subs,
+            p,
+            MASS_KG.optional(),
             |p| p.weight_balance.max_ramp.map(|m| m.0),
             |p, v| p.weight_balance.max_ramp = v.map(Kilograms),
         );
@@ -287,11 +342,18 @@ impl ProfileEditor {
             .iter()
             .enumerate()
             .map(|(ix, station)| StationRow {
-                name: text_field(window, cx, &mut subs, &station.name, "Station", move |p, v| {
-                    if let Some(s) = p.weight_balance.stations.get_mut(ix) {
-                        s.name = v.to_owned();
-                    }
-                }),
+                name: text_field(
+                    window,
+                    cx,
+                    &mut subs,
+                    &station.name,
+                    "Station",
+                    move |p, v| {
+                        if let Some(s) = p.weight_balance.stations.get_mut(ix) {
+                            s.name = v.to_owned();
+                        }
+                    },
+                ),
                 arm: num_field(
                     window,
                     cx,
@@ -311,7 +373,13 @@ impl ProfileEditor {
                     &mut subs,
                     p,
                     MASS_KG.optional(),
-                    move |p| p.weight_balance.stations.get(ix).and_then(|s| s.max_load).map(|m| m.0),
+                    move |p| {
+                        p.weight_balance
+                            .stations
+                            .get(ix)
+                            .and_then(|s| s.max_load)
+                            .map(|m| m.0)
+                    },
                     move |p, v| {
                         if let Some(s) = p.weight_balance.stations.get_mut(ix) {
                             s.max_load = v.map(Kilograms);
@@ -340,74 +408,110 @@ impl ProfileEditor {
 
         // -- distances ------------------------------------------------------------
         let takeoff_roll = num_field(
-            window, cx, &mut subs,
-            p, DISTANCE_M,
+            window,
+            cx,
+            &mut subs,
+            p,
+            DISTANCE_M,
             |p| Some(p.distances.takeoff_roll.0),
             |p, v| p.distances.takeoff_roll = Meters(v.unwrap_or(0.0)),
         );
         let takeoff_50 = num_field(
-            window, cx, &mut subs,
-            p, DISTANCE_M.optional(),
+            window,
+            cx,
+            &mut subs,
+            p,
+            DISTANCE_M.optional(),
             |p| p.distances.takeoff_over_50ft.map(|m| m.0),
             |p, v| p.distances.takeoff_over_50ft = v.map(Meters),
         );
         let landing_roll = num_field(
-            window, cx, &mut subs,
-            p, DISTANCE_M,
+            window,
+            cx,
+            &mut subs,
+            p,
+            DISTANCE_M,
             |p| Some(p.distances.landing_roll.0),
             |p, v| p.distances.landing_roll = Meters(v.unwrap_or(0.0)),
         );
         let landing_50 = num_field(
-            window, cx, &mut subs,
-            p, DISTANCE_M.optional(),
+            window,
+            cx,
+            &mut subs,
+            p,
+            DISTANCE_M.optional(),
             |p| p.distances.landing_over_50ft.map(|m| m.0),
             |p, v| p.distances.landing_over_50ft = v.map(Meters),
         );
         let takeoff_safety = num_field(
-            window, cx, &mut subs,
-            p, SAFETY_FACTOR,
+            window,
+            cx,
+            &mut subs,
+            p,
+            SAFETY_FACTOR,
             |p| Some(p.distances.takeoff_safety_factor),
             |p, v| p.distances.takeoff_safety_factor = v.unwrap_or(1.0),
         );
         let landing_safety = num_field(
-            window, cx, &mut subs,
-            p, SAFETY_FACTOR,
+            window,
+            cx,
+            &mut subs,
+            p,
+            SAFETY_FACTOR,
             |p| Some(p.distances.landing_safety_factor),
             |p, v| p.distances.landing_safety_factor = v.unwrap_or(1.0),
         );
         let factor_da = num_field(
-            window, cx, &mut subs,
-            p, CORRECTION_FACTOR,
+            window,
+            cx,
+            &mut subs,
+            p,
+            CORRECTION_FACTOR,
             |p| Some(p.distances.factors.per_1000_ft_density_altitude),
             |p, v| p.distances.factors.per_1000_ft_density_altitude = v.unwrap_or(0.0),
         );
         let factor_headwind = num_field(
-            window, cx, &mut subs,
-            p, CORRECTION_FACTOR,
+            window,
+            cx,
+            &mut subs,
+            p,
+            CORRECTION_FACTOR,
             |p| Some(p.distances.factors.per_10_kt_headwind),
             |p, v| p.distances.factors.per_10_kt_headwind = v.unwrap_or(0.0),
         );
         let factor_tailwind = num_field(
-            window, cx, &mut subs,
-            p, CORRECTION_FACTOR,
+            window,
+            cx,
+            &mut subs,
+            p,
+            CORRECTION_FACTOR,
             |p| Some(p.distances.factors.per_10_kt_tailwind),
             |p, v| p.distances.factors.per_10_kt_tailwind = v.unwrap_or(0.0),
         );
         let factor_grass = num_field(
-            window, cx, &mut subs,
-            p, CORRECTION_FACTOR,
+            window,
+            cx,
+            &mut subs,
+            p,
+            CORRECTION_FACTOR,
             |p| Some(p.distances.factors.grass),
             |p, v| p.distances.factors.grass = v.unwrap_or(0.0),
         );
         let factor_wet = num_field(
-            window, cx, &mut subs,
-            p, CORRECTION_FACTOR,
+            window,
+            cx,
+            &mut subs,
+            p,
+            CORRECTION_FACTOR,
             |p| Some(p.distances.factors.wet),
             |p, v| p.distances.factors.wet = v.unwrap_or(0.0),
         );
         let factor_slope = num_field(
-            window, cx, &mut subs,
-            p, CORRECTION_FACTOR,
+            window,
+            cx,
+            &mut subs,
+            p,
+            CORRECTION_FACTOR,
             |p| Some(p.distances.factors.per_percent_slope),
             |p, v| p.distances.factors.per_percent_slope = v.unwrap_or(0.0),
         );
@@ -604,7 +708,10 @@ fn section_title(
 }
 
 fn input_w32(state: &Entity<InputState>) -> impl IntoElement {
-    div().w_32().flex_shrink_0().child(Input::new(state).small())
+    div()
+        .w_32()
+        .flex_shrink_0()
+        .child(Input::new(state).small())
 }
 
 fn section_identity(
@@ -625,7 +732,10 @@ fn section_identity(
         .child(field_row(
             "Name",
             Some("Display name in the library and the aircraft selector."),
-            div().w_64().flex_shrink_0().child(Input::new(&editor.name).small()),
+            div()
+                .w_64()
+                .flex_shrink_0()
+                .child(Input::new(&editor.name).small()),
             cx,
         ))
         .child(field_row(
@@ -648,10 +758,7 @@ fn section_identity(
         ))
 }
 
-fn section_performance(
-    editor: &ProfileEditor,
-    cx: &mut Context<AircraftManagerView>,
-) -> GroupBox {
+fn section_performance(editor: &ProfileEditor, cx: &mut Context<AircraftManagerView>) -> GroupBox {
     let theme_muted = cx.theme().muted_foreground;
     let header = |text: &str| {
         div()
@@ -660,25 +767,38 @@ fn section_performance(
             .child(text.to_owned())
     };
 
-    let mut cruise = v_flex()
-        .gap_1p5()
-        .child(
-            h_flex()
-                .gap_2()
-                .items_center()
-                .child(div().flex_1().min_w_0().child(header("Power setting")))
-                .child(div().w_24().flex_shrink_0().child(header("TAS (kt)")))
-                .child(div().w_24().flex_shrink_0().child(header("Flow (L/h)")))
-                .child(div().w_6().flex_shrink_0()),
-        );
+    let mut cruise = v_flex().gap_1p5().child(
+        h_flex()
+            .gap_2()
+            .items_center()
+            .child(div().flex_1().min_w_0().child(header("Power setting")))
+            .child(div().w_24().flex_shrink_0().child(header("TAS (kt)")))
+            .child(div().w_24().flex_shrink_0().child(header("Flow (L/h)")))
+            .child(div().w_6().flex_shrink_0()),
+    );
     for (ix, row) in editor.cruise_rows.iter().enumerate() {
         cruise = cruise.child(
             h_flex()
                 .gap_2()
                 .items_center()
-                .child(div().flex_1().min_w_0().child(Input::new(&row.name).small()))
-                .child(div().w_24().flex_shrink_0().child(Input::new(&row.tas).small()))
-                .child(div().w_24().flex_shrink_0().child(Input::new(&row.flow).small()))
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w_0()
+                        .child(Input::new(&row.name).small()),
+                )
+                .child(
+                    div()
+                        .w_24()
+                        .flex_shrink_0()
+                        .child(Input::new(&row.tas).small()),
+                )
+                .child(
+                    div()
+                        .w_24()
+                        .flex_shrink_0()
+                        .child(Input::new(&row.flow).small()),
+                )
                 .child(
                     Button::new(("cruise-remove", ix))
                         .ghost()
@@ -704,14 +824,15 @@ fn section_performance(
         ),
     );
 
-    let triple = |ias: &Entity<InputState>, rate: &Entity<InputState>, flow: &Entity<InputState>| {
-        h_flex()
-            .gap_2()
-            .items_center()
-            .child(div().w_20().flex_shrink_0().child(Input::new(ias).small()))
-            .child(div().w_20().flex_shrink_0().child(Input::new(rate).small()))
-            .child(div().w_20().flex_shrink_0().child(Input::new(flow).small()))
-    };
+    let triple =
+        |ias: &Entity<InputState>, rate: &Entity<InputState>, flow: &Entity<InputState>| {
+            h_flex()
+                .gap_2()
+                .items_center()
+                .child(div().w_20().flex_shrink_0().child(Input::new(ias).small()))
+                .child(div().w_20().flex_shrink_0().child(Input::new(rate).small()))
+                .child(div().w_20().flex_shrink_0().child(Input::new(flow).small()))
+        };
 
     GroupBox::new()
         .id("aircraft-performance")
@@ -731,7 +852,11 @@ fn section_performance(
         .child(field_row(
             "Descent",
             Some("IAS (kt) · rate (ft/min) · fuel flow (L/h)."),
-            triple(&editor.descent_ias, &editor.descent_rate, &editor.descent_flow),
+            triple(
+                &editor.descent_ias,
+                &editor.descent_rate,
+                &editor.descent_flow,
+            ),
             cx,
         ))
         .child(field_row(
@@ -839,18 +964,16 @@ fn section_weight_balance(
     };
     let moment = draft.weight_balance.empty_mass.0 * draft.weight_balance.empty_arm.0;
 
-    let mut stations = v_flex()
-        .gap_1p5()
-        .child(
-            h_flex()
-                .gap_2()
-                .items_center()
-                .child(div().flex_1().min_w_0().child(header("Station")))
-                .child(div().w_20().flex_shrink_0().child(header("Arm (m)")))
-                .child(div().w_20().flex_shrink_0().child(header("Max (kg)")))
-                .child(div().w_24().flex_shrink_0().child(header("Kind")))
-                .child(div().w_6().flex_shrink_0()),
-        );
+    let mut stations = v_flex().gap_1p5().child(
+        h_flex()
+            .gap_2()
+            .items_center()
+            .child(div().flex_1().min_w_0().child(header("Station")))
+            .child(div().w_20().flex_shrink_0().child(header("Arm (m)")))
+            .child(div().w_20().flex_shrink_0().child(header("Max (kg)")))
+            .child(div().w_24().flex_shrink_0().child(header("Kind")))
+            .child(div().w_6().flex_shrink_0()),
+    );
     for (ix, row) in editor.station_rows.iter().enumerate() {
         let kind = draft
             .weight_balance
@@ -884,9 +1007,24 @@ fn section_weight_balance(
             h_flex()
                 .gap_2()
                 .items_center()
-                .child(div().flex_1().min_w_0().child(Input::new(&row.name).small()))
-                .child(div().w_20().flex_shrink_0().child(Input::new(&row.arm).small()))
-                .child(div().w_20().flex_shrink_0().child(Input::new(&row.max_load).small()))
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w_0()
+                        .child(Input::new(&row.name).small()),
+                )
+                .child(
+                    div()
+                        .w_20()
+                        .flex_shrink_0()
+                        .child(Input::new(&row.arm).small()),
+                )
+                .child(
+                    div()
+                        .w_20()
+                        .flex_shrink_0()
+                        .child(Input::new(&row.max_load).small()),
+                )
                 .child(div().w_24().flex_shrink_0().child(kind_menu))
                 .child(
                     Button::new(("station-remove", ix))
@@ -931,7 +1069,10 @@ fn section_weight_balance(
         .gap_3()
         .child(field_row(
             "Empty mass · arm",
-            Some(&format!("Basic empty mass and its arm (moment {} kg·m).", format_num(moment, 1))),
+            Some(&format!(
+                "Basic empty mass and its arm (moment {} kg·m).",
+                format_num(moment, 1)
+            )),
             pair(&editor.empty_mass, &editor.empty_arm),
             cx,
         ))
@@ -962,10 +1103,7 @@ fn section_weight_balance(
         )
 }
 
-fn section_distances(
-    editor: &ProfileEditor,
-    cx: &mut Context<AircraftManagerView>,
-) -> GroupBox {
+fn section_distances(editor: &ProfileEditor, cx: &mut Context<AircraftManagerView>) -> GroupBox {
     let pair = |a: &Entity<InputState>, b: &Entity<InputState>| {
         h_flex()
             .gap_2()

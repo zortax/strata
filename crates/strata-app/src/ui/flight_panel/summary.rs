@@ -99,15 +99,12 @@ pub(super) fn render_summary(root: &RootView, cx: &Context<RootView>) -> AnyElem
                 .child(stat("Usable", usable, cx)),
         )
         .child(
-            h_flex()
-                .gap_1()
-                .justify_between()
-                .children(
-                    badges
-                        .into_iter()
-                        .enumerate()
-                        .map(|(index, badge)| render_badge(index, badge, cx)),
-                ),
+            h_flex().gap_1().justify_between().children(
+                badges
+                    .into_iter()
+                    .enumerate()
+                    .map(|(index, badge)| render_badge(index, badge, cx)),
+            ),
         )
         .into_any_element()
 }

@@ -35,17 +35,15 @@ use std::collections::VecDeque;
 use std::sync::Arc;
 
 use chrono::DateTime;
+use gpui::{AsyncApp, Context, Task, WeakEntity};
+use gpui_tokio::Tokio;
 use strata_data::domain::GriddedTimeline;
 use strata_data::providers::GriddedWeatherProvider;
 use strata_render::{GriddedField, WeatherGridFrame};
-use gpui::{AsyncApp, Context, Task, WeakEntity};
-use gpui_tokio::Tokio;
 
 use crate::gridded_weather::cache::FrameKey;
 use crate::gridded_weather::plan::{self, FieldPlan, GridSource};
-use crate::gridded_weather::{
-    FETCH_CONCURRENCY, REFRESH_INTERVAL, SLIDER_FETCH_DEBOUNCE, convert,
-};
+use crate::gridded_weather::{FETCH_CONCURRENCY, REFRESH_INTERVAL, SLIDER_FETCH_DEBOUNCE, convert};
 
 use super::MapView;
 
@@ -150,7 +148,10 @@ impl MapView {
         if keys.is_empty() || !self.gridded_weather.record_push(plan.field, &keys) {
             return false;
         }
-        let frames = self.gridded_weather.cache.frames_for(plan.field, &plan.steps);
+        let frames = self
+            .gridded_weather
+            .cache
+            .frames_for(plan.field, &plan.steps);
         if let Some(cell) = &self.cell {
             cell.lock().renderer.set_weather_frames(plan.field, frames);
         }
@@ -342,7 +343,12 @@ async fn fetch_timeline(
         .ok()?;
     match task.await {
         Ok(timeline) => {
-            tracing::debug!(?source, ?field, steps = timeline.steps.len(), "timeline fetched");
+            tracing::debug!(
+                ?source,
+                ?field,
+                steps = timeline.steps.len(),
+                "timeline fetched"
+            );
             let timeline = Arc::new(timeline);
             this.update(cx, |this, _| {
                 this.gridded_weather

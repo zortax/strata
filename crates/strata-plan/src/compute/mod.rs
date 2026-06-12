@@ -114,9 +114,7 @@ pub enum NotComputable {
     RouteTooShort,
     /// `leg` has neither its own planned altitude nor a flight cruise
     /// altitude to fall back to — the vertical profile is undefined.
-    #[error(
-        "leg {leg} has no planned altitude (no leg altitude and no flight cruise altitude)"
-    )]
+    #[error("leg {leg} has no planned altitude (no leg altitude and no flight cruise altitude)")]
     MissingAltitude { leg: usize },
     /// No aircraft profile is selected on the document (caller-produced).
     #[error("no aircraft selected")]
@@ -226,17 +224,14 @@ pub fn compute(
         sources.winds,
     )?;
 
-    let departure_elevation = endpoint_profile_elevation(
-        &route[0],
-        corridor.samples.first(),
-        sources.elevation,
-    )?;
+    let departure_elevation =
+        endpoint_profile_elevation(&route[0], corridor.samples.first(), sources.elevation)?;
     let destination_elevation = endpoint_profile_elevation(
         &route[route.len() - 1],
         corridor.samples.last(),
         sources.elevation,
     )?;
-    let phases = perf::plan_phases(
+    let still_air_phases = perf::plan_phases(
         route,
         aircraft,
         doc.power_setting.as_deref(),
@@ -244,11 +239,13 @@ pub fn compute(
         departure_elevation,
         destination_elevation,
     )?;
+    let phases = perf::wind_adjusted_phases(route, &still_air_phases, &winds);
 
     let alternate_plan = alternate_phases(doc, aircraft, sources, destination_elevation)?;
     let fuel = fuel::compute_fuel_ladder(
         &doc.fuel_policy,
         aircraft,
+        doc.power_setting.as_deref(),
         &phases,
         alternate_plan.as_ref(),
         doc.loading.fuel,

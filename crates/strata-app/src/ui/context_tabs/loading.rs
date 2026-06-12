@@ -200,7 +200,9 @@ impl LoadingInputs {
 
         for station in stations {
             let name = station.name.clone();
-            let max_kg = station.max_load.map_or(DEFAULT_STATION_MAX_KG, |m| m.0.max(1.0));
+            let max_kg = station
+                .max_load
+                .map_or(DEFAULT_STATION_MAX_KG, |m| m.0.max(1.0));
             let slider = cx.new(|_| SliderState::new().min(0.).max(max_kg as f32).step(1.));
             let input = cx.new(|cx| InputState::new(window, cx).placeholder("0"));
 
@@ -266,8 +268,12 @@ impl LoadingInputs {
             .map(|p| p.fuel.usable.0)
             .filter(|u| *u > 0.0)
             .unwrap_or(DEFAULT_FUEL_MAX_L);
-        self.fuel_slider =
-            cx.new(|_| SliderState::new().min(0.).max(self.fuel_max as f32).step(1.));
+        self.fuel_slider = cx.new(|_| {
+            SliderState::new()
+                .min(0.)
+                .max(self.fuel_max as f32)
+                .step(1.)
+        });
         self.fuel_input = cx.new(|cx| InputState::new(window, cx).placeholder("0"));
         self.wire_fuel(window, cx);
     }
@@ -370,7 +376,12 @@ pub(super) fn render_loading_tab(
     v_flex()
         .gap_3()
         .child(stations_card(panel, flight, aircraft, cx))
-        .child(totals_card(aircraft, report, flight.compute_hint.clone(), cx))
+        .child(totals_card(
+            aircraft,
+            report,
+            flight.compute_hint.clone(),
+            cx,
+        ))
         .child(
             card(cx)
                 .child(section("CG envelope", cx))
@@ -415,11 +426,19 @@ fn stations_card(
                     h_flex()
                         .gap_2()
                         .items_center()
-                        .child(div().flex_1().min_w_0().truncate().text_sm().child(row.name.clone()))
                         .child(
-                            div().w(px(116.)).flex_shrink_0().child(
-                                NumberInput::new(&row.input).small().suffix(kg_suffix(cx)),
-                            ),
+                            div()
+                                .flex_1()
+                                .min_w_0()
+                                .truncate()
+                                .text_sm()
+                                .child(row.name.clone()),
+                        )
+                        .child(
+                            div()
+                                .w(px(116.))
+                                .flex_shrink_0()
+                                .child(NumberInput::new(&row.input).small().suffix(kg_suffix(cx))),
                         ),
                 )
                 .child(Slider::new(&row.slider).horizontal()),
@@ -501,7 +520,10 @@ fn totals_card(
                 div()
                     .text_sm()
                     .text_color(cx.theme().muted_foreground)
-                    .child(compute_hint.unwrap_or_else(|| "Totals appear once the route computes.".into())),
+                    .child(
+                        compute_hint
+                            .unwrap_or_else(|| "Totals appear once the route computes.".into()),
+                    ),
             )
             .into_any_element();
     };
@@ -535,12 +557,9 @@ fn totals_card(
                         .font_family("monospace")
                         .child(format!("{:.0} kg @ {:.2} m", state.mass.0, state.arm.0)),
                 )
-                .children(note.map(|note| {
-                    div()
-                        .text_xs()
-                        .text_color(cx.theme().danger)
-                        .child(note)
-                })),
+                .children(
+                    note.map(|note| div().text_xs().text_color(cx.theme().danger).child(note)),
+                ),
         );
     }
     el.into_any_element()
@@ -625,7 +644,11 @@ mod tests {
         // equal what that compute then produces.
         assert!(set_station_load(&mut doc, "Front seats", 156.0));
         assert!(set_station_load(&mut doc, "Baggage", 30.0));
-        assert!(set_fuel_liters(&mut doc, 90.0, Some(aircraft.fuel.usable.0)));
+        assert!(set_fuel_liters(
+            &mut doc,
+            90.0,
+            Some(aircraft.fuel.usable.0)
+        ));
         let preview =
             wb_preview(&aircraft, &doc.loading, Some(&landed.fuel)).expect("preview computes");
         let (outcome, _) = run_compute(&doc, Some(&aircraft), Some(store), winds, &params, None);
@@ -706,7 +729,10 @@ mod tests {
         assert!(set_station_load(&mut doc, "Front seats", 0.0));
         assert_eq!(station_mass(&doc, "Front seats"), 0.0);
         assert_eq!(doc.loading.station_loads.len(), 1);
-        assert!(!set_station_load(&mut doc, "Front seats", 0.0), "already absent");
+        assert!(
+            !set_station_load(&mut doc, "Front seats", 0.0),
+            "already absent"
+        );
 
         // Negative input clamps to zero (= removal).
         assert!(set_station_load(&mut doc, "Baggage", -5.0));

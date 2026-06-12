@@ -176,7 +176,12 @@ mod tests {
                 elevations_m.push(f(lat, lon) as f32);
             }
         }
-        DemTile { id: DemTileId { lat_sw, lon_sw }, width, height, elevations_m }
+        DemTile {
+            id: DemTileId { lat_sw, lon_sw },
+            width,
+            height,
+            elevations_m,
+        }
     }
 
     /// Sample position `(r, c)` of a DEM tile — the exact same expressions
@@ -203,7 +208,9 @@ mod tests {
         for (r, c) in [(300, 300), (1, 1), (599, 599), (37, 451)] {
             let (lat, lon) = sample_pos(50, 10, 600, 600, r, c);
             let want = (ramp(lat, lon) as f32).ceil() as f64;
-            let got = set.max_elevation_at(lat, lon).expect("pooled cell has data");
+            let got = set
+                .max_elevation_at(lat, lon)
+                .expect("pooled cell has data");
             assert_eq!(got.0, want, "cell at sample ({r}, {c})");
         }
     }
@@ -217,9 +224,15 @@ mod tests {
         let set = ElevationTileSet::new(pooler.into_tiles());
 
         let (lat, lon) = sample_pos(50, 10, 60, 60, 30, 30);
-        assert_eq!(set.max_elevation_at(lat, lon), Some(crate::domain::MetersAmsl(800.0)));
+        assert_eq!(
+            set.max_elevation_at(lat, lon),
+            Some(crate::domain::MetersAmsl(800.0))
+        );
         // Mid-way between samples: a cell no sample fell into.
-        assert_eq!(set.max_elevation_at(lat + 0.5 / 600.0 + 3.0 / 600.0, lon), None);
+        assert_eq!(
+            set.max_elevation_at(lat + 0.5 / 600.0 + 3.0 / 600.0, lon),
+            None
+        );
     }
 
     #[test]
@@ -243,7 +256,11 @@ mod tests {
     fn an_off_grid_ridge_can_only_raise_cells_never_hide() {
         // A narrow 2000 m ridge along lon ≈ 10.345 on an 800 m plateau.
         let ridge = |_lat: f64, lon: f64| {
-            if (10.3449..10.3451).contains(&lon) { 2000.0 } else { 800.0 }
+            if (10.3449..10.3451).contains(&lon) {
+                2000.0
+            } else {
+                800.0
+            }
         };
         let (w, h) = (3600, 3600);
         let tile = dem_tile(50, 10, w, h, ridge);

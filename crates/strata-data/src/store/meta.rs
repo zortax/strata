@@ -71,7 +71,9 @@ fn decode_meta(
     let airac = match (airac_id, airac_effective) {
         (Some(id), Some(effective)) => {
             let effective = NaiveDate::parse_from_str(&effective, "%Y-%m-%d").map_err(|e| {
-                StoreError::Schema(format!("meta.airac_effective {effective:?} unparseable: {e}"))
+                StoreError::Schema(format!(
+                    "meta.airac_effective {effective:?} unparseable: {e}"
+                ))
             })?;
             Some(AiracCycle::new(id, effective))
         }

@@ -70,7 +70,10 @@ pub(crate) fn query_candidates(store: &Store, bbox: BoundingBox, zoom: f64) -> V
         });
     }
     if snap_reporting_points(zoom) {
-        for point in fetch("snap reporting points", store.reporting_points_in_bbox(bbox)) {
+        for point in fetch(
+            "snap reporting points",
+            store.reporting_points_in_bbox(bbox),
+        ) {
             out.push(SnapCandidate {
                 kind: NamedPointKind::ReportingPoint,
                 id: point.name.clone(),

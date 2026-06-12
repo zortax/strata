@@ -143,8 +143,7 @@ pub struct TileCoverage {
 /// [`display_level`]`(camera.zoom(), max_source_zoom, bias)`.
 pub fn viewport_coverage(camera: &Camera, max_source_zoom: u8, bias: f64) -> TileCoverage {
     let level = display_level(camera.zoom(), max_source_zoom, bias);
-    let overzoomed =
-        (camera.zoom() + bias).floor() > max_source_zoom.min(MAX_TILE_ZOOM) as f64;
+    let overzoomed = (camera.zoom() + bias).floor() > max_source_zoom.min(MAX_TILE_ZOOM) as f64;
     let (min, max) = camera.visible_world_bounds();
     let n = TileId::tiles_across(level);
     let lo = TileId::containing(level, min);

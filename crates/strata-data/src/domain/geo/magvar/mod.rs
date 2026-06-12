@@ -164,7 +164,13 @@ impl WmmModel {
     /// geodetic → geocentric spherical, sum the Schmidt semi-normalized
     /// spherical-harmonic series, rotate the result back into the geodetic
     /// frame (WMM2025 Technical Report, eqs. 4–13).
-    fn field_at(&self, lat_deg: f64, lon_deg: f64, height_km: f64, decimal_year: f64) -> FieldVector {
+    fn field_at(
+        &self,
+        lat_deg: f64,
+        lon_deg: f64,
+        height_km: f64,
+        decimal_year: f64,
+    ) -> FieldVector {
         let dt = decimal_year - self.epoch;
         let lat = lat_deg.to_radians();
         let lon = lon_deg.to_radians();
@@ -208,8 +214,7 @@ impl WmmModel {
                     };
                     let a = (2 * n - 1) as f64;
                     pnm[n][m] = (a * s * pnm[n - 1][m] - k * p2) / norm;
-                    dpnm[n][m] =
-                        (a * (s * dpnm[n - 1][m] + c * pnm[n - 1][m]) - k * dp2) / norm;
+                    dpnm[n][m] = (a * (s * dpnm[n - 1][m] + c * pnm[n - 1][m]) - k * dp2) / norm;
                 }
             }
         }
@@ -299,9 +304,21 @@ mod tests {
             let field = MODEL.field_at(lat, lon, height, date);
             // Published precision: 0.1 nT for field components, 0.01° for
             // angles (+ a rounding half-step of slack).
-            assert!((field.x - x).abs() < 0.05, "X at {lat},{lon}: {} vs {x}", field.x);
-            assert!((field.y - y).abs() < 0.05, "Y at {lat},{lon}: {} vs {y}", field.y);
-            assert!((field.z - z).abs() < 0.05, "Z at {lat},{lon}: {} vs {z}", field.z);
+            assert!(
+                (field.x - x).abs() < 0.05,
+                "X at {lat},{lon}: {} vs {x}",
+                field.x
+            );
+            assert!(
+                (field.y - y).abs() < 0.05,
+                "Y at {lat},{lon}: {} vs {y}",
+                field.y
+            );
+            assert!(
+                (field.z - z).abs() < 0.05,
+                "Z at {lat},{lon}: {} vs {z}",
+                field.z
+            );
             let h_got = field.x.hypot(field.y);
             let f_got = h_got.hypot(field.z);
             assert!((h_got - h).abs() < 0.05, "H at {lat},{lon}: {h_got} vs {h}");
@@ -312,7 +329,10 @@ mod tests {
                 "D at {lat},{lon}: {} vs {decl}",
                 field.declination_deg()
             );
-            assert!((incl_got - incl).abs() < 0.005, "I at {lat},{lon}: {incl_got} vs {incl}");
+            assert!(
+                (incl_got - incl).abs() < 0.005,
+                "I at {lat},{lon}: {incl_got} vs {incl}"
+            );
             rows += 1;
         }
         assert_eq!(rows, 12, "official table should contribute 12 rows");
@@ -359,8 +379,15 @@ mod tests {
         let aachen = magvar(ll(50.78, 6.08), date).0;
         let frankfurt = magvar(ll(50.03, 8.57), date).0;
         let goerlitz = magvar(ll(51.15, 14.99), date).0;
-        for (name, d) in [("Aachen", aachen), ("Frankfurt", frankfurt), ("Görlitz", goerlitz)] {
-            assert!((2.5..=5.5).contains(&d), "{name}: {d}° outside expected band");
+        for (name, d) in [
+            ("Aachen", aachen),
+            ("Frankfurt", frankfurt),
+            ("Görlitz", goerlitz),
+        ] {
+            assert!(
+                (2.5..=5.5).contains(&d),
+                "{name}: {d}° outside expected band"
+            );
         }
         // Declination increases eastward across Germany.
         assert!(aachen < frankfurt && frankfurt < goerlitz);
@@ -381,7 +408,10 @@ mod tests {
         assert_eq!(late.0, until);
         // Clamped results stay sane (no panic, no garbage).
         assert!(early.0.is_finite() && late.0.is_finite());
-        assert!(late.0 > from.0, "declination in Germany is currently increasing");
+        assert!(
+            late.0 > from.0,
+            "declination in Germany is currently increasing"
+        );
     }
 
     #[test]

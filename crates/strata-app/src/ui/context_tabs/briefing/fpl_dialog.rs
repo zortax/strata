@@ -91,26 +91,21 @@ pub(crate) fn open_fpl_dialog(app_state: Entity<AppState>, window: &mut Window, 
                         .label("Copy")
                         .icon(IconName::Copy)
                         .on_click(move |_, window, cx| {
-                            cx.write_to_clipboard(ClipboardItem::new_string(
-                                copy_message.clone(),
-                            ));
+                            cx.write_to_clipboard(ClipboardItem::new_string(copy_message.clone()));
                             window.push_notification(
                                 (NotificationType::Success, "FPL message copied."),
                                 cx,
                             );
                         }),
                 )
-                .child(
-                    Button::new("fpl-save")
-                        .primary()
-                        .label("Save…")
-                        .on_click(move |_, window, cx| {
-                            // The portal save dialog takes over; the FPL
-                            // dialog has done its job.
-                            window.close_dialog(cx);
-                            app_state.update(cx, |state, cx| state.export_fpl(cx));
-                        }),
-                );
+                .child(Button::new("fpl-save").primary().label("Save…").on_click(
+                    move |_, window, cx| {
+                        // The portal save dialog takes over; the FPL
+                        // dialog has done its job.
+                        window.close_dialog(cx);
+                        app_state.update(cx, |state, cx| state.export_fpl(cx));
+                    },
+                ));
         }
         dialog.footer(footer)
     });

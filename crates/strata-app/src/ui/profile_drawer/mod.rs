@@ -45,8 +45,7 @@ use gpui_component::{
 use strata_render::MapTheme;
 
 use crate::app::panel_animation::{
-    PANEL_ENTER_DURATION, PANEL_EXIT_DURATION, PANEL_UNMOUNT_DELAY, PanelAnimation,
-    PanelVisibility,
+    PANEL_ENTER_DURATION, PANEL_EXIT_DURATION, PANEL_UNMOUNT_DELAY, PanelAnimation, PanelVisibility,
 };
 use crate::assets::IconName;
 use crate::state::flight::PlanningFocus;
@@ -304,12 +303,7 @@ impl ProfileDrawer {
         }
     }
 
-    fn on_overlay_mouse_up(
-        &mut self,
-        _: &MouseUpEvent,
-        _: &mut Window,
-        cx: &mut Context<Self>,
-    ) {
+    fn on_overlay_mouse_up(&mut self, _: &MouseUpEvent, _: &mut Window, cx: &mut Context<Self>) {
         self.finish_resize(cx);
     }
 
@@ -389,43 +383,35 @@ impl ProfileDrawer {
                     .text_color(cx.theme().muted_foreground)
                     .child(format!("ETE {ete}")),
             )
-            .child(h_flex().gap_2().children(
-                badges.into_iter().map(|badge| {
-                    let dot: AnyElement = match badge.tone {
-                        BadgeTone::Unknown => div()
-                            .text_xs()
-                            .text_color(cx.theme().muted_foreground)
-                            .child(navlog::EM_DASH)
-                            .into_any_element(),
-                        tone => div()
-                            .size_2()
-                            .flex_shrink_0()
-                            .rounded_full()
-                            .bg(match tone {
-                                BadgeTone::Unknown => cx.theme().muted_foreground,
-                                BadgeTone::Ok => cx.theme().success,
-                                BadgeTone::Caution => cx.theme().warning,
-                                BadgeTone::Alert => cx.theme().danger,
-                            })
-                            .into_any_element(),
-                    };
-                    h_flex()
-                        .gap_1()
-                        .items_center()
-                        .child(dot)
-                        .child(div().text_xs().child(badge.label))
-                        .into_any_element()
-                }),
-            ))
+            .child(h_flex().gap_2().children(badges.into_iter().map(|badge| {
+                let dot: AnyElement = match badge.tone {
+                    BadgeTone::Unknown => div()
+                        .text_xs()
+                        .text_color(cx.theme().muted_foreground)
+                        .child(navlog::EM_DASH)
+                        .into_any_element(),
+                    tone => div()
+                        .size_2()
+                        .flex_shrink_0()
+                        .rounded_full()
+                        .bg(match tone {
+                            BadgeTone::Unknown => cx.theme().muted_foreground,
+                            BadgeTone::Ok => cx.theme().success,
+                            BadgeTone::Caution => cx.theme().warning,
+                            BadgeTone::Alert => cx.theme().danger,
+                        })
+                        .into_any_element(),
+                };
+                h_flex()
+                    .gap_1()
+                    .items_center()
+                    .child(dot)
+                    .child(div().text_xs().child(badge.label))
+                    .into_any_element()
+            })))
             // The mini elevation sparkline fills the strip's free middle —
             // passive (no listeners), so the strip stays one click target.
-            .child(
-                div()
-                    .flex_1()
-                    .min_w_0()
-                    .h(px(24.))
-                    .children(spark),
-            )
+            .child(div().flex_1().min_w_0().h(px(24.)).children(spark))
             // Passive affordance: the whole strip is the click target (a
             // button here would double-fire through the strip's handler).
             .child(
@@ -751,10 +737,7 @@ impl Render for ProfileDrawer {
                         .inset_0()
                         .cursor_row_resize()
                         .on_mouse_move(cx.listener(Self::on_overlay_mouse_move))
-                        .on_mouse_up(
-                            MouseButton::Left,
-                            cx.listener(Self::on_overlay_mouse_up),
-                        ),
+                        .on_mouse_up(MouseButton::Left, cx.listener(Self::on_overlay_mouse_up)),
                 )
             })
             .into_any_element()

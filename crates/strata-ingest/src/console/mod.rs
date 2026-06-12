@@ -54,17 +54,20 @@ pub async fn run(command: Command, config: IngestConfig) -> Result<()> {
             report::aero(&stage(&config, |r| async move { r.aero().await }).await?);
         }
         Command::Basemap { maxzoom } => {
-            report::basemap(&stage(&config, move |r| async move { r.basemap(maxzoom).await }).await?);
+            report::basemap(
+                &stage(&config, move |r| async move { r.basemap(maxzoom).await }).await?,
+            );
         }
         Command::Terrain { minzoom, maxzoom } => {
             report::terrain(
-                &stage(&config, move |r| async move { r.terrain(minzoom, maxzoom).await }).await?,
+                &stage(&config, move |r| async move {
+                    r.terrain(minzoom, maxzoom).await
+                })
+                .await?,
             );
         }
         Command::Elevation => {
-            report::elevation(
-                &stage(&config, |r| async move { r.elevation().await }).await?,
-            );
+            report::elevation(&stage(&config, |r| async move { r.elevation().await }).await?);
         }
         Command::All {
             basemap_maxzoom,
@@ -81,7 +84,11 @@ pub async fn run(command: Command, config: IngestConfig) -> Result<()> {
                 .await?,
             );
             report::basemap(
-                &stage(&config, move |r| async move { r.basemap(basemap_maxzoom).await }).await?,
+                &stage(
+                    &config,
+                    move |r| async move { r.basemap(basemap_maxzoom).await },
+                )
+                .await?,
             );
         }
         Command::Status => status::run(&config)?,
@@ -157,13 +164,19 @@ mod tests {
     #[test]
     fn default_is_xdg_data_dir_plus_strata() {
         let dir = resolve_data_dir(None, None, Some(p("/home/u/.local/share")));
-        assert_eq!(dir.as_deref(), Some(Path::new("/home/u/.local/share/strata")));
+        assert_eq!(
+            dir.as_deref(),
+            Some(Path::new("/home/u/.local/share/strata"))
+        );
     }
 
     #[test]
     fn empty_env_counts_as_unset() {
         let dir = resolve_data_dir(None, Some(OsString::new()), Some(p("/home/u/.local/share")));
-        assert_eq!(dir.as_deref(), Some(Path::new("/home/u/.local/share/strata")));
+        assert_eq!(
+            dir.as_deref(),
+            Some(Path::new("/home/u/.local/share/strata"))
+        );
     }
 
     #[test]

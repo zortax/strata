@@ -28,7 +28,9 @@ fn non_default_config() -> Config {
             auto: false,
             basemap_maxzoom: 11,
         },
-        weather: WeatherConfig { refresh_minutes: 15 },
+        weather: WeatherConfig {
+            refresh_minutes: 15,
+        },
         profile_drawer: ProfileDrawerConfig {
             height_px: 320.0,
             corridor_half_width_nm: 3.0,
@@ -286,7 +288,11 @@ fn failed_save_cleans_up_temp_file() {
         .unwrap()
         .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
         .collect();
-    assert_eq!(entries, vec!["config.toml".to_owned()], "temp file left behind");
+    assert_eq!(
+        entries,
+        vec!["config.toml".to_owned()],
+        "temp file left behind"
+    );
 }
 
 #[test]
@@ -295,7 +301,10 @@ fn save_if_changed_is_diff_aware() {
     let path = dir.path().join("config.toml");
     let config = non_default_config();
 
-    assert!(config.save_to_if_changed(&path).unwrap(), "first save writes");
+    assert!(
+        config.save_to_if_changed(&path).unwrap(),
+        "first save writes"
+    );
     assert!(
         !config.save_to_if_changed(&path).unwrap(),
         "identical config skips the write"
@@ -332,7 +341,9 @@ fn normalized_clamps_both_ends_and_nan() {
             basemap_maxzoom: 2,
             ..IngestConfig::default()
         },
-        weather: WeatherConfig { refresh_minutes: 999 },
+        weather: WeatherConfig {
+            refresh_minutes: 999,
+        },
         ..Config::default()
     }
     .normalized();

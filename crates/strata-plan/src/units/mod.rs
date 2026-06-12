@@ -128,7 +128,11 @@ pub struct MagneticVariation(pub f64);
 /// Wraps an angle into `[0, 360)`.
 fn normalize_degrees(degrees: f64) -> f64 {
     let wrapped = degrees % 360.0;
-    if wrapped < 0.0 { wrapped + 360.0 } else { wrapped }
+    if wrapped < 0.0 {
+        wrapped + 360.0
+    } else {
+        wrapped
+    }
 }
 
 #[cfg(test)]
@@ -175,9 +179,17 @@ mod tests {
         let var = MagneticVariation(3.0);
         assert_eq!(DegreesTrue::new(100.0).to_magnetic(var).0, 97.0);
         // Wraps below zero: true 1° with 5°E variation -> magnetic 356°.
-        assert_eq!(DegreesTrue::new(1.0).to_magnetic(MagneticVariation(5.0)).0, 356.0);
+        assert_eq!(
+            DegreesTrue::new(1.0).to_magnetic(MagneticVariation(5.0)).0,
+            356.0
+        );
         // West variation (negative): true 100° with 2°W -> magnetic 102°.
-        assert_eq!(DegreesTrue::new(100.0).to_magnetic(MagneticVariation(-2.0)).0, 102.0);
+        assert_eq!(
+            DegreesTrue::new(100.0)
+                .to_magnetic(MagneticVariation(-2.0))
+                .0,
+            102.0
+        );
         // Round trip.
         let back = DegreesTrue::new(100.0).to_magnetic(var).to_true(var);
         assert!((back.0 - 100.0).abs() < 1e-12);

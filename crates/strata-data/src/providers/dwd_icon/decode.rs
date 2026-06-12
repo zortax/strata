@@ -23,7 +23,9 @@ use std::io::Read;
 
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use grib::codetables::grib2::Table4_4;
-use grib::{Code, ForecastTime, Grib2Read, Grib2SubmessageDecoder, GridDefinitionTemplateValues, SubMessage};
+use grib::{
+    Code, ForecastTime, Grib2Read, Grib2SubmessageDecoder, GridDefinitionTemplateValues, SubMessage,
+};
 
 use crate::domain::{LatLon, RegularLatLonGrid};
 
@@ -229,10 +231,10 @@ fn grid_params<R: Grib2Read>(submessage: &SubMessage<'_, R>) -> Result<GridParam
     let lat_spacing_deg = spacing(def.lat_lon.j_direction_inc, (lat1 - lat2).abs(), nj);
     // Guard against misread corners/increments: the corner span must equal
     // (n−1) steps to within one step.
-    let lon_consistent = ((ni - 1) as f64 * lon_spacing_deg - (lon1 - lon2).abs()).abs()
-        <= lon_spacing_deg;
-    let lat_consistent = ((nj - 1) as f64 * lat_spacing_deg - (lat1 - lat2).abs()).abs()
-        <= lat_spacing_deg;
+    let lon_consistent =
+        ((ni - 1) as f64 * lon_spacing_deg - (lon1 - lon2).abs()).abs() <= lon_spacing_deg;
+    let lat_consistent =
+        ((nj - 1) as f64 * lat_spacing_deg - (lat1 - lat2).abs()).abs() <= lat_spacing_deg;
     if !(lon_consistent && lat_consistent) {
         return Err(DwdIconError::UnsupportedGrid(
             "grid increments inconsistent with corner points",
@@ -337,15 +339,7 @@ mod tests {
     }
 
     fn grid(ni: usize, nj: usize, values: Vec<f32>) -> RegularLatLonGrid {
-        RegularLatLonGrid::new(
-            LatLon::new(50.0, 10.0).unwrap(),
-            0.5,
-            0.5,
-            ni,
-            nj,
-            values,
-        )
-        .unwrap()
+        RegularLatLonGrid::new(LatLon::new(50.0, 10.0).unwrap(), 0.5, 0.5, ni, nj, values).unwrap()
     }
 
     #[test]
@@ -454,7 +448,10 @@ mod tests {
         let c = kelvin_to_celsius(&k).unwrap();
         let close = |i, j, want: f32| {
             let got = c.value_at(i, j).unwrap();
-            assert!((got - want).abs() < 1e-3, "({i},{j}): got {got}, want {want}");
+            assert!(
+                (got - want).abs() < 1e-3,
+                "({i},{j}): got {got}, want {want}"
+            );
         };
         close(0, 0, 0.0);
         close(1, 0, 15.0);
@@ -475,11 +472,8 @@ mod tests {
         assert_eq!(on_hour.nj(), 746);
 
         // The 15-minute sub-step is a different message with different data.
-        let quarter = decode_grid_at(
-            bytes.clone(),
-            run_time() + Duration::minutes(75),
-        )
-        .expect("+75 min sub-step message exists");
+        let quarter = decode_grid_at(bytes.clone(), run_time() + Duration::minutes(75))
+            .expect("+75 min sub-step message exists");
         assert_ne!(on_hour.values(), quarter.values());
 
         // Times not in this file: the run itself and the next hour.

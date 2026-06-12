@@ -113,11 +113,7 @@ pub trait NotamProvider: Send + Sync {
     /// navigation-warning and area-wide NOTAMs such as ED-R activations or
     /// GNSS degradation. Aerodrome NOTAMs inside the FIR are *not*
     /// included — query their locations explicitly.
-    async fn notams_by_fir(
-        &self,
-        fir: &IcaoCode,
-        window: TimeWindow,
-    ) -> Result<Vec<Notam>, Error>;
+    async fn notams_by_fir(&self, fir: &IcaoCode, window: TimeWindow) -> Result<Vec<Notam>, Error>;
 }
 
 /// Identifies a 1°×1° DEM tile by the integer degrees of its south-west
@@ -175,8 +171,29 @@ mod tests {
 
     #[test]
     fn dem_tile_id_display() {
-        assert_eq!(DemTileId { lat_sw: 50, lon_sw: 10 }.to_string(), "N50E010");
-        assert_eq!(DemTileId { lat_sw: -3, lon_sw: -72 }.to_string(), "S03W072");
-        assert_eq!(DemTileId { lat_sw: 47, lon_sw: 5 }.to_string(), "N47E005");
+        assert_eq!(
+            DemTileId {
+                lat_sw: 50,
+                lon_sw: 10
+            }
+            .to_string(),
+            "N50E010"
+        );
+        assert_eq!(
+            DemTileId {
+                lat_sw: -3,
+                lon_sw: -72
+            }
+            .to_string(),
+            "S03W072"
+        );
+        assert_eq!(
+            DemTileId {
+                lat_sw: 47,
+                lon_sw: 5
+            }
+            .to_string(),
+            "N47E005"
+        );
     }
 }

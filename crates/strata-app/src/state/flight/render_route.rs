@@ -127,7 +127,10 @@ fn leg_label(doc: &FlightDoc, computed: &ComputedFlight, leg: usize) -> Option<S
     if !ground_speed.is_finite() || ground_speed <= 0.0 {
         return None;
     }
-    let heading = wind.triangle.true_heading.to_magnetic(leg_variation(summary));
+    let heading = wind
+        .triangle
+        .true_heading
+        .to_magnetic(leg_variation(summary));
     let altitude = doc.route.get(leg)?.leg_altitude.or(doc.cruise_altitude)?;
     Some(format!(
         "MH {} · {ground_speed:.0} kt · {}",
@@ -437,9 +440,9 @@ mod tests {
             2,
             &stale,
             &[
-                conflict(station(25_000.0)),                    // stale leg 1 — kept
-                conflict(station(45_000.0)),                    // stale leg 2 — dropped
-                conflict(ConflictLocation::Leg { index: 2 }),   // dropped
+                conflict(station(25_000.0)),                  // stale leg 1 — kept
+                conflict(station(45_000.0)),                  // stale leg 2 — dropped
+                conflict(ConflictLocation::Leg { index: 2 }), // dropped
             ],
         );
         assert_eq!(flags, [false, true]);
@@ -540,7 +543,10 @@ mod tests {
         let mut with_alt = doc(&[(50.0, 8.0), (50.5, 9.0)], &[]);
         with_alt.cruise_altitude = Some(PlannedAltitude::Amsl(MetersAmsl::from_feet(4500.0)));
         let stalled = computed_flight(&[10_000.0], vec![leg_wind(0, 56.0, 0.0)], Vec::new());
-        assert_eq!(render_route(&with_alt, Some(&stalled)).leg_labels, vec![None]);
+        assert_eq!(
+            render_route(&with_alt, Some(&stalled)).leg_labels,
+            vec![None]
+        );
 
         // Stale compute with fewer legs than the doc: uncovered legs stay
         // unlabelled, the vector is still doc-sized.

@@ -227,7 +227,11 @@ pub(crate) fn envelope_plot(
                     "{label} {:.0} kg @ {:.2} m{}",
                     state.mass.0,
                     state.arm.0,
-                    if state.within_envelope { "" } else { " — out" }
+                    if state.within_envelope {
+                        ""
+                    } else {
+                        " — out"
+                    }
                 ))
         }));
 
@@ -332,7 +336,10 @@ fn paint_plot(data: &PlotPaint, bounds: Bounds<Pixels>, window: &mut gpui::Windo
         let r = POINT_RADIUS_PX;
         window.paint_quad(
             gpui::fill(
-                Bounds::new(point(px(x - r), px(y - r)), gpui::size(px(2. * r), px(2. * r))),
+                Bounds::new(
+                    point(px(x - r), px(y - r)),
+                    gpui::size(px(2. * r), px(2. * r)),
+                ),
                 p.color,
             )
             .corner_radii(px(r)),
@@ -381,8 +388,14 @@ mod tests {
         let ranges =
             PlotRanges::covering([(1.0, 700.0), (1.2, 1100.0), (0.9, 900.0)]).expect("ranges");
         // Raw extent: arm 0.9–1.2, mass 700–1100; padded by 8 % per side.
-        assert!((ranges.arm.0 - (0.9 - 0.3 * 0.08)).abs() < 1e-9, "{ranges:?}");
-        assert!((ranges.arm.1 - (1.2 + 0.3 * 0.08)).abs() < 1e-9, "{ranges:?}");
+        assert!(
+            (ranges.arm.0 - (0.9 - 0.3 * 0.08)).abs() < 1e-9,
+            "{ranges:?}"
+        );
+        assert!(
+            (ranges.arm.1 - (1.2 + 0.3 * 0.08)).abs() < 1e-9,
+            "{ranges:?}"
+        );
         assert!((ranges.mass.0 - (700.0 - 400.0 * 0.08)).abs() < 1e-9);
         assert!((ranges.mass.1 - (1100.0 + 400.0 * 0.08)).abs() < 1e-9);
     }

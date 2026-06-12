@@ -447,7 +447,9 @@ fn render_row(
         ));
     }
     element = element.child(cell(
-        div().truncate().child(fmt_frequency(row.frequency.as_ref())),
+        div()
+            .truncate()
+            .child(fmt_frequency(row.frequency.as_ref())),
         104.,
         false,
     ));
@@ -455,7 +457,10 @@ fn render_row(
     // Notes: editable for waypoint rows (persisted on the doc per leg);
     // TOC/TOD rows and stale computes show the row's copy read-only.
     let notes: AnyElement = match route_index.and_then(|i| drawer.notes.input(i)) {
-        Some(input) => Input::new(input).xsmall().appearance(false).into_any_element(),
+        Some(input) => Input::new(input)
+            .xsmall()
+            .appearance(false)
+            .into_any_element(),
         None => div()
             .text_color(cx.theme().muted_foreground)
             .truncate()
@@ -476,8 +481,7 @@ fn render_row(
 /// The pinned totals row (outside the vertical scroller, inside the
 /// horizontal one, so columns stay aligned at every scroll offset).
 fn render_totals(navlog: &NavLog, cx: &Context<ProfileDrawer>) -> AnyElement {
-    let blank =
-        |width: f32, numeric: bool| cell(String::new(), width, numeric);
+    let blank = |width: f32, numeric: bool| cell(String::new(), width, numeric);
     h_flex()
         .flex_shrink_0()
         .items_center()
@@ -486,9 +490,11 @@ fn render_totals(navlog: &NavLog, cx: &Context<ProfileDrawer>) -> AnyElement {
         .border_color(cx.theme().border)
         .font_weight(FontWeight::SEMIBOLD)
         .child(cell("Totals", 108., false))
-        .children(COLUMNS[1..8].iter().map(|c| {
-            blank(c.width_px.unwrap_or(NOTES_MIN_WIDTH_PX), c.numeric)
-        }))
+        .children(
+            COLUMNS[1..8]
+                .iter()
+                .map(|c| blank(c.width_px.unwrap_or(NOTES_MIN_WIDTH_PX), c.numeric)),
+        )
         .child(cell(model::fmt_nm(navlog.totals.distance), 52., true))
         .child(cell(model::fmt_minutes(navlog.totals.ete), 52., true))
         .child(blank(58., true)) // ETA
@@ -569,10 +575,7 @@ mod tests {
             fmt_altitude(Some(PlannedAltitude::Amsl(MetersAmsl::from_feet(3500.0)))),
             "3500 ft"
         );
-        assert_eq!(
-            fmt_altitude(Some(PlannedAltitude::FlightLevel(95))),
-            "FL95"
-        );
+        assert_eq!(fmt_altitude(Some(PlannedAltitude::FlightLevel(95))), "FL95");
         assert_eq!(fmt_fuel(Some(Liters(12.34))), "12.3");
     }
 

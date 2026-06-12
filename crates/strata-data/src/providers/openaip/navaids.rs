@@ -84,9 +84,7 @@ mod tests {
     use crate::domain::{MetersAmsl, RadioFrequency};
 
     fn fixture_items() -> Vec<Value> {
-        super::super::fixture_items(include_str!(
-            "../../../tests/fixtures/openaip/navaids.json"
-        ))
+        super::super::fixture_items(include_str!("../../../tests/fixtures/openaip/navaids.json"))
     }
 
     #[test]
@@ -107,7 +105,10 @@ mod tests {
         assert_eq!(alg.kind, NavaidKind::Ndb);
         // NDB frequencies carry openAIP unit 1 (kHz) — not MHz.
         assert_eq!(alg.frequency, Some(RadioFrequency::from_khz(341.0)));
-        assert_eq!(alg.frequency.map(|f| f.to_string()).as_deref(), Some("341 kHz"));
+        assert_eq!(
+            alg.frequency.map(|f| f.to_string()).as_deref(),
+            Some("341 kHz")
+        );
         assert_eq!(alg.channel, None);
         assert_eq!(alg.elevation, MetersAmsl(617.0));
         assert!((alg.position.lat() - 47.997_222_222_222).abs() < 1e-9);

@@ -146,10 +146,7 @@ mod tests {
     fn pick_env_prefers_primary_even_when_empty() {
         let primary = Some(OsString::from(""));
         let legacy = Some(OsString::from("/legacy"));
-        assert_eq!(
-            pick_env("NEW", primary.clone(), "OLD", legacy),
-            primary
-        );
+        assert_eq!(pick_env("NEW", primary.clone(), "OLD", legacy), primary);
     }
 
     #[test]

@@ -95,9 +95,7 @@ pub fn delete_aircraft(dir: &Path, id: &AircraftId) -> anyhow::Result<()> {
     match fs::remove_file(&path) {
         Ok(()) => Ok(()),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(err) => {
-            Err(err).with_context(|| format!("delete aircraft file {}", path.display()))
-        }
+        Err(err) => Err(err).with_context(|| format!("delete aircraft file {}", path.display())),
     }
 }
 

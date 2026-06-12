@@ -8,11 +8,6 @@
 
 use std::rc::Rc;
 
-use strata_data::domain::{
-    Airport, Airspace, FlightCategory, Frequency, Metar, MetarDecode, Navaid, Obstacle, Qnh,
-    ReportingPoint, Taf, Visibility, WindDirection,
-};
-use strata_data::store::Feature;
 use gpui::prelude::FluentBuilder as _;
 use gpui::{
     Animation, AnimationExt as _, AnyElement, App, Context, ElementId, FontWeight,
@@ -24,6 +19,11 @@ use gpui_component::{
     button::{Button, ButtonVariants as _},
     h_flex, v_flex,
 };
+use strata_data::domain::{
+    Airport, Airspace, FlightCategory, Frequency, Metar, MetarDecode, Navaid, Obstacle, Qnh,
+    ReportingPoint, Taf, Visibility, WindDirection,
+};
+use strata_data::store::Feature;
 
 use strata_render::MapTheme;
 

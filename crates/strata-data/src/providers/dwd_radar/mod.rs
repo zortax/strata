@@ -94,8 +94,7 @@ pub struct DwdRadarRv {
 }
 
 impl DwdRadarRv {
-    pub const DEFAULT_BASE_URL: &'static str =
-        "https://opendata.dwd.de/weather/radar/composite/rv";
+    pub const DEFAULT_BASE_URL: &'static str = "https://opendata.dwd.de/weather/radar/composite/rv";
 
     pub fn new() -> Self {
         Self::with_base_url(Self::DEFAULT_BASE_URL)
@@ -185,7 +184,9 @@ fn decode_frame(
 ) -> Result<crate::domain::RegularLatLonGrid, DwdRadarError> {
     let frame = radolan::parse_frame(frame_bytes)?;
     if frame.product != "RV" {
-        return Err(DwdRadarError::UnexpectedProduct { product: frame.product });
+        return Err(DwdRadarError::UnexpectedProduct {
+            product: frame.product,
+        });
     }
     if frame.valid_time() != valid_time {
         return Err(DwdRadarError::FrameTimeMismatch {
@@ -320,9 +321,17 @@ mod tests {
         // Rates stay within the frame's decoded range (max raw value 635
         // → 6.35 mm / 5 min → 76.2 mm/h) and roughly half the bounding
         // box lies outside radar coverage.
-        let real: Vec<f32> = grid.values().iter().copied().filter(|v| !v.is_nan()).collect();
+        let real: Vec<f32> = grid
+            .values()
+            .iter()
+            .copied()
+            .filter(|v| !v.is_nan())
+            .collect();
         let nan_fraction = 1.0 - real.len() as f64 / grid.values().len() as f64;
-        assert!((0.3..0.6).contains(&nan_fraction), "NaN fraction {nan_fraction}");
+        assert!(
+            (0.3..0.6).contains(&nan_fraction),
+            "NaN fraction {nan_fraction}"
+        );
         assert!(real.iter().all(|&v| (0.0..=76.2001).contains(&v)));
 
         // The heaviest cell of this frame sits in the Eifel; bilinear

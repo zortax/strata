@@ -368,7 +368,10 @@ fn crossing_conflict(
 }
 
 /// The corridor sample nearest to `along_m`.
-fn nearest_sample(corridor: &Corridor, along_m: f64) -> Option<&strata_plan::corridor::CorridorSample> {
+fn nearest_sample(
+    corridor: &Corridor,
+    along_m: f64,
+) -> Option<&strata_plan::corridor::CorridorSample> {
     corridor.samples.iter().min_by(|a, b| {
         let da = (a.station.along_track.0 - along_m).abs();
         let db = (b.station.along_track.0 - along_m).abs();
@@ -415,22 +418,19 @@ fn emphasis_intervals(
         let Some(reference) = terrain.into_iter().chain(obstacle).reduce(f64::max) else {
             return false;
         };
-        let Some(planned) =
-            plan_profile::planned_altitude_at(phases, sample.station.along_track)
+        let Some(planned) = plan_profile::planned_altitude_at(phases, sample.station.along_track)
         else {
             return false;
         };
         planned.0 - reference < buffer_m
     };
 
-    let anchors = conflicts.iter().filter_map(|c| {
-        match (c.kind, c.location) {
-            (
-                ConflictKind::Terrain | ConflictKind::Obstacle,
-                ConflictLocation::Station { along_track, .. },
-            ) => Some(along_track.0),
-            _ => None,
-        }
+    let anchors = conflicts.iter().filter_map(|c| match (c.kind, c.location) {
+        (
+            ConflictKind::Terrain | ConflictKind::Obstacle,
+            ConflictLocation::Station { along_track, .. },
+        ) => Some(along_track.0),
+        _ => None,
     });
 
     let mut ranges: Vec<(usize, usize)> = Vec::new();
@@ -528,8 +528,8 @@ fn eta_at(checkpoints: &[(f64, DateTime<Utc>)], along_m: f64) -> Option<DateTime
 mod tests {
     use chrono::TimeZone as _;
     use strata_data::domain::{
-        AirspaceClass, AirspaceKind, LatLon, Meters, MetersAgl, MetersAmsl, Obstacle,
-        ObstacleKind, Polygon, VerticalLimit,
+        AirspaceClass, AirspaceKind, LatLon, Meters, MetersAgl, MetersAmsl, Obstacle, ObstacleKind,
+        Polygon, VerticalLimit,
     };
     use strata_plan::corridor::{CorridorParams, CorridorSample, Station};
     use strata_plan::perf::{PhaseKind, PhasePlan, PhaseSegment};
@@ -652,9 +652,7 @@ mod tests {
         let floors: Vec<f64> = band.stations.iter().map(|s| s.floor_m).collect();
         assert_eq!(floors, vec![600.0, 700.0, 800.0, 900.0], "sloped AGL floor");
         assert!(
-            band.stations
-                .iter()
-                .all(|s| s.ceiling_m == Some(2500.0)),
+            band.stations.iter().all(|s| s.ceiling_m == Some(2500.0)),
             "flat AMSL ceiling"
         );
         assert_eq!(band.style, AirspaceStyleKey::Ctr);
@@ -720,7 +718,10 @@ mod tests {
             message: "enters OTHER TMA at 1.1 NM".into(),
             ..conflicts[0].clone()
         }];
-        assert_eq!(band_series(&corridor_data, &crossing, &other).conflict, None);
+        assert_eq!(
+            band_series(&corridor_data, &crossing, &other).conflict,
+            None
+        );
 
         // A conflict outside the interval is someone else's.
         let outside = [Conflict {
@@ -874,10 +875,7 @@ mod tests {
         assert_eq!(readout.stack, vec!["CTR D · GND – 1500 m".to_string()]);
         // ETA: 7/20 of the 30 min → 10:10:30.
         let eta = readout.eta.expect("checkpoints exist");
-        assert_eq!(
-            eta,
-            Utc.with_ymd_and_hms(2026, 6, 14, 10, 10, 30).unwrap()
-        );
+        assert_eq!(eta, Utc.with_ymd_and_hms(2026, 6, 14, 10, 10, 30).unwrap());
 
         // 16 km: nearest station 20 km has no terrain data; leg 1 has no
         // MSA; outside the band.

@@ -51,9 +51,7 @@ impl fmt::Display for SourceError {
 
 impl Error for SourceError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source
-            .as_deref()
-            .map(|e| e as &(dyn Error + 'static))
+        self.source.as_deref().map(|e| e as &(dyn Error + 'static))
     }
 }
 
@@ -235,8 +233,20 @@ mod tests {
         assert_eq!(elevation, MetersAmsl(5000.0));
 
         let bbox = BoundingBox::new(9.0, 49.0, 11.0, 51.0).unwrap();
-        assert!(sources.obstacles.obstacles_in_bbox(bbox).unwrap().is_empty());
-        assert!(sources.airspaces.airspaces_in_bbox(bbox).unwrap().is_empty());
+        assert!(
+            sources
+                .obstacles
+                .obstacles_in_bbox(bbox)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            sources
+                .airspaces
+                .airspaces_in_bbox(bbox)
+                .unwrap()
+                .is_empty()
+        );
 
         let t = chrono::Utc.with_ymd_and_hms(2026, 6, 14, 12, 0, 0).unwrap();
         let aloft = sources

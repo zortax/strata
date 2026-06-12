@@ -121,7 +121,11 @@ fn decode_value(v: u16, factor: f32) -> f32 {
         return f32::NAN;
     }
     let magnitude = f32::from(v & VALUE_MASK) * factor;
-    if v & NEGATIVE != 0 { -magnitude } else { magnitude }
+    if v & NEGATIVE != 0 {
+        -magnitude
+    } else {
+        magnitude
+    }
 }
 
 /// Header fields needed downstream (dims returned separately).
@@ -254,9 +258,7 @@ impl<'a> Cursor<'a> {
     /// Consumes leading spaces then a run of digits.
     fn number(&mut self) -> Result<u64, DwdRadarError> {
         let s = self.rest.trim_start_matches(' ');
-        let end = s
-            .find(|c: char| !c.is_ascii_digit())
-            .unwrap_or(s.len());
+        let end = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
         if end == 0 {
             return Err(DwdRadarError::InvalidHeader("expected a number"));
         }
@@ -280,9 +282,8 @@ pub(super) mod testutil {
 
     /// Real analysis frame (lead 000) from the RV tarball published
     /// 2026-06-10 17:10 UTC, re-bzip2ed standalone.
-    pub const RV_FIXTURE: &[u8] = include_bytes!(
-        "../../../tests/fixtures/dwd_radar/DE1200_RV2606101710_000.bz2"
-    );
+    pub const RV_FIXTURE: &[u8] =
+        include_bytes!("../../../tests/fixtures/dwd_radar/DE1200_RV2606101710_000.bz2");
 
     pub fn decompress(bytes: &[u8]) -> Vec<u8> {
         let mut out = Vec::new();
@@ -332,12 +333,12 @@ mod tests {
     #[test]
     fn payload_decodes_flags_sign_and_precision() {
         let frame = parse_frame(&synthetic_frame([
-            0,               // 0.00 mm
-            123,             // 1.23 mm (E-02 scaling)
-            0x2000 | 2500,   // no-data → NaN, regardless of value bits
-            0x8000 | 2490,   // clutter → NaN
-            0x4000 | 1,      // negative sign → −0.01 mm
-            0x1000 | 4095,   // secondary-data flag: value stays valid
+            0,             // 0.00 mm
+            123,           // 1.23 mm (E-02 scaling)
+            0x2000 | 2500, // no-data → NaN, regardless of value bits
+            0x8000 | 2490, // clutter → NaN
+            0x4000 | 1,    // negative sign → −0.01 mm
+            0x1000 | 4095, // secondary-data flag: value stays valid
         ]))
         .unwrap();
         let v = &frame.values_mm;
@@ -351,15 +352,7 @@ mod tests {
 
     #[test]
     fn rate_scales_to_mm_h_and_clamps_negatives() {
-        let frame = parse_frame(&synthetic_frame([
-            0,
-            123,
-            0x2000,
-            0,
-            0x4000 | 1,
-            50,
-        ]))
-        .unwrap();
+        let frame = parse_frame(&synthetic_frame([0, 123, 0x2000, 0, 0x4000 | 1, 50])).unwrap();
         let rate = frame.rate_mm_h();
         assert_eq!(rate[0], 0.0);
         assert!((rate[1] - 14.76).abs() < 1e-4); // 1.23 mm / 5 min × 12
@@ -388,7 +381,12 @@ mod tests {
         short.truncate(short.len() - 2);
         assert!(matches!(
             parse_frame(&short),
-            Err(DwdRadarError::PayloadSizeMismatch { got: 10, expected: 12, nx: 3, ny: 2 })
+            Err(DwdRadarError::PayloadSizeMismatch {
+                got: 10,
+                expected: 12,
+                nx: 3,
+                ny: 2
+            })
         ));
         // Nonsense month.
         let mut bad_time = synthetic_frame([0; 6]);
@@ -424,7 +422,10 @@ mod tests {
             .fold(f32::MIN, |a, &b| a.max(b));
         assert!((max - 6.35).abs() < 1e-4); // raw 635 × 0.01 mm / 5 min
         let rate = frame.rate_mm_h();
-        let max_rate = rate.iter().filter(|v| !v.is_nan()).fold(f32::MIN, |a, &b| a.max(b));
+        let max_rate = rate
+            .iter()
+            .filter(|v| !v.is_nan())
+            .fold(f32::MIN, |a, &b| a.max(b));
         assert!((max_rate - 76.2).abs() < 1e-3);
     }
 }

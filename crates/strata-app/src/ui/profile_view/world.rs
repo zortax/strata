@@ -250,7 +250,11 @@ pub(crate) fn build_world_scene(series: &ProfileSeries, params: SceneParams) -> 
         let mut out: Vec<(f64, f64, f64)> = Vec::new();
         let mut start_m = 0.0f64;
         for (leg, value) in values.iter().enumerate() {
-            let end_m = series.leg_ends_m.get(leg).copied().unwrap_or(series.total_m);
+            let end_m = series
+                .leg_ends_m
+                .get(leg)
+                .copied()
+                .unwrap_or(series.total_m);
             if let Some(value) = value {
                 out.push((start_m, end_m, clamp(*value)));
             }
@@ -337,12 +341,7 @@ impl Norm {
         }
         let scaled: Vec<(f64, f64)> = points
             .iter()
-            .map(|&(along, alt)| {
-                (
-                    along / self.total_m,
-                    (alt - self.floor_m) / self.range_m,
-                )
-            })
+            .map(|&(along, alt)| (along / self.total_m, (alt - self.floor_m) / self.range_m))
             .collect();
         let mut keep = vec![false; points.len()];
         keep[0] = true;
@@ -447,10 +446,7 @@ fn altitude_range(series: &ProfileSeries, show_freezing: bool) -> (f64, f64) {
 
 /// Red clearance emphasis: the closed area between terrain and the planned
 /// line over each conflicted interval, in world coordinates.
-fn emphasis_polygons(
-    series: &ProfileSeries,
-    clamp: impl Fn(f64) -> f64,
-) -> Vec<Vec<(f64, f64)>> {
+fn emphasis_polygons(series: &ProfileSeries, clamp: impl Fn(f64) -> f64) -> Vec<Vec<(f64, f64)>> {
     // Half a station spacing, for single-station intervals.
     let half_step = series
         .terrain

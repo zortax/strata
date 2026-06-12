@@ -171,8 +171,7 @@ fn label_precision(exterior: &[DVec2]) -> f64 {
 }
 
 fn vertex_mean(points: &[DVec2]) -> Option<DVec2> {
-    (!points.is_empty())
-        .then(|| points.iter().copied().sum::<DVec2>() / points.len() as f64)
+    (!points.is_empty()).then(|| points.iter().copied().sum::<DVec2>() / points.len() as f64)
 }
 
 #[cfg(test)]

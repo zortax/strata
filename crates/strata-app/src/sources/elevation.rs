@@ -38,7 +38,11 @@ impl StoreElevationSource {
     /// Wraps a previously prefetched tile set (`tiles` were bulk-read for
     /// `coverage`) — the cache-hit path; semantics are identical to a
     /// fresh [`Self::prefetch`] over the same bbox.
-    pub fn with_tiles(store: Arc<Store>, coverage: BoundingBox, tiles: Arc<ElevationTileSet>) -> Self {
+    pub fn with_tiles(
+        store: Arc<Store>,
+        coverage: BoundingBox,
+        tiles: Arc<ElevationTileSet>,
+    ) -> Self {
         Self {
             store,
             coverage,

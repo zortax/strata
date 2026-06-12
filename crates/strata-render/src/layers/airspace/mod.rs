@@ -442,7 +442,10 @@ pub(crate) mod tests {
         let deadline = Instant::now() + Duration::from_secs(30);
         while layer.pending_batches > 0 {
             layer.drain_batches();
-            assert!(Instant::now() < deadline, "tessellation batches never landed");
+            assert!(
+                Instant::now() < deadline,
+                "tessellation batches never landed"
+            );
             std::thread::sleep(Duration::from_millis(1));
         }
     }

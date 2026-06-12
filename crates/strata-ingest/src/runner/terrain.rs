@@ -177,7 +177,8 @@ impl<'a> TileWriter<'a> {
 
     fn flush(&mut self) -> Result<(), Error> {
         for tile in self.buffer.drain(..) {
-            self.store.put_terrain_tile(tile.z, tile.x, tile.y, &tile.png)?;
+            self.store
+                .put_terrain_tile(tile.z, tile.x, tile.y, &tile.png)?;
         }
         Ok(())
     }

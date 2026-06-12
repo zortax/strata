@@ -89,7 +89,10 @@ pub fn render_flight_panel(
         PanelVisibility::Closed => return None, // unreachable: handled above
         PanelVisibility::Open => panel
             .with_animation(
-                ("flight-panel-enter", root.flight_panel_anim.open_generation()),
+                (
+                    "flight-panel-enter",
+                    root.flight_panel_anim.open_generation(),
+                ),
                 Animation::new(PANEL_ENTER_DURATION).with_easing(ease_out_quint()),
                 |panel, delta| {
                     panel
@@ -102,11 +105,7 @@ pub fn render_flight_panel(
             .with_animation(
                 ("flight-panel-exit", root.flight_panel_anim.close_epoch()),
                 Animation::new(PANEL_EXIT_DURATION).with_easing(quadratic),
-                |panel, delta| {
-                    panel
-                        .left(px(-PANEL_SLIDE_PX * delta))
-                        .opacity(1. - delta)
-                },
+                |panel, delta| panel.left(px(-PANEL_SLIDE_PX * delta)).opacity(1. - delta),
             )
             .into_any_element(),
     };

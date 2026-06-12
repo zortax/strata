@@ -19,9 +19,9 @@
 
 mod countries;
 mod io;
-mod theme;
 #[cfg(test)]
 mod tests;
+mod theme;
 
 use std::fmt;
 use std::ops::RangeInclusive;

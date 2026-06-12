@@ -139,12 +139,7 @@ mod tests {
                 ll(50.0 + r * theta.sin(), 10.0 + r * theta.cos())
             })
             .collect();
-        let hole = vec![
-            ll(49.8, 9.8),
-            ll(49.8, 10.2),
-            ll(50.2, 10.2),
-            ll(50.2, 9.8),
-        ];
+        let hole = vec![ll(49.8, 9.8), ll(49.8, 10.2), ll(50.2, 10.2), ll(50.2, 9.8)];
         Polygon::new(star, vec![hole]).unwrap()
     }
 
@@ -156,11 +151,7 @@ mod tests {
         for i in 0..=60 {
             for j in 0..=60 {
                 let p = ll(47.9 + 4.2 * i as f64 / 60.0, 7.9 + 4.2 * j as f64 / 60.0);
-                assert_eq!(
-                    prepared.contains(p),
-                    polygon.contains(p),
-                    "diverged at {p}"
-                );
+                assert_eq!(prepared.contains(p), polygon.contains(p), "diverged at {p}");
                 inside += usize::from(polygon.contains(p));
             }
         }

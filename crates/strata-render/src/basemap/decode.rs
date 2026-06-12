@@ -448,7 +448,12 @@ mod tests {
         let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), Compression::default());
         encoder.write_all(&raw).expect("zlib write");
         let zlibbed = encoder.finish().expect("zlib finish");
-        assert!(!build_tile(id, &zlibbed, &theme()).expect("zlib").mesh.is_empty());
+        assert!(
+            !build_tile(id, &zlibbed, &theme())
+                .expect("zlib")
+                .mesh
+                .is_empty()
+        );
     }
 
     #[test]

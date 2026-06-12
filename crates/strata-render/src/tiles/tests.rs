@@ -83,7 +83,10 @@ fn negative_detail_bias_delays_the_level_switch() {
     // With the old +0.3 bias z13 arrived at camera 12.7; the default
     // basemap bias must delay it past the integer boundary (0.5–1 later).
     let shift = TILE_PICK_BIAS - DEFAULT_BASEMAP_DETAIL_BIAS;
-    assert!((0.5..=1.0).contains(&shift), "default shift {shift} out of range");
+    assert!(
+        (0.5..=1.0).contains(&shift),
+        "default shift {shift} out of range"
+    );
     assert_eq!(display_level(12.7, 13, DEFAULT_BASEMAP_DETAIL_BIAS), 12);
     assert_eq!(display_level(13.4, 13, DEFAULT_BASEMAP_DETAIL_BIAS), 12);
     assert_eq!(display_level(13.5, 13, DEFAULT_BASEMAP_DETAIL_BIAS), 13);
